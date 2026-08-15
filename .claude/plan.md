@@ -168,15 +168,16 @@ That is inherent, and is exactly why grading must move server-side in P2.1.
   change, proven by a test; camelCase aliases match `types.ts` exactly and parse back in;
   Khmer numerals survive the round-trip; DDL compiles against the postgres dialect.
 
-### P1.2 — `dal/` clients
+### P1.2 — `dal/` clients · ✅ **DONE 2026-08-15**
 
-- **Files:** `dal/clients/{postgres,redis}.py`, `dal/llm_client.py`
-- `llm_client.py` wraps `google-genai`: timeout, bounded retry with backoff, token
-  accounting, and a **bilingual fallback string on failure** — never propagate a raw
-  exception toward a child.
-- **Depends:** P1.1
-- **Verify:** `pytest` with the Gemini call mocked — asserts retry on 503 and that a
-  hard failure returns the fallback rather than raising.
+`dal/clients/{postgres,redis}.py` (lazy cached async factories with test-reset helpers) and
+`dal/llm_client.py`. **Verified:** `pytest dal/tests/` → 57 passed, 1 xfailed — retry on
+503-class errors with injectable backoff sleep; hard failure returns the bilingual fallback
+(byte-identical to `server.ts`'s catch block) and never raises; placeholder/missing
+`GEMINI_API_KEY` short-circuits to fallback with zero SDK calls; non-transient errors
+(401/400) skip retries; token accounting from `usage_metadata`; no prompt content in logs.
+Model id via `GEMINI_MODEL` env (default `gemini-3.7-flash`, still unverified). The SDK
+call and sleep are constructor-injectable — tests never patch google internals.
 
 ### P1.3 — `auth_service`
 
@@ -229,30 +230,34 @@ That is inherent, and is exactly why grading must move server-side in P2.1.
   curl -s localhost:8003/problems/math-g4-apples | jq -r '.title_khmer' # Khmer renders
   ```
 
-### P1.5 — `solver_service` (thin)
+### P1.5 — `solver_service` · ✅ **DONE 2026-08-15**
 
-- **Files:** `app/core/math_solver.py`, `app/core/step_formatter.py`, `app/api/`, `app/main.py`
-- Grade 4–6 arithmetic only: the four operations, fractions, decimals, percentages. `sympy`
-  is reasonable; a word-problem parser is **not** in this phase. Higher grades come later —
-  keep the solver's entry point grade-agnostic so algebra can be added beside it.
-- **Depends:** P0.6
-- **Verify:** `curl -sX POST localhost:8004/solve -d '{"expression":"5*8"}'` → `{"answer":"40", ...}`;
-  `pytest` covers fraction and percentage cases.
+Recursive-descent parser (no `eval()`), exact arithmetic via `Fraction`, working-steps
+trace via `step_formatter.py`. **Verified:** 47 tests pass — four ops, precedence,
+parentheses, `1/2 + 1/4` → `"3/4"`, `0.1+0.2` → `"0.3"` (no float noise), `25% of 80` →
+`"20"`, **Khmer numerals** `៥*៨` → `"40"`, division by zero → 422 not 500, injection
+rejected, answers always `str`. Deliberately unsupported: bare `N%` arithmetic, mixed
+numbers, exponents, implicit multiplication, word problems. Entry point is grade-agnostic
+so algebra can be added beside it. Deps: fastapi + uvicorn only — no sympy needed.
 
-### P1.6 — `safety_service` (real, not a stub)
+### P1.6 — `safety_service` · ✅ **DONE 2026-08-15**
 
-Built in Phase 1 rather than later: it guards the LLM path, and the current frontend
-"filter" is four keywords that only run when the network fails.
+Layered rule filter, pure and testable: NFC normalization, zero-width stripping,
+letter-spacing evasion collapse; English rules on word boundaries, Khmer keywords on a
+whitespace-free form (Khmer script has no word spaces); guard phrases excised before rules
+run so "shooting percentage" never trips violence. Categories (first match wins):
+`self_harm` (checked before violence; gentle trusted-adult refusal), `violence`, `sexual`,
+`drugs`, `hate`, `pii_request`, `cheating`, plus output-only `age_inappropriate`.
 
-- **Files:** `app/core/age_gate.py`, `app/core/content_filter.py`, `app/api/`, `app/main.py`
-- Screens **both** directions. Refusals are bilingual and in Tunsay's voice (warm, redirects
-  to the homework), matching the existing refusal string in `geminiService.ts`.
-- **Contract:** returns `{is_safe, reason?, refusal_khmer, refusal_eng}`;
-  sets `is_safety_refusal` on the chat response.
-- **Depends:** P0.6
-- **Verify:** `pytest` — an off-topic/unsafe prompt in **both Khmer and English** is blocked,
-  and a legitimate question about subtracting negative numbers is *not* (no naive keyword
-  blocklist).
+**Verified:** 73 tests pass — every category blocked in English AND Khmer; the math
+false-positive set ("subtract negative numbers", "what does mean mean in math", Khmer
+equivalents) passes as safe; refusals always bilingual, Tunsay-voiced, never echo input;
+output screening stricter than input ("you are stupid": blocked as output, safe as a
+frustrated child's input); a block returns HTTP 200 with `is_safe:false`, not an error.
+
+Judgment calls recorded: "give me the answer" (singular) is NOT a safety block — that is
+the pedagogy layer's job; cheating triggers only on "all the answers"/test/exam phrasing.
+Bare "drugs" over-blocks health-class questions — accepted for the 6–12 audience.
 
 ### P1.7 — `orchestrator`: minimal graph
 
@@ -529,11 +534,11 @@ Status: `[ ]` not started · `[~]` in progress · `[x]` done · `[?]` blocked on
 Strict dependency chain — do not start a task before its predecessor's verify passes.
 
 - [x] **P1.1** `dal/` models + schemas — 34 tests pass ✅ *2026-08-15*
-- [ ] **P1.2** `dal/` clients + `llm_client.py` → *needs P1.1*
+- [x] **P1.2** `dal/` clients + `llm_client.py` — 57 dal tests pass ✅ *2026-08-15*
 - [ ] **P1.3** `auth_service` — school code + PIN, **no password/email** → *needs P1.1, P0.6*
 - [~] **P1.4** `content_service` + seeding — YAML done, `seed_exercises.py` to write → *needs P1.1*
-- [ ] **P1.5** `solver_service` (thin) → *needs P0.6*
-- [ ] **P1.6** `safety_service` (real, not a stub) → *needs P0.6*
+- [x] **P1.5** `solver_service` — 47 tests; Khmer numerals, exact fractions ✅ *2026-08-15*
+- [x] **P1.6** `safety_service` — 73 tests; bilingual rules both directions ✅ *2026-08-15*
 - [ ] **P1.7** `orchestrator` — 5-node graph, session store, logging → *needs P1.2, P1.4, P1.5, P1.6*
 - [ ] **P1.8** `pedagogy_service` — owns the Gemini call → *needs P1.2*
 - [ ] **P1.9** `gateway` — cors, auth_verify, rate_limit → *needs P1.3, P1.7*
