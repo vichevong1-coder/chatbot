@@ -14,12 +14,8 @@ a time, with a three-rung hint ladder, and never just hands over the answer.
 
 Honest state of the repo:
 
-- **Frontend: built and running, on mock data.** The UI is complete and polished, but every
-  problem, transcript, scan and progress number comes from local mocks. Its only network
-  call goes straight to Gemini from `frontend_tunsay/server.ts`.
-- **Backend: scaffolded, not implemented.** The twelve-service Python tree, `dal/` and
-  `docker-compose.yml` exist as directories and empty files. `dal/` is now installable; the
-  rest is still to be written. Nothing in the Python stack runs yet.
+- **Frontend: built and running.** The UI is complete and polished. It is now wired to the Python backend via the gateway, no longer relying on direct Gemini calls from the local node server. Some features like scanning and profile progress still use local mocks pending Phase 2 and 3 completion.
+- **Backend: Phase 1 complete.** The core Python stack is implemented and running, achieving a real end-to-end tutoring turn. Services including `dal`, `auth`, `content`, `solver`, `safety`, `orchestrator`, `pedagogy`, and `gateway` are functioning.
 
 `frontend_tunsay/` was generated in Google AI Studio and first landed in a separate repo,
 but **this repository is now the single source of truth** — frontend and backend alike. Edit
@@ -36,9 +32,7 @@ docker-compose up
 cd frontend_tunsay && npm install && npm run dev
 ```
 
-The frontend serves on `:3000` and the API gateway on `:8000`. Note that
-`docker-compose.yml` is still an empty placeholder, so today only the frontend command
-actually brings anything up.
+The frontend serves on `:3000` and the API gateway on `:8000`. The Python backend services and backing infrastructure (Postgres, Redis, Qdrant, MinIO) are fully configured in `docker-compose.yml`.
 
 ## Documentation
 
