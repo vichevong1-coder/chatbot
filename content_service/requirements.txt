@@ -1,0 +1,6 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pyyaml>=6.0
+# tunsay-dal (schemas, ORM, DB clients) is NOT on PyPI — it is installed from the
+# monorepo's dal/ directory: `pip install ./dal` in the Dockerfile, `pip install -e ./dal`
+# in the dev venv. It pulls in pydantic, sqlalchemy[asyncio] and psycopg transitively.

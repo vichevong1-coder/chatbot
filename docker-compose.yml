@@ -180,7 +180,10 @@ services:
 
   auth_service:
     <<: *app-service
-    build: ./auth_service
+    # repo-root context: the image copies dal/ from the monorepo
+    build:
+      context: .
+      dockerfile: auth_service/Dockerfile
     container_name: tunsay-auth-service
     expose:
       - "8002"
@@ -190,7 +193,10 @@ services:
 
   content_service:
     <<: *app-service
-    build: ./content_service
+    # repo-root context: the image copies dal/ from the monorepo
+    build:
+      context: .
+      dockerfile: content_service/Dockerfile
     container_name: tunsay-content-service
     expose:
       - "8003"
@@ -216,7 +222,10 @@ services:
 
   pedagogy_service:
     <<: *app-service
-    build: ./pedagogy_service
+    # repo-root context: the image copies dal/ from the monorepo
+    build:
+      context: .
+      dockerfile: pedagogy_service/Dockerfile
     container_name: tunsay-pedagogy-service
     # The ONLY service that talks to Gemini (architecture.md §1, rule 4).
     # GEMINI_API_KEY is consumed here and nowhere else.

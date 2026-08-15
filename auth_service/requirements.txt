@@ -1,0 +1,10 @@
+# auth_service runtime dependencies.
+#
+# NOTE: this service also depends on the monorepo's `tunsay-dal` package (../dal),
+# which brings SQLAlchemy, psycopg and pydantic. It is not on PyPI, so the Docker
+# build needs the repo root as its build context (or a dal/ copied in beside this
+# file) and installs it with `pip install ./dal` — see the Dockerfile.
+fastapi
+uvicorn[standard]
+pyjwt
+bcrypt

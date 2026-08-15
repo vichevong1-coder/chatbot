@@ -1,0 +1,7 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pyyaml>=6.0
+# dal (tunsay-dal) is installed from the monorepo, not PyPI:
+#   pip install -e ../dal        (dev)
+# The Dockerfile copies dal/ into the build context and installs it there —
+# build from the repo root so ../dal is reachable.

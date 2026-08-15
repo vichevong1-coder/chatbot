@@ -114,7 +114,9 @@ files, `orchestrator/__init__.py`, root `plan.md`, and the two stale `.claude` d
 
 **Verified:** `find . -name docker-compose.yml` → exactly one, at the root.
 
-### P0.6 — One compose file · ✅ **DONE 2026-08-15**
+### P0.6 — One compose file · ✅ **DONE 2026-08-15** *(amended: dal-dependent services
+— auth, content, pedagogy — now build with repo-root context so their images can copy
+`dal/`; `docker compose config` re-verified)*
 
 One root `docker-compose.yml`, 17 services, no obsolete `version:` key. Backing services
 (postgres 16, redis 7, qdrant, minio) have healthchecks and named volumes and start by
@@ -179,56 +181,36 @@ That is inherent, and is exactly why grading must move server-side in P2.1.
 Model id via `GEMINI_MODEL` env (default `gemini-3.7-flash`, still unverified). The SDK
 call and sleep are constructor-injectable — tests never patch google internals.
 
-### P1.3 — `auth_service`
+### P1.3 — `auth_service` · ✅ **DONE 2026-08-15**
 
-- **Files:** `app/core/{password_hashing,jwt_handler}.py`, `app/api/{register,login,me}.py`,
-  `app/infrastructure/repository.py`, `app/main.py`, `alembic/`
-- **Read `contracts.md` §4 "Auth credentials" first.** There is **no password and no email** —
-  `LoginView.tsx` collects a school code, a Khmer display name, and an optional 4-digit PIN
-  across three flows. Building an email/password service here means rewriting it and the
-  login UI later. `password_hashing.py` hashes PINs; the filename is inherited, not a spec.
-- Resolve the school-code/class scope question in §4 before writing the schema.
-- **One role: student.** No `role` column, no account types, no `parent_student_link`
-  table — the frontend has no account-type picker (`contracts.md` §4). `UserMode` is a
-  separate concept and stays: it is an in-app student/parent toggle, not an identity.
-- Admin is **not** gateway-routed and needs no auth path here (`contracts.md` §4).
-- Rate-limit auth attempts: a 4-digit PIN has 10,000 combinations.
-- **Contract:** `contracts.md` §4
-- **Depends:** P1.1, P0.6
-- **Verify:**
-  ```bash
-  docker compose up -d auth_service
-  # school-code flow, mirroring LoginView's demo values
-  curl -sX POST localhost:8002/register -H 'Content-Type: application/json' \
-    -d '{"student_name":"សុជា (Sochea)","school_code":"TUNSAY-G4-DEMO","pin":"1234"}'
-  curl -sX POST localhost:8002/login -H 'Content-Type: application/json' \
-    -d '{"student_name":"សុជា (Sochea)","school_code":"TUNSAY-G4-DEMO","pin":"1234"}' | tee /tmp/tok.json
-  curl -s localhost:8002/me -H "Authorization: Bearer $(jq -r .access_token /tmp/tok.json)"
-  ```
-  Round-trips; `/me` returns grade 4 resolved from the school code; the Khmer name survives
-  unmangled. Two students with the same name under different school codes both work. A wrong
-  PIN fails, and repeated wrong PINs get throttled.
+School-code + optional 4-digit PIN, no password/email/role; bcrypt PIN hashing; HS256 JWT
+(`sub`, `student_name`, `school_code`, `grade` — no role claim); per-(school, name)
+throttle: 5 wrong PINs → 15-min lock → 429 with `Retry-After` (in-process store,
+TODO(redis) noted). **Verified:** 16 tests — grade resolved from `TUNSAY-G4-DEMO`;
+duplicate name same school 409 via the DB constraint (no check-then-insert race); same
+name different school both succeed; 401s are deliberately identical for wrong PIN /
+missing PIN / unknown name (no user enumeration); throttle runs before PIN verification;
+Khmer name round-trips `/me` byte-for-byte; expired and tampered tokens 401. Errors are
+structured and bilingual. `scripts/seed_demo_school.py` seeds the demo school and creates
+the two auth tables (no alembic migrations yet — run it once before the curl verify).
 
-### P1.4 — `content_service` + seeding
+### P1.4 — `content_service` + seeding · ✅ **DONE 2026-08-15**
 
-- **Files:** `scripts/seed_exercises.py`, `seed_data/*.yaml`, `app/api/admin.py`,
-  `app/api/problems.py` [new], `app/infrastructure/repository.py`, `app/core/models.py`
-- `app/api/admin.py` stays **internal-network only** — no gateway route, no public
-  exposure (`contracts.md` §4). `expose:` in compose, never `ports:`.
-- ✅ **The YAML transcode is done** — `seed_data/*.yaml`, 7 files, 18 steps, snake_case,
-  Khmer preserved byte-for-byte (verified bidirectionally against the `.ts` source).
-  **`scripts/seed_exercises.py` is still to write** — the seed data currently has no loader.
-- Ingest validation must reject: a missing Khmer *or* English authored field (§3), and
-  **`total_steps != len(steps)`** — see the known defect in `contracts.md` §6.
-- `GET /problems/{id}` **must strip `correct_answer`** from every step.
-- **Depends:** P1.1
-- **Verify:**
-  ```bash
-  docker compose run --rm content_service python scripts/seed_exercises.py
-  curl -s localhost:8003/problems | jq 'length'                        # 7
-  curl -s localhost:8003/problems/math-g4-apples | jq '.steps[0]'      # no correct_answer
-  curl -s localhost:8003/problems/math-g4-apples | jq -r '.title_khmer' # Khmer renders
-  ```
+Async repository over dal ORM (JSONB blobs for hints/analogy/options; reads revalidate
+through `model_validate` so hand-edited rows can't leak). `GET /problems[/{id}]` with
+grade/subject filters, everything serialized through `.to_public()`. Admin CRUD unauthed
+by decision (internal network only). `scripts/seed_exercises.py` validates each YAML,
+loads the good ones, exits non-zero if any fail.
+
+**Verified:** 12 tests + a live throwaway Postgres run — **6 loaded, 1 rejected**
+(`science-g4-water`, named `total_steps` defect), exit=1, reseed idempotent, `៥` intact in
+the DB; the full public JSON contains no `correct_answer`/`correctAnswer`; admin sees
+answers, public reflection of an admin upsert stays stripped.
+
+**Bug caught here that applies everywhere:** FastAPI `response_model` serializes
+`by_alias=True` by default, so TunsayModel would leak camelCase onto the inter-service
+wire. Every route must set `response_model_by_alias=False` — snake_case between services;
+the gateway is the only translation boundary. auth/pedagogy already comply.
 
 ### P1.5 — `solver_service` · ✅ **DONE 2026-08-15**
 
@@ -281,23 +263,18 @@ Bare "drugs" over-blocks health-class questions — accepted for the 6–12 audi
   → `text_khmer` populated, `text_eng: ""`, `is_safety_refusal: false`. Re-posting the same
   `session_id` shows the prior turn in Redis.
 
-### P1.8 — `pedagogy_service` owns the Gemini call
+### P1.8 — `pedagogy_service` · ✅ **DONE 2026-08-15**
 
-The system prompt moves out of `server.ts`. Port it verbatim first — it encodes the product
-voice (friendly rabbit, Cambodia/WEG context, never give the answer immediately, "Let's
-solve it together", never judgmental) — then split by grade band.
+The only service that touches Gemini, via `dal.llm_client` exclusively. `server.ts` system
+prompt ported faithfully into `explain_grade1_3.yaml` / `explain_grade4_6.yaml`
+(language_instructions verbatim; mode_instructions replace the bare `Mode:` line — student
+never reveals the answer, parent may). Band selection is a lookup with nearest-band
+fallback (grades 7–12 resolve to 4–6 until their stub YAMLs are filled — stubs kept).
 
-- **Files:** `app/core/explanation_generator.py`,
-  `app/ai/prompts/explain_grade4_6.yaml` (build first), `explain_grade1_3.yaml`,
-  `app/api/`, `app/main.py`
-- Band selection is a lookup, not an `if` chain — grades 7–9 and 10–12 already have prompt
-  files reserved and will be filled in later (`claude.md` §4). Grade and language are prompt
-  inputs, not string concatenation at the call site.
-- **Depends:** P1.2
-- **Verify:** with `GEMINI_API_KEY` unset the service still returns the bilingual fallback
-  (matching `server.ts`'s current no-key behavior); with a key set, a grade-4 and a grade-6
-  request produce visibly different reading levels, and an unmapped grade falls back to the
-  nearest band instead of erroring.
+**Verified:** 24 tests — placeholder key → bilingual fallback with zero SDK calls (proven
+with an exploding fake); km fills `text_khmer` and leaves `text_eng` "" and vice versa;
+grade 2 vs 5 select different bands; assembled instruction carries the WEG/Tunsay identity
+and "Let's solve it together".
 
 ### P1.9 — `gateway`
 
@@ -535,12 +512,12 @@ Strict dependency chain — do not start a task before its predecessor's verify 
 
 - [x] **P1.1** `dal/` models + schemas — 34 tests pass ✅ *2026-08-15*
 - [x] **P1.2** `dal/` clients + `llm_client.py` — 57 dal tests pass ✅ *2026-08-15*
-- [ ] **P1.3** `auth_service` — school code + PIN, **no password/email** → *needs P1.1, P0.6*
-- [~] **P1.4** `content_service` + seeding — YAML done, `seed_exercises.py` to write → *needs P1.1*
+- [x] **P1.3** `auth_service` — 16 tests; school code + PIN + throttle ✅ *2026-08-15*
+- [x] **P1.4** `content_service` + seeding — 12 tests; 6/7 seeded, defect rejected ✅ *2026-08-15*
 - [x] **P1.5** `solver_service` — 47 tests; Khmer numerals, exact fractions ✅ *2026-08-15*
 - [x] **P1.6** `safety_service` — 73 tests; bilingual rules both directions ✅ *2026-08-15*
 - [ ] **P1.7** `orchestrator` — 5-node graph, session store, logging → *needs P1.2, P1.4, P1.5, P1.6*
-- [ ] **P1.8** `pedagogy_service` — owns the Gemini call → *needs P1.2*
+- [x] **P1.8** `pedagogy_service` — 24 tests; server.ts prompt ported to band YAMLs ✅ *2026-08-15*
 - [ ] **P1.9** `gateway` — cors, auth_verify, rate_limit → *needs P1.3, P1.7*
 - [ ] **P1.10** Repoint the frontend — `server.ts` + `geminiService.ts` → *needs P1.9*
 - [ ] 🏁 **Milestone 1** — browser → login → question → Gemini answer via the Python stack
