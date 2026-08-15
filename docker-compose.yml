@@ -167,7 +167,10 @@ services:
 
   orchestrator:
     <<: *app-service
-    build: ./orchestrator
+    # repo-root context: the image copies dal/ from the monorepo
+    build:
+      context: .
+      dockerfile: orchestrator/Dockerfile
     container_name: tunsay-orchestrator
     expose:
       - "8001"

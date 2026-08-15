@@ -1,0 +1,87 @@
+"""Orchestrator app factory (plan.md P1.7).
+
+``create_app(clients=None, session_store=None)`` is the DI seam: tests inject
+fake service clients and an InMemorySessionStore; production builds real httpx
+clients from the ``*_SERVICE_URL`` environment variables (.env.example) and a
+RedisSessionStore over ``dal.clients.redis``.
+"""
+
+from __future__ import annotations
+
+import os
+import uuid
+from contextlib import asynccontextmanager
+
+import httpx
+from fastapi import FastAPI, Request
+
+from app.api.chat import router as chat_router
+from app.api.health import router as health_router
+from app.core.graph.builder import build_graph
+from app.infrastructure.service_clients import ServiceClients
+from app.infrastructure.service_clients.auth_client import AuthClient
+from app.infrastructure.service_clients.content_client import ContentClient
+from app.infrastructure.service_clients.pedagogy_client import PedagogyClient
+from app.infrastructure.service_clients.safety_client import SafetyClient
+from app.infrastructure.service_clients.solver_client import SolverClient
+from app.session_store.redis_store import RedisSessionStore, SessionStore
+from app.utils.logging import request_id_var
+
+
+def _default_clients(http: httpx.AsyncClient) -> ServiceClients:
+    """Real clients over one shared AsyncClient; URLs per .env.example."""
+
+    def url(name: str, default: str) -> str:
+        return os.environ.get(name, default).strip() or default
+
+    return ServiceClients(
+        safety=SafetyClient(url("SAFETY_SERVICE_URL", "http://safety_service:8011"), http),
+        solver=SolverClient(url("SOLVER_SERVICE_URL", "http://solver_service:8004"), http),
+        content=ContentClient(url("CONTENT_SERVICE_URL", "http://content_service:8003"), http),
+        pedagogy=PedagogyClient(
+            url("PEDAGOGY_SERVICE_URL", "http://pedagogy_service:8006"), http
+        ),
+        auth=AuthClient(url("AUTH_SERVICE_URL", "http://auth_service:8002"), http),
+    )
+
+
+def create_app(
+    clients: ServiceClients | None = None,
+    session_store: SessionStore | None = None,
+) -> FastAPI:
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        yield
+        if app.state.http is not None:
+            await app.state.http.aclose()
+
+    app = FastAPI(title="Tunsay orchestrator", lifespan=lifespan)
+
+    if clients is None:
+        app.state.http = httpx.AsyncClient()
+        clients = _default_clients(app.state.http)
+    else:
+        app.state.http = None  # injected fakes own no transport
+
+    app.state.clients = clients
+    app.state.session_store = session_store or RedisSessionStore()
+    app.state.graph = build_graph(clients)
+
+    @app.middleware("http")
+    async def request_id_middleware(request: Request, call_next):
+        """One uuid per request, carried into every structured log line."""
+        request_id = str(uuid.uuid4())
+        token = request_id_var.set(request_id)
+        try:
+            response = await call_next(request)
+        finally:
+            request_id_var.reset(token)
+        response.headers["X-Request-ID"] = request_id
+        return response
+
+    app.include_router(health_router)
+    app.include_router(chat_router)
+    return app
+
+
+app = create_app()

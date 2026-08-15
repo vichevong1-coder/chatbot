@@ -1,0 +1,12 @@
+# orchestrator — the brain (plan.md P1.7).
+#
+# tunsay-dal is NOT on PyPI: it is the shared monorepo package at ../dal.
+# Local dev:      pip install -e ../dal    (or from repo root: pip install -e dal)
+# Docker image:   the Dockerfile copies dal/ in and pip-installs it (repo-root
+#                 build context — see Dockerfile header).
+
+fastapi
+uvicorn[standard]
+httpx
+langgraph
+redis

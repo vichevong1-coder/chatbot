@@ -241,27 +241,20 @@ Judgment calls recorded: "give me the answer" (singular) is NOT a safety block �
 the pedagogy layer's job; cheating triggers only on "all the answers"/test/exam phrasing.
 Bare "drugs" over-blocks health-class questions — accepted for the 6–12 audience.
 
-### P1.7 — `orchestrator`: minimal graph
+### P1.7 — `orchestrator` · ✅ **DONE 2026-08-15**
 
-- **Files:** `app/core/graph/state.py`, `builder.py`, `edges.py`,
-  `nodes/{input_normalizer,safety_gate,intent_router,solve,explain}.py`,
-  `app/infrastructure/service_clients/{auth,content,solver,safety,pedagogy}_client.py`,
-  `app/session_store/redis_store.py`, `app/utils/logging.py`, `app/api/chat.py`, `app/main.py`
-- Only five nodes this phase — `clarify`, `check_answer`, and `recommend_next` come in
-  Phase 2. `state.py` is auth-aware from the first commit (`student_id`, `session_id`,
-  `language`, `mode`, `problem_id`, `active_step_index`) — `mode` is the student/parent
-  toggle, and there is no `role`, since every account is a student.
-- Write `utils/logging.py` **now**, before the first cross-service debugging session.
-- **Contract:** `contracts.md` §4 `POST /chat`
-- **Depends:** P1.2, P1.4, P1.5, P1.6
-- **Verify:**
-  ```bash
-  curl -sX POST localhost:8001/chat -H 'Content-Type: application/json' \
-    -d '{"session_id":"t1","student_id":"s1","prompt":"why do I multiply?",
-         "mode":"student","language":"km","problem_id":"math-g4-apples","active_step_index":0}'
-  ```
-  → `text_khmer` populated, `text_eng: ""`, `is_safety_refusal: false`. Re-posting the same
-  `session_id` shows the prior turn in Redis.
+LangGraph five-node graph (`input_normalizer → safety_gate → intent_router → solve|explain`),
+clients bound via partial so nodes stay pure and tests inject fakes. Heuristics: greetings
+short-circuit at the normalizer (whitelist-matched, safe by construction — zero service
+calls); bare arithmetic (incl. Khmer numerals) goes to the solver; everything else to
+pedagogy. **Fail-closed:** safety service down → refusal, never unchecked text to the LLM,
+never a 500. Solver 422 or outage falls through to explain (distinct exceptions, both
+tested). Problems fetched via the PUBLIC content endpoint — the orchestrator never sees
+`correct_answer` in Phase 1. Transcript turns validated through `dal.schemas.ChatMessage`
+into a Redis session store (in-memory impl for tests). Structured JSON logging with
+request/student/session ids and no child text. Grade defaults to 4 with TODO(P2) to read
+the auth profile. **Verified:** 28 tests + a live smoke with safety unreachable → Khmer
+refusal, `is_safety_refusal: true`, content-free log line.
 
 ### P1.8 — `pedagogy_service` · ✅ **DONE 2026-08-15**
 
@@ -276,22 +269,18 @@ with an exploding fake); km fills `text_khmer` and leaves `text_eng` "" and vice
 grade 2 vs 5 select different bands; assembled instruction carries the WEG/Tunsay identity
 and "Let's solve it together".
 
-### P1.9 — `gateway`
+### P1.9 — `gateway` · ✅ **DONE 2026-08-15**
 
-- **Files:** `app/middleware/{cors,auth_verify,rate_limit}.py`,
-  `app/routes/{auth,chat}.py`, `app/routes/problems.py` [new], `app/main.py`
-- **No `admin.py`** — content editing does not pass through the gateway (`contracts.md` §4).
-  The empty stub has been deleted; do not recreate it.
-- Middleware order `cors → auth_verify → rate_limit`. CORS allows `FRONTEND_ORIGIN` only.
-  Rate limit per `student_id` on `/chat*` only. **`auth_verify` injects `student_id` from
-  the JWT** — the gateway must overwrite any client-supplied `student_id` in the body,
-  or a child can impersonate a classmate.
-- **Contract:** `contracts.md` §4
-- **Depends:** P1.3, P1.7
-- **Verify:** `/chat` without a token → `401`; with a token → `200`; a body carrying a
-  forged `student_id` is overridden by the JWT's; 20 rapid requests → `429`; a request from
-  a disallowed `Origin` is refused; **`/admin/anything` → `404`** from the gateway, while
-  `docker compose exec gateway curl content_service:8003/admin/...` still works internally.
+The single public surface. Middleware cors → auth_verify → rate_limit. **Security-critical
+and tested:** `/chat` overwrites `student_id` with the JWT `sub` *after* case translation,
+so both `studentId` and `student_id` forgeries die; injected even when the body omits it.
+camelCase↔snake_case translation happens only here (keys only — Khmer values byte-identical
+through both directions, tested). Rate limit fixed-window per student on `/chat*` only →
+bilingual 429 + Retry-After. `/admin/*` → clean 404 (no admin surface exists to challenge
+for). Upstream connect failure → bilingual 502, no stack traces. `/health` fans out to
+downstream healths, always 200. Gateway deliberately imports no dal — pass-through proxy;
+the orchestrator validates its own contract. **Verified:** 35 tests incl. expired/tampered
+tokens, independent per-student buckets, evil-origin CORS, upstream-404 pass-through.
 
 ### P1.10 — Repoint the frontend
 
@@ -516,9 +505,9 @@ Strict dependency chain — do not start a task before its predecessor's verify 
 - [x] **P1.4** `content_service` + seeding — 12 tests; 6/7 seeded, defect rejected ✅ *2026-08-15*
 - [x] **P1.5** `solver_service` — 47 tests; Khmer numerals, exact fractions ✅ *2026-08-15*
 - [x] **P1.6** `safety_service` — 73 tests; bilingual rules both directions ✅ *2026-08-15*
-- [ ] **P1.7** `orchestrator` — 5-node graph, session store, logging → *needs P1.2, P1.4, P1.5, P1.6*
+- [x] **P1.7** `orchestrator` — 28 tests; langgraph 5-node graph ✅ *2026-08-15*
 - [x] **P1.8** `pedagogy_service` — 24 tests; server.ts prompt ported to band YAMLs ✅ *2026-08-15*
-- [ ] **P1.9** `gateway` — cors, auth_verify, rate_limit → *needs P1.3, P1.7*
+- [x] **P1.9** `gateway` — 35 tests; JWT overwrite + case boundary ✅ *2026-08-15*
 - [ ] **P1.10** Repoint the frontend — `server.ts` + `geminiService.ts` → *needs P1.9*
 - [ ] 🏁 **Milestone 1** — browser → login → question → Gemini answer via the Python stack
 

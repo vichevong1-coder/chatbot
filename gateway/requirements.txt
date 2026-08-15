@@ -1,0 +1,10 @@
+# gateway runtime dependencies.
+#
+# Deliberately NO tunsay-dal dependency: the gateway is a proxy and does not
+# validate bodies against dal models — /chat passes the body through and only
+# forces `student_id` from the JWT (see app/routes/chat.py for the rationale).
+# This keeps the Docker build context to ./gateway alone.
+fastapi
+uvicorn[standard]
+httpx
+pyjwt
