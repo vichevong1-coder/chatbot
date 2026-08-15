@@ -10,6 +10,7 @@ import { CelebrationOverlay } from './components/CelebrationOverlay';
 import { LandingView } from './components/LandingView';
 import { LoginView } from './components/LoginView';
 import { getDisplayName } from './utils/language';
+import { signOut } from './api/client';
 
 export default function App() {
   // Page mode: 'landing' (Public Welcome) | 'login' (Sign-in Page) | 'app' (In-app student experience)
@@ -152,7 +153,10 @@ export default function App() {
               ]);
             }}
             onUpdateProfile={handleUpdateProfile}
-            onSignOut={() => setPageMode('landing')}
+            onSignOut={() => {
+              signOut();
+              setPageMode('landing');
+            }}
           />
         )}
       </main>

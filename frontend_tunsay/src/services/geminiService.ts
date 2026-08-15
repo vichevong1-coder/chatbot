@@ -1,4 +1,13 @@
 import { HomeworkProblem, UserMode, Language } from '../types';
+import { authHeaders } from '../api/client';
+
+// One conversation per page load; "New Chat" is still a frontend-only reset,
+// so the id lives for the tab's lifetime. The orchestrator keys the transcript
+// on it (P1.7 session store).
+const sessionId: string =
+  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `web-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 
 export async function askTunsayTutor(
   userPrompt: string,
@@ -7,10 +16,22 @@ export async function askTunsayTutor(
   language: Language = 'km'
 ): Promise<{ textKhmer: string; textEng: string; isSafetyRefusal?: boolean }> {
   try {
+    // P1.10: the request now carries the .claude/contracts.md §4 chat contract
+    // (camelCase on the browser wire; the gateway translates). problemContext
+    // is no longer shipped whole — the orchestrator loads the problem by id
+    // from content_service rather than trusting a client blob. studentId is
+    // omitted on purpose: the gateway injects it from the verified JWT.
     const response = await fetch('/api/tutor', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: userPrompt, mode, problemContext, language }),
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({
+        sessionId,
+        prompt: userPrompt,
+        mode,
+        language,
+        problemId: problemContext?.id,
+        activeStepIndex: 0,
+      }),
     });
 
     if (response.ok) {
@@ -25,7 +46,8 @@ export async function askTunsayTutor(
     console.log('Using local Tunsay tutor engine');
   }
 
-  // Fallback intelligent Tunsay response engine
+  // Fallback intelligent Tunsay response engine — kept deliberately: it is the
+  // offline story when the gateway is unreachable (.claude/plan.md P1.10).
   const promptLower = userPrompt.toLowerCase();
 
   // Safety / Unrelated topic check

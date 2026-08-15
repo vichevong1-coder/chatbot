@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { UserProfile, Grade, Language } from '../types';
+import { registerOrLogin } from '../api/client';
 import { TunsayAvatar } from './TunsayAvatar';
 import { 
   School, 
@@ -79,35 +80,62 @@ export const LoginView: React.FC<LoginViewProps> = ({
     }
   };
 
-  const handleFinishSchoolCodeLogin = (e: React.FormEvent) => {
+  // P1.10: the three flows now hit the real auth_service through the gateway
+  // (school code + optional PIN — no passwords, .claude/contracts.md §4).
+  // When the backend is unreachable, registerOrLogin returns null and we fall
+  // back to local state so the offline demo keeps working.
+  const handleFinishSchoolCodeLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!studentName.trim()) return;
+    const profile = await registerOrLogin({
+      studentName: studentName.trim(),
+      schoolCode: schoolCode.trim() || undefined,
+      pin: pin || undefined,
+      language,
+    });
     onLoginSuccess({
       name: studentName,
       grade: resolvedSchool?.grade || 4,
       language,
       mode: 'student',
+      ...(profile ?? {}),
     });
   };
 
-  const handleFinishPublicSignup = (e: React.FormEvent) => {
+  const handleFinishPublicSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!studentName.trim()) return;
+    const profile = await registerOrLogin({
+      studentName: studentName.trim(),
+      grade,
+      className: classNameOption,
+      parentContact: parentContact.trim() || undefined,
+      pin: pin || undefined,
+      language,
+    });
     onLoginSuccess({
       name: studentName,
       grade,
       language,
       mode: 'student',
+      ...(profile ?? {}),
     });
   };
 
-  const handleFinishReturningLogin = (e: React.FormEvent) => {
+  const handleFinishReturningLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    const profile = await registerOrLogin({
+      studentName: (studentName || 'សុជា (Sochea)').trim(),
+      schoolCode: schoolCode.trim() || undefined,
+      pin: pin || undefined,
+      language,
+    });
     onLoginSuccess({
       name: studentName || 'សុជា (Sochea)',
       grade: 4,
       language,
       mode: 'student',
+      ...(profile ?? {}),
     });
   };
 

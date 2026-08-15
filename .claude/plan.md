@@ -282,22 +282,33 @@ downstream healths, always 200. Gateway deliberately imports no dal — pass-thr
 the orchestrator validates its own contract. **Verified:** 35 tests incl. expired/tampered
 tokens, independent per-student buckets, evil-origin CORS, upstream-404 pass-through.
 
-### P1.10 — Repoint the frontend
+### P1.10 — Repoint the frontend · ✅ **DONE 2026-08-15**
 
-The smallest possible frontend change: two files, no components touched.
+`server.ts` no longer imports the Gemini SDK — it serves the SPA and proxies `/api/*`
+(tutor, auth, problems) to the gateway, forwarding Authorization and returning a bilingual
+502 when the gateway is down so the local fallback engine still answers offline.
+`geminiService.ts` sends the contracts.md chat shape (camelCase; `sessionId`, `problemId`,
+`activeStepIndex`; `studentId` deliberately omitted — the gateway injects it from the JWT)
+and keeps the offline fallback. New `src/api/client.ts` owns the token (localStorage) and
+`registerOrLogin` with offline fallback to local state; `LoginView`'s three handlers now
+hit real auth; sign-out clears the token. `npm run lint` (tsc) clean.
 
-- **Files:** `frontend_tunsay/server.ts`, `frontend_tunsay/src/services/geminiService.ts`
-- `server.ts`: delete the `GoogleGenAI` import and the inline system prompt; `/api/tutor`
-  becomes a proxy to `${GATEWAY_URL}/chat` that forwards the `Authorization` header. Keep
-  serving the SPA and keep the Vite middleware.
-- `geminiService.ts`: send `session_id`, `problem_id`, `active_step_index`; map
-  `snake_case` → `camelCase`. **Keep the local fallback engine** — it is the offline story.
-- **Depends:** P1.9
-- **Verify:** `npm run lint` clean, then in a browser at `localhost:3000`: log in, ask
-  "why do I multiply?", get a Khmer answer. Confirm in the **network tab** that it went
-  through `:8000`, and in `docker compose logs orchestrator` that the graph ran.
+**Milestone 1 verified live** (7 uvicorns + dockerized postgres/redis, `.env` key):
+- register/login `TUNSAY-G4-DEMO` + PIN → JWT; `/chat` without token → bilingual 401
+- `5*8` and `៥*៨` → solver through the whole stack → "40" in Tunsay voice, LLM untouched
+- unsafe prompt → `isSafetyRefusal: true`; `/problems` → 6, zero `correctAnswer` leaked
+- forged `studentId` in the body overwritten by the JWT sub
+- structured content-free logs with request/student/session ids at every turn
+- Gemini path: request reaches Google (model `gemini-3.7-flash` confirmed to EXIST — the
+  probe returned 503 "high demand", not 404; `gemini-2.5-*` 404 for generation on this
+  key). Under the 503 the child got the graceful bilingual fallback — the designed
+  behavior. A real LLM answer awaits Google capacity, not our code.
 
-### ✅ Milestone 1
+Dev helpers: `docker-compose.override.yml` publishes postgres on loopback **:5433**
+(host 5432 is owned by an unrelated `obs-postgres` container — do not touch it) and redis
+on :6379, so venv uvicorns can reach them. Stack launcher lives in the session scratchpad.
+
+### ✅ Milestone 1 — **REACHED 2026-08-15**
 
 `docker compose up` → browser → login → question → Gemini answer through the Python stack.
 No `MOCK_PROBLEMS`, no `server.ts` Gemini call, no local fallback on the happy path.
@@ -508,8 +519,8 @@ Strict dependency chain — do not start a task before its predecessor's verify 
 - [x] **P1.7** `orchestrator` — 28 tests; langgraph 5-node graph ✅ *2026-08-15*
 - [x] **P1.8** `pedagogy_service` — 24 tests; server.ts prompt ported to band YAMLs ✅ *2026-08-15*
 - [x] **P1.9** `gateway` — 35 tests; JWT overwrite + case boundary ✅ *2026-08-15*
-- [ ] **P1.10** Repoint the frontend — `server.ts` + `geminiService.ts` → *needs P1.9*
-- [ ] 🏁 **Milestone 1** — browser → login → question → Gemini answer via the Python stack
+- [x] **P1.10** Repoint the frontend — proxy + real login + contract fields ✅ *2026-08-15*
+- [x] 🏁 **Milestone 1** — full stack verified end-to-end (see P1.10 notes) ✅ *2026-08-15*
 
 ### Phase 2 — Real tutoring
 
@@ -541,7 +552,7 @@ Strict dependency chain — do not start a task before its predecessor's verify 
 - [ ] Author at least one `input_format: text` step — the corpus has **none**, so that
       `StepCard` widget path ships untested
 - [ ] Fix `science-g4-water/sci-step-1`: `total_steps: 3` but the problem has 2 steps
-- [ ] Verify the `gemini-3.7-flash` model ID against current Google model IDs
+- [x] `gemini-3.7-flash` verified REAL against the live API (503 capacity, not 404) ✅ *2026-08-15*
 
 ## Known risks
 

@@ -1,7 +1,48 @@
 import express from 'express';
 import path from 'path';
-import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
+
+// P1.10 (.claude/plan.md): this server no longer talks to Gemini. It serves the
+// SPA and proxies /api/* to the gateway, which owns auth, rate limiting and the
+// camelCase boundary. The Gemini call and the system prompt live in
+// pedagogy_service now. The browser keeps a single origin (:3000), so no CORS
+// gymnastics are needed in dev.
+const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:8000';
+
+async function proxyJson(
+  req: express.Request,
+  res: express.Response,
+  target: string,
+) {
+  try {
+    const upstream = await fetch(`${GATEWAY_URL}${target}`, {
+      method: req.method,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(req.headers.authorization
+          ? { Authorization: req.headers.authorization }
+          : {}),
+      },
+      body: ['GET', 'HEAD'].includes(req.method)
+        ? undefined
+        : JSON.stringify(req.body),
+    });
+    const text = await upstream.text();
+    res
+      .status(upstream.status)
+      .type(upstream.headers.get('content-type') || 'application/json')
+      .send(text);
+  } catch (err) {
+    // Gateway unreachable. 502 lets geminiService.ts fall back to the local
+    // Tunsay engine, so the app still answers offline.
+    console.error('Gateway proxy error:', (err as Error).message);
+    res.status(502).json({
+      error: 'gateway_unreachable',
+      messageKhmer: 'មិនអីទេ! តោះយើងពិនិត្យមើលសំណួរនេះជាមួយគ្នាណា។ 🐰',
+      messageEng: "No problem! Let's look at this step together. 🐰",
+    });
+  }
+}
 
 async function startServer() {
   const app = express();
@@ -9,78 +50,22 @@ async function startServer() {
 
   app.use(express.json());
 
-  // Sayo AI Tutor API Endpoint
-  app.post('/api/tutor', async (req, res) => {
-    try {
-      const { prompt, mode, problemContext, language = 'km' } = req.body;
-      const apiKey = process.env.GEMINI_API_KEY;
+  // Tutor turn → gateway /chat → orchestrator graph → pedagogy → Gemini.
+  app.post('/api/tutor', (req, res) => proxyJson(req, res, '/chat'));
 
-      if (!apiKey || apiKey === 'MY_GEMINI_API_KEY') {
-        // Return default Sayo structured response
-        if (language === 'km') {
-          return res.json({
-            textKhmer: 'តោះយើងពិនិត្យមើលសំណួរនេះជាមួយគ្នានា! តើអ្នកឃើញលេខអ្វីខ្លះ? 🐰',
-            textEng: '',
-            isSafetyRefusal: false
-          });
-        } else {
-          return res.json({
-            textKhmer: '',
-            textEng: "Let's look at the question together! What numbers do you see? 🐰",
-            isSafetyRefusal: false
-          });
-        }
-      }
+  // Auth → gateway /auth/* → auth_service (school code + PIN, no passwords).
+  app.post('/api/auth/register', (req, res) => proxyJson(req, res, '/auth/register'));
+  app.post('/api/auth/login', (req, res) => proxyJson(req, res, '/auth/login'));
+  app.get('/api/auth/me', (req, res) => proxyJson(req, res, '/auth/me'));
 
-      const ai = new GoogleGenAI({
-        apiKey,
-        httpOptions: {
-          headers: {
-            'User-Agent': 'aistudio-build',
-          },
-        },
-      });
-      const languageInstruction = language === 'km'
-        ? 'Always reply exclusively in clear, warm, encouraging Khmer language for primary students (Grades 1–6). Do not include any English translation in the response.'
-        : 'Always reply exclusively in clear, warm, simple English language for primary students (Grades 1–6). Do not include any Khmer translation in the response.';
-
-      const systemInstruction = `You are Tunsay (ទន្សាយ), a friendly cartoon rabbit tutor for Westline Education Group (WEG) in Cambodia.
-Your goal is to help Grade 1–6 students understand Math and Science homework step-by-step without giving direct answers immediately.
-Mode: ${mode || 'student'}.
-${languageInstruction}
-Never be judgmental. Encourage the student with "Let's solve it together".`;
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.7-flash',
-        contents: [
-          { role: 'user', parts: [{ text: `${systemInstruction}\n\nUser Question: ${prompt}\nContext: ${JSON.stringify(problemContext || {})}` }] }
-        ]
-      });
-
-      const responseText = response.text || '';
-      if (language === 'km') {
-        return res.json({
-          textKhmer: responseText,
-          textEng: '',
-          isSafetyRefusal: false
-        });
-      } else {
-        return res.json({
-          textKhmer: '',
-          textEng: responseText,
-          isSafetyRefusal: false
-        });
-      }
-    } catch (error) {
-      console.error('Gemini API Error:', error);
-      const language = req.body?.language || 'km';
-      return res.json({
-        textKhmer: language === 'km' ? 'មិនអីទេ! តោះយើងពិនិត្យមើលសំណួរនេះជាមួយគ្នាណា។ 🐰' : '',
-        textEng: language === 'en' ? "No problem! Let's look at this step together. 🐰" : '',
-        isSafetyRefusal: false
-      });
-    }
+  // Problem catalog (public shape — correct_answer is stripped server-side).
+  app.get('/api/problems', (req, res) => {
+    const qs = new URLSearchParams(req.query as Record<string, string>).toString();
+    return proxyJson(req, res, `/problems${qs ? `?${qs}` : ''}`);
   });
+  app.get('/api/problems/:id', (req, res) =>
+    proxyJson(req, res, `/problems/${encodeURIComponent(req.params.id)}`),
+  );
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {
@@ -98,7 +83,7 @@ Never be judgmental. Encourage the student with "Let's solve it together".`;
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Sayo WEG AI Tutor Server running on http://localhost:${PORT}`);
+    console.log(`Tunsay frontend on http://localhost:${PORT} (gateway: ${GATEWAY_URL})`);
   });
 }
 
