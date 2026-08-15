@@ -1,0 +1,92 @@
+id: math-g3-perimeter
+title_khmer: គណិតវិទ្យា៖ រង្វាស់បរិមាត្រចតុគោណកែង
+title_eng: 'Math: Perimeter of a Rectangle'
+grade: 3
+subject: math
+problem_statement_khmer: សួនច្បារសាលារៀនមួយមានរាងជាចតុគោណកែង ដែលមានបណ្តោយ ១០ ម៉ែត្រ និងទទឹង ៥ ម៉ែត្រ។ តើបរិមាត្រសរុបនៃសួនច្បារនេះស្មើនឹងប៉ុន្មានម៉ែត្រ?
+problem_statement_eng: A school garden is rectangular with a length of 10 meters and width of 5 meters. What is the total perimeter of the garden?
+image_uri: https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=600&auto=format&fit=crop&q=80
+steps:
+- id: perim-step-1
+  step_number: 1
+  total_steps: 3
+  question_khmer: តើប្រវែងបណ្តោយ (Length) និងទទឹង (Width) នៃសួនច្បារមានប៉ុន្មានម៉ែត្រ?
+  question_eng: What are the length and width of the garden?
+  input_format: mcq
+  options:
+  - បណ្តោយ ១០m, ទទឹង ៥m
+  - បណ្តោយ ៥m, ទទឹង ១០m
+  - បណ្តោយ ១៥m, ទទឹង ០m
+  correct_answer: បណ្តោយ ១០m, ទទឹង ៥m
+  hint1:
+    khmer: មើលលេខនៅក្នុងប្រធានបទចំណោទ៖ "បណ្តោយ ១០ ម៉ែត្រ និងទទឹង ៥ ម៉ែត្រ"
+    eng: 'Look at the numbers given: length = 10m, width = 5m'
+  hint2:
+    khmer: ជ្រើសរើសចម្លើយដែលប្រាប់ថា បណ្តោយ ១០m និង ទទឹង ៥m!
+    eng: Select length 10m and width 5m!
+  hint3:
+    title_khmer: ប្រវែងជ្រុងចតុគោណកែង
+    title_eng: Rectangle Dimensions
+    example_khmer: ចតុគោណកែងមានជ្រុងទល់មុខស្មើគ្នា៖ បណ្តោយ២ និងទទឹង២
+    example_eng: 'A rectangle has opposite equal sides: 2 lengths and 2 widths'
+  explain_differently:
+    simple_khmer: ស្រមៃមើលសួនច្បាររាងចតុកោណកែង៖ ជ្រុងវែង ១០m និងជ្រុងខ្លី ៥m!
+    simple_eng: 'Picture a rectangle garden: long side is 10m and short side is 5m!'
+    analogy_title: សួនច្បារសាលារៀន (School Garden)
+    analogy_khmer: យើងដើរជុំវិញសួនច្បារដែលមានជ្រុងវែង ២ និងជ្រុងខ្លី ២!
+    analogy_eng: Walking around a garden with two long sides and two short sides!
+    analogy_type: pizza
+- id: perim-step-2
+  step_number: 2
+  total_steps: 3
+  question_khmer: តើរូបមន្តបរិមាត្រចតុគោណកែង (Perimeter) គឺជាអ្វី?
+  question_eng: What is the correct formula for the perimeter of a rectangle?
+  input_format: mcq
+  options:
+  - P = (បណ្តោយ + ទទឹង) × ២
+  - P = បណ្តោយ × ទទឹង
+  - P = បណ្តោយ - ទទឹង
+  correct_answer: P = (បណ្តោយ + ទទឹង) × ២
+  hint1:
+    khmer: បរិមាត្រ គឺជាផលបូកនៃជ្រុងទាំង ៤ (បណ្តោយ + ទទឹង + បណ្តោយ + ទទឹង)
+    eng: Perimeter is the sum of all 4 sides (Length + Width + Length + Width)
+  hint2:
+    khmer: យើងអាចបូកបណ្តោយនិងទទឹង រួចគុណនឹង ២!
+    eng: We add length and width then multiply by 2!
+  hint3:
+    title_khmer: រូបមន្តបរិមាត្រ
+    title_eng: Perimeter Formula
+    example_khmer: P = (L + W) × 2
+    example_eng: P = (L + W) × 2
+  explain_differently:
+    simple_khmer: បរិមាត្រគឺជាប្រវែងរវ៉ាត់ជុំវិញរាង។ (១០ + ៥ + ១០ + ៥)
+    simple_eng: Perimeter is the total boundary distance around the shape. (10 + 5 + 10 + 5)
+    analogy_title: របងសួន (Garden Fence)
+    analogy_khmer: វាដូចជាការប្រមាណប្រវែងរបងសរុបដើម្បីព័ទ្ធជុំវិញសួន!
+    analogy_eng: Like measuring the total fence length to surround the garden!
+    analogy_type: pizza
+- id: perim-step-3
+  step_number: 3
+  total_steps: 3
+  question_khmer: គណនាបរិមាត្រ P = (១០ + ៥) × ២ = ? (គិតជាម៉ែត្រ)
+  question_eng: Calculate the perimeter P = (10 + 5) × 2 = ? (in meters)
+  input_format: number
+  correct_answer: '30'
+  hint1:
+    khmer: បូកក្នុងវង់ក្រចកមុន៖ ១០ + ៥ = ១៥
+    eng: 'Add inside parentheses first: 10 + 5 = 15'
+  hint2:
+    khmer: បន្ទាប់មកយក ១៥ គុណនឹង ២៖ ១៥ × ២ = ៣០
+    eng: 'Then multiply 15 by 2: 15 × 2 = 30'
+  hint3:
+    title_khmer: គណនាតាមលំដាប់
+    title_eng: Step Calculation
+    example_khmer: ១០ + ៥ = ១៥, បន្ទាប់មក ១៥ × ២ = ៣០m!
+    example_eng: 10 + 5 = 15, then 15 × 2 = 30m!
+  explain_differently:
+    simple_khmer: ១៥ បូក ១៥ ស្មើនឹង ៣០! ដូច្នេះរបងព័ទ្ធជុំវិញមានប្រវែង ៣០ ម៉ែត្រ។
+    simple_eng: 15 plus 15 equals 30! So the total fence distance is 30 meters.
+    analogy_title: ប្រវែងសរុប (Total Length)
+    analogy_khmer: បរិមាត្រសួនច្បារសរុបគឺ ៣០ ម៉ែត្រ!
+    analogy_eng: Total garden perimeter is 30 meters!
+    analogy_type: pizza

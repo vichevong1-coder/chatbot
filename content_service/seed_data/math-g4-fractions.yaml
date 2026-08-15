@@ -1,0 +1,67 @@
+id: math-g4-fractions
+title_khmer: គណិតវិទ្យា៖ ការបូកប្រភាគភាគបែងដូចគ្នា
+title_eng: 'Math: Adding Same Denominator Fractions'
+grade: 4
+subject: math
+problem_statement_khmer: សុខាបានញ៉ាំនំភីហ្សា ២/៨ ផ្ទាំង ហើយប្អូនស្រីរបស់គេញ៉ាំ ៣/៨ ផ្ទាំង។ តើអ្នកទាំងពីរញ៉ាំនំភីហ្សាសរុបស្មើនឹងភាគប៉ុន្មាននៃផ្ទាំង?
+problem_statement_eng: Sokha ate 2/8 of a pizza, and his sister ate 3/8. What fraction of the pizza did they eat in total?
+image_uri: https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&auto=format&fit=crop&q=80
+steps:
+- id: frac-step-1
+  step_number: 1
+  total_steps: 2
+  question_khmer: ដោយសារភាគបែង (Denominator) ដូចគ្នាគឺ ៨ តើយើងត្រូវបូកតែភាគយក (Numerator) ឬបូកទាំងភាគបែង?
+  question_eng: Since denominators are equal (8), do we add only numerators (top numbers) or denominators too?
+  input_format: mcq
+  options:
+  - បូកតែភាគយកខាងលើ (២ + ៣) ហើយរក្សាភាគបែង ៨ ដដែល
+  - បូកទាំងភាគយក និងភាគបែង (២+៣)/(៨+៨)
+  - ដកភាគយក
+  correct_answer: បូកតែភាគយកខាងលើ (២ + ៣) ហើយរក្សាភាគបែង ៨ ដដែល
+  hint1:
+    khmer: វិធានបូកប្រភាគ៖ ពេលភាគបែងដូចគ្នា យើងបូកតែភាគយកខាងលើប៉ុណ្ណោះ!
+    eng: 'Fraction rule: When denominators are the same, add only top numbers!'
+  hint2:
+    khmer: ភាគបែង ៨ រក្សានៅដដែល!
+    eng: Denominator 8 stays the same!
+  hint3:
+    title_khmer: វិធានប្រភាគ
+    title_eng: Fraction Rule
+    example_khmer: a/c + b/c = (a + b) / c
+    example_eng: a/c + b/c = (a + b) / c
+  explain_differently:
+    simple_khmer: គិតពីចំណិតភីហ្សា៖ ភីហ្សាទាំងមូលចែកជា ៨ ចំណិត។ សុខា ២ ចំណិត + ប្អូន ៣ ចំណិត = ៥ ចំណិត នៃ ៨ ចំណិត!
+    simple_eng: 'Think of pizza slices: whole pizza has 8 slices. Sokha 2 slices + sister 3 slices = 5 slices out of 8!'
+    analogy_title: ចំណិតនំភីហ្សា (Pizza Slices)
+    analogy_khmer: ២ ចំណិត + ៣ ចំណិត = ៥ ចំណិតនៃភីហ្សា ៨ ចំណិត!
+    analogy_eng: 2 slices + 3 slices = 5 slices of 8 total slices!
+    analogy_type: pizza
+- id: frac-step-2
+  step_number: 2
+  total_steps: 2
+  question_khmer: គណនា ២/៨ + ៣/៨ = ?
+  question_eng: Calculate 2/8 + 3/8 = ?
+  input_format: mcq
+  options:
+  - ៥/៨ (5/8)
+  - ៥/១៦ (5/16)
+  - ១/៨ (1/8)
+  correct_answer: ៥/៨ (5/8)
+  hint1:
+    khmer: ភាគយកខាងលើគឺ ២ + ៣ = ៥។ ភាគបែងខាងក្រោមគឺ ៨ ដដែល!
+    eng: Top number is 2 + 3 = 5. Bottom number stays 8!
+  hint2:
+    khmer: ចម្លើយគឺ ៥/៨!
+    eng: The answer is 5/8!
+  hint3:
+    title_khmer: ចម្លើយចុងក្រោយ
+    title_eng: Final Fraction Answer
+    example_khmer: ២/៨ + ៣/៨ = ៥/៨
+    example_eng: 2/8 + 3/8 = 5/8
+  explain_differently:
+    simple_khmer: សរុបមក អ្នកទាំងពីរបានញ៉ាំនំភីហ្សា ៥/៨ ផ្ទាំង!
+    simple_eng: In total, they ate 5/8 of the pizza together!
+    analogy_title: ភាគភីហ្សាសរុប (Total Pizza Fraction)
+    analogy_khmer: ៥ ភាគ ក្នុងចំណោម ៨ ភាគ!
+    analogy_eng: 5 parts out of 8 parts!
+    analogy_type: pizza

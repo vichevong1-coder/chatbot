@@ -1,0 +1,6 @@
+{
+  "name": "Tunsay — AI Homework Tutor",
+  "description": "Interactive, step-by-step AI Homework Tutor for Grade 1–6 students in Math, Science, and English.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

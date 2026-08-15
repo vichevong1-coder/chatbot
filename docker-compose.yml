@@ -1,0 +1,296 @@
+# Tunsay — the ONE compose file (architecture.md §4, plan.md P0.6).
+# Replaces the 12 deleted per-service docker-compose.yml files. Do not re-add them.
+#
+# ---------------------------------------------------------------------------
+# HOW TO BRING THIS UP
+#
+#   Backing services only (Phase 0 — works TODAY):
+#       docker compose up -d postgres redis
+#       docker compose up -d                  # same thing: all four backing services
+#
+#   Everything, once the service images can actually build:
+#       docker compose --profile app up -d
+#
+# Every application service sits behind the `app` profile because EVERY Python
+# file and EVERY Dockerfile in this repo is currently 0 bytes — the app images
+# cannot be built yet. The profile keeps `docker compose up -d` useful in the
+# meantime instead of failing on the first unbuildable image.
+# ---------------------------------------------------------------------------
+#
+# PORTS (architecture.md §4). Only 3000 and 8000 are published to the host;
+# everything else uses `expose:` and is reachable only on the compose network,
+# because the gateway is the only public surface (architecture.md §1, rule 1).
+#
+#   gateway 8000 · orchestrator 8001 · auth 8002 · content 8003 · solver 8004
+#   grading 8005 · pedagogy 8006 · retrieval 8007 · profile 8008 · stt 8009
+#   ocr 8010 · safety 8011 · frontend 3000
+#
+# No top-level `version:` key — it is obsolete in the Compose Specification.
+
+# Shared boilerplate for the application services. Anchors, not a real service.
+x-app-service: &app-service
+  profiles: ["app"]
+  restart: unless-stopped
+  env_file:
+    # `required: false` so a fresh clone with no .env still passes
+    # `docker compose config`. Copy .env.example to .env before using --profile app.
+    - path: .env
+      required: false
+  networks: [tunsay]
+
+
+services:
+
+  # =========================================================================
+  # BACKING SERVICES — no profile, so they start with a bare `docker compose up`.
+  # These must come up healthy right now, with no application image built.
+  # =========================================================================
+
+  postgres:
+    # System of record for auth, content, student_profile and orchestrator
+    # (architecture.md §4).
+    image: postgres:16-alpine
+    container_name: tunsay-postgres
+    restart: unless-stopped
+    environment:
+      # Defaults matter: postgres refuses to initialize with no POSTGRES_PASSWORD,
+      # and .env may not exist yet. Real values come from .env when present.
+      POSTGRES_USER: ${POSTGRES_USER:-tunsay}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tunsay_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-tunsay}
+    expose:
+      - "5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # $$ escapes the $ so compose does NOT interpolate at parse time — the
+      # variables are expanded by the shell inside the container, where they exist.
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-tunsay} -d $${POSTGRES_DB:-tunsay}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks: [tunsay]
+
+  redis:
+    # Orchestrator session store, explanation cache, and the gateway's
+    # rate-limit counters (architecture.md §4).
+    image: redis:7-alpine
+    container_name: tunsay-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks: [tunsay]
+
+  qdrant:
+    # Curriculum embeddings for retrieval_service (architecture.md §4).
+    image: qdrant/qdrant:latest
+    container_name: tunsay-qdrant
+    restart: unless-stopped
+    expose:
+      - "6333"   # HTTP / REST
+      - "6334"   # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      # The qdrant image ships NO curl, wget or nc — verified by inspecting the
+      # image. It does ship bash, so probe the port with bash's /dev/tcp.
+      # A curl-based check here would mark qdrant permanently unhealthy and
+      # deadlock retrieval_service's service_healthy gate.
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks: [tunsay]
+
+  minio:
+    # Uploaded homework images (ocr_service) and audio (stt_service)
+    # (architecture.md §4).
+    image: minio/minio:latest
+    container_name: tunsay-minio
+    restart: unless-stopped
+    # Required: the minio image has no serving default command — without this
+    # it prints help and exits immediately.
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-tunsay_minio_admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-tunsay_minio_dev_password}
+    expose:
+      - "9000"   # S3 API
+      - "9001"   # web console — internal only, same 3000/8000 rule applies
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      # This image does ship curl.
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/minio/health/live || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks: [tunsay]
+
+
+  # =========================================================================
+  # APPLICATION SERVICES — all behind the `app` profile.
+  #
+  # `depends_on` uses `condition: service_healthy` ONLY against backing
+  # services. There is deliberately no service-to-service depends_on: the app
+  # services have no healthchecks, so a service_healthy edge between two of
+  # them would never resolve. Startup order between app services is handled by
+  # retries in the service clients, not by compose.
+  # =========================================================================
+
+  gateway:
+    <<: *app-service
+    build: ./gateway
+    container_name: tunsay-gateway
+    # The only service published to the host besides the frontend
+    # (architecture.md §1, rule 1: the gateway is the only public surface).
+    ports:
+      - "8000:8000"
+    depends_on:
+      # Redis, not just postgres: architecture.md §3 puts rate_limit.py in the
+      # gateway's middleware, so the gateway owns the rate-limit counters even
+      # though §4's table lists Redis only under the orchestrator.
+      redis:
+        condition: service_healthy
+
+  orchestrator:
+    <<: *app-service
+    build: ./orchestrator
+    container_name: tunsay-orchestrator
+    expose:
+      - "8001"
+    depends_on:
+      # Session store + explanation cache in Redis; postgres_store in Postgres.
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  auth_service:
+    <<: *app-service
+    build: ./auth_service
+    container_name: tunsay-auth-service
+    expose:
+      - "8002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  content_service:
+    <<: *app-service
+    build: ./content_service
+    container_name: tunsay-content-service
+    expose:
+      - "8003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  solver_service:
+    <<: *app-service
+    build: ./solver_service
+    container_name: tunsay-solver-service
+    # Pure computation (sympy) — no backing service.
+    expose:
+      - "8004"
+
+  grading_service:
+    <<: *app-service
+    build: ./grading_service
+    container_name: tunsay-grading-service
+    # Pure computation — grades against the answer it is handed.
+    expose:
+      - "8005"
+
+  pedagogy_service:
+    <<: *app-service
+    build: ./pedagogy_service
+    container_name: tunsay-pedagogy-service
+    # The ONLY service that talks to Gemini (architecture.md §1, rule 4).
+    # GEMINI_API_KEY is consumed here and nowhere else.
+    expose:
+      - "8006"
+
+  retrieval_service:
+    <<: *app-service
+    build: ./retrieval_service
+    container_name: tunsay-retrieval-service
+    expose:
+      - "8007"
+    depends_on:
+      qdrant:
+        condition: service_healthy
+
+  student_profile_service:
+    <<: *app-service
+    build: ./student_profile_service
+    container_name: tunsay-student-profile-service
+    expose:
+      - "8008"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  stt_service:
+    <<: *app-service
+    build: ./stt_service
+    container_name: tunsay-stt-service
+    expose:
+      - "8009"
+    depends_on:
+      # Uploaded audio blobs.
+      minio:
+        condition: service_healthy
+
+  ocr_service:
+    <<: *app-service
+    build: ./ocr_service
+    container_name: tunsay-ocr-service
+    expose:
+      - "8010"
+    depends_on:
+      # Uploaded homework images.
+      minio:
+        condition: service_healthy
+
+  safety_service:
+    <<: *app-service
+    build: ./safety_service
+    container_name: tunsay-safety-service
+    # Screens input and output; holds no state.
+    expose:
+      - "8011"
+
+  frontend_tunsay:
+    <<: *app-service
+    # NOTE: frontend_tunsay/ is a teammate's separate repo (claude.md §1, D0.2)
+    # and has no Dockerfile yet. This entry reserves the contract; the image
+    # will not build until one is added there.
+    build: ./frontend_tunsay
+    container_name: tunsay-frontend
+    # Published to the host — the browser loads the SPA from here.
+    ports:
+      - "3000:3000"
+
+
+volumes:
+  postgres_data:
+  redis_data:
+  qdrant_data:
+  minio_data:
+
+networks:
+  tunsay:
+    driver: bridge

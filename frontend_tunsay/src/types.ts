@@ -1,0 +1,90 @@
+/**
+ * Core type definitions for Tunsay AI Homework Tutor
+ */
+
+export type Grade = 1 | 2 | 3 | 4 | 5 | 6;
+
+export type Subject = 'math' | 'science' | 'english';
+
+export type UserMode = 'student' | 'parent';
+
+export type Language = 'km' | 'en';
+
+export type TunsayState = 
+  | 'idle' 
+  | 'listening' 
+  | 'thinking' 
+  | 'explaining' 
+  | 'encouraging' 
+  | 'celebrating' 
+  | 'sleepy';
+
+export type SayoState = TunsayState;
+
+export interface StepItem {
+  id: string;
+  stepNumber: number;
+  totalSteps: number;
+  questionKhmer: string;
+  questionEng: string;
+  inputFormat: 'mcq' | 'number' | 'text';
+  options?: string[];
+  correctAnswer: string;
+  hint1: {
+    khmer: string;
+    eng: string;
+  };
+  hint2: {
+    khmer: string;
+    eng: string;
+  };
+  hint3: {
+    titleKhmer: string;
+    titleEng: string;
+    exampleKhmer: string;
+    exampleEng: string;
+  };
+  explainDifferently: {
+    simpleKhmer: string;
+    simpleEng: string;
+    analogyTitle: string;
+    analogyKhmer: string;
+    analogyEng: string;
+    analogyType: 'apples' | 'pizza' | 'water' | 'plants';
+  };
+}
+
+export interface HomeworkProblem {
+  id: string;
+  titleKhmer: string;
+  titleEng: string;
+  grade: Grade;
+  subject: Subject;
+  problemStatementKhmer: string;
+  problemStatementEng: string;
+  imageUri?: string;
+  steps: StepItem[];
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'sayo' | 'system';
+  textKhmer?: string;
+  textEng: string;
+  timestamp: string;
+  imageUri?: string;
+  problem?: HomeworkProblem;
+  activeStepIndex?: number;
+  isSafetyRefusal?: boolean;
+  isParentHelp?: boolean;
+}
+
+export interface UserProfile {
+  name: string;
+  grade: Grade;
+  subject: Subject;
+  mode: UserMode;
+  language: Language;
+  completedProblemsCount: number;
+  starsEarned: number;
+}

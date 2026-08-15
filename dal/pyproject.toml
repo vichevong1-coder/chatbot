@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tunsay-dal"
+version = "0.1.0"
+description = "Shared data-access and schema library for the Tunsay backend services."
+requires-python = ">=3.11"
+dependencies = [
+    "sqlalchemy>=2.0",
+    "pydantic>=2.0",
+    "redis",
+    "qdrant-client",
+    "google-genai",
+    "httpx",
+    "psycopg[binary]",
+]
+
+# This pyproject.toml lives *inside* the package directory, so the build root is `dal/`
+# itself and `dal` is not a subdirectory of it. Auto-discovery would pick up `models`,
+# `schemas`, `repositories` and `clients` as four top-level packages and `import dal`
+# would not exist. Map the build root onto the `dal` package explicitly instead.
+[tool.setuptools]
+package-dir = { "dal" = "." }
+packages = [
+    "dal",
+    "dal.clients",
+    "dal.models",
+    "dal.repositories",
+    "dal.schemas",
+]

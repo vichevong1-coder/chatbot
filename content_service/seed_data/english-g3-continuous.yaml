@@ -1,0 +1,67 @@
+id: english-g3-continuous
+title_khmer: ភាសាអង់គ្លេស៖ Present Continuous Actions
+title_eng: 'English: Present Continuous Actions'
+grade: 3
+subject: english
+problem_statement_khmer: បំពេញចន្លោះក្នុងប្រយោគ៖ "Look! Sochea ___ (play) football in the school yard right now."
+problem_statement_eng: 'Fill in the blank: "Look! Sochea ___ (play) football in the school yard right now."'
+image_uri: https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80
+steps:
+- id: cont-step-1
+  step_number: 1
+  total_steps: 2
+  question_khmer: សម្រាប់ប្រធានឯកវចនៈ Sochea (He) នៅក្នុង Present Continuous តើត្រូវប្រើ Verb to be មួយណា? (am, is, ឬ are?)
+  question_eng: For singular subject Sochea (He) in Present Continuous, which Verb to be do we use? (am, is, or are?)
+  input_format: mcq
+  options:
+  - is
+  - are
+  - am
+  correct_answer: is
+  hint1:
+    khmer: He, She, It ឬឈ្មោះមនុស្សម្នាក់ (Sochea) ត្រូវប្រើ "is"!
+    eng: He, She, It, or one person name (Sochea) uses "is"!
+  hint2:
+    khmer: Sochea + is!
+    eng: Sochea + is!
+  hint3:
+    title_khmer: វិធាន Verb to Be
+    title_eng: Verb to Be Rule
+    example_khmer: I am, He/She/Sochea is, They/We are
+    example_eng: I am, He/She/Sochea is, They/We are
+  explain_differently:
+    simple_khmer: សម្រាប់មិត្តម្នាក់ដូចជា សុជា យើងប្រើពាក្យ "is"!
+    simple_eng: For one friend like Sochea, we match with "is"!
+    analogy_title: ការផ្គូផ្គង Verb to be (Matching is)
+    analogy_khmer: Sochea + is = Sochea is!
+    analogy_eng: Sochea + is = Sochea is!
+    analogy_type: apples
+- id: cont-step-2
+  step_number: 2
+  total_steps: 2
+  question_khmer: តើកិរិយាស័ព្ទ play ត្រូវថែមអ្វីនៅខាងចុងដើម្បីបង្ហាញសកម្មភាពកំពុងធ្វើ? (playing, played, ឬ plays?)
+  question_eng: What ending do we add to "play" for present ongoing action? (playing, played, or plays?)
+  input_format: mcq
+  options:
+  - playing (-ing)
+  - played (-ed)
+  - plays (-s)
+  correct_answer: playing (-ing)
+  hint1:
+    khmer: សកម្មភាពកំពុងកើតឡើងនៅពេលនេះ (right now) ត្រូវថែម -ing!
+    eng: Actions happening right now end with -ing!
+  hint2:
+    khmer: play + ing = playing!
+    eng: play + ing = playing!
+  hint3:
+    title_khmer: វិធាន -ing
+    title_eng: -ing Rule
+    example_khmer: is + verb + ing = is playing
+    example_eng: is + verb + ing = is playing
+  explain_differently:
+    simple_khmer: ពាក្យ -ing បង្ហាញថាសុជាកំពុងរត់លេងបាល់នៅពេលនេះ!
+    simple_eng: Adding -ing shows Sochea is playing right at this moment!
+    analogy_title: សកម្មភាពកំពុងធ្វើ (Ongoing Action)
+    analogy_khmer: Sochea is playing football right now!
+    analogy_eng: Sochea is playing football right now!
+    analogy_type: apples

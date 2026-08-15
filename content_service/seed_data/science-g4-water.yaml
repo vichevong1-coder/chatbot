@@ -1,0 +1,67 @@
+id: science-g4-water
+title_khmer: វិទ្យាសាស្ត្រ៖ សភាពនៃសារធាតុ និងការរលាយ
+title_eng: 'Science: States of Matter & Melting'
+grade: 4
+subject: science
+problem_statement_khmer: នៅពេលដែលដុំទឹកកកត្រូវគេទុកក្នុងបន្ទប់ក្តៅ វាប្រែជាទឹក។ តើដំណើរការនេះហៅថាអ្វី ហើយវាប្តូរពីសភាពអ្វីទៅសភាពអ្វី?
+problem_statement_eng: When an ice cube is left in a warm room, it turns into water. What is this process called, and what state change happens?
+image_uri: https://images.unsplash.com/photo-1548839140-29a749e1cf4e?w=600&auto=format&fit=crop&q=80
+steps:
+- id: sci-step-1
+  step_number: 1
+  total_steps: 3
+  question_khmer: តើដុំទឹកកកមុនពេលរលាយស្ថិតក្នុងសភាពអ្វី? (រឹង, រាវ, ឬ ឧស្ម័ន)
+  question_eng: What state of matter is the ice cube BEFORE it melts? (Solid, Liquid, or Gas)
+  input_format: mcq
+  options:
+  - សភាពរឹង (Solid)
+  - សភាពរាវ (Liquid)
+  - សភាពឧស្ម័ន (Gas)
+  correct_answer: សភាពរឹង (Solid)
+  hint1:
+    khmer: ដុំទឹកកកមានរូបរាងច្បាស់លាស់ ហើយយើងអាចកាន់វាបាន។
+    eng: An ice cube has a fixed shape and you can hold it.
+  hint2:
+    khmer: អ្វីៗដែលមានរូបរាងថេរមិនហូរ គឺជាសភាពរឹង!
+    eng: Things that keep their shape and do not flow are Solids!
+  hint3:
+    title_khmer: ឧទាហរណ៍សភាពរឹង
+    title_eng: Solid Examples
+    example_khmer: ថ្ម ឈើ និងដុំទឹកកក សុទ្ធតែជាសភាពរឹង (Solid)។
+    example_eng: Rocks, wood, and ice cubes are all Solids.
+  explain_differently:
+    simple_khmer: ទឹកកកគឺជារឹង ព្រោះវាមានរាងរឹងមាំ និងមិនហូរដូចទឹកឡើយ។
+    simple_eng: Ice is solid because it stays firm and doesn't flow around.
+    analogy_title: ដុំទឹកកករឹង (Solid Ice)
+    analogy_khmer: ដូចជាដុំកែវ ឬដុំថ្មតូចមួយ។
+    analogy_eng: Just like a marble or a small pebble.
+    analogy_type: water
+- id: sci-step-2
+  step_number: 2
+  total_steps: 2
+  question_khmer: តើដំណើរការនៃការប្រែប្រួលពី "សភាពរឹង" ទៅ "សភាពរាវ" ហៅថាអ្វី?
+  question_eng: What is the change from "Solid" to "Liquid" called?
+  input_format: mcq
+  options:
+  - ការរលាយ (Melting)
+  - ការកក (Freezing)
+  - ការរំហួត (Evaporation)
+  correct_answer: ការរលាយ (Melting)
+  hint1:
+    khmer: គិតពីប្រឡាក់ការ៉ែមនៅថ្ងៃក្តៅ។
+    eng: Think of an ice cream on a sunny day.
+  hint2:
+    khmer: នៅពេលកម្ដៅធ្វើឲ្យទឹកកកក្លាយជាទឹក វាគឺ "ការរលាយ" (Melting)!
+    eng: When heat turns solid ice into liquid water, it is "Melting"!
+  hint3:
+    title_khmer: ពាក្យគន្លឹះវិទ្យាសាស្ត្រ
+    title_eng: Science Keyword
+    example_khmer: រឹង → រាវ = ការរលាយ (Melting)
+    example_eng: Solid → Liquid = Melting
+  explain_differently:
+    simple_khmer: កម្ដៅក្នុងបន្ទប់ធ្វើឲ្យភាគល្អិតទឹកកកមានថាមពល ហើយរលាយក្លាយជាទឹករាវ។
+    simple_eng: Heat gives energy to the ice particles, making them flow as liquid water.
+    analogy_title: ការរលាយការ៉ែម (Ice Cream Melting)
+    analogy_khmer: ដូចជាការ៉ែមដែលស្រក់ចុះនៅពេលត្រូវពន្លឺព្រះអាទិត្យ។
+    analogy_eng: Like ice cream dripping down under hot sunlight.
+    analogy_type: water

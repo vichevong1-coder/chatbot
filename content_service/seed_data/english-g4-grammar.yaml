@@ -1,0 +1,67 @@
+id: english-g4-grammar
+title_khmer: ភាសាអង់គ្លេស៖ កិរិយាស័ព្ទ Present Simple
+title_eng: 'English: Present Simple Verbs'
+grade: 4
+subject: english
+problem_statement_khmer: បំពេញចន្លោះក្នុងប្រយោគ៖ "Tunsay ___ (like) apples." តើត្រូវថែម "s" នៅចុងកិរិយាស័ព្ទ like ឬទេ?
+problem_statement_eng: 'Fill in the blank: "Tunsay ___ (like) apples." Should we add "s" to the verb like?'
+image_uri: https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&auto=format&fit=crop&q=80
+steps:
+- id: eng-step-1
+  step_number: 1
+  total_steps: 2
+  question_khmer: នៅក្នុងប្រយោគនេះ "Tunsay" គឺជាប្រធានឯកវចនៈ (Singular Subject, He/She/It)។ តើកិរិយាស័ព្ទត្រូវថែមអ្វី?
+  question_eng: In this sentence, "Tunsay" is a singular subject (He/She/It). What do we add to the verb?
+  input_format: mcq
+  options:
+  - ថែម -s (likes)
+  - ថែម -ing (liking)
+  - មិនថែមអ្វីទាំងអស់ (like)
+  correct_answer: ថែម -s (likes)
+  hint1:
+    khmer: សម្រាប់ He, She, It ឬឈ្មោះមនុស្សម្នាក់ (Tunsay) កិរិយាស័ព្ទត្រូវថែម -s!
+    eng: For He, She, It, or one person name (Tunsay), we add -s to the verb!
+  hint2:
+    khmer: Tunsay like + s = Tunsay likes!
+    eng: Tunsay like + s = Tunsay likes!
+  hint3:
+    title_khmer: វិធានវេយ្យាករណ៍
+    title_eng: Grammar Rule
+    example_khmer: He plays, She reads, Tunsay likes!
+    example_eng: He plays, She reads, Tunsay likes!
+  explain_differently:
+    simple_khmer: ពេលនិយាយពីមនុស្សម្នាក់ ដូចជា ទន្សាយ (Tunsay) យើងថែមអក្សរ "s" នៅខាងចុងពាក្យដូចជា likes!
+    simple_eng: 'When talking about one friend like Tunsay, we put an "s" at the end of the action word: likes!'
+    analogy_title: អក្សរ S សម្រាប់មិត្តម្នាក់ (The Letter S)
+    analogy_khmer: គិតថាអក្សរ S គឺជាកាដូជូនមិត្តម្នាក់!
+    analogy_eng: Think of the letter "s" as a small gift for one person!
+    analogy_type: apples
+- id: eng-step-2
+  step_number: 2
+  total_steps: 2
+  question_khmer: តើប្រយោគពេញលេញដែលត្រឹមត្រូវគឺជាអ្វី?
+  question_eng: What is the correct full sentence?
+  input_format: mcq
+  options:
+  - Tunsay likes apples.
+  - Tunsay liking apples.
+  - Tunsay like apples.
+  correct_answer: Tunsay likes apples.
+  hint1:
+    khmer: ជ្រើសរើសប្រយោគដែលមានពាក្យ "likes"។
+    eng: Choose the sentence with "likes".
+  hint2:
+    khmer: Tunsay + likes + apples!
+    eng: Tunsay + likes + apples!
+  hint3:
+    title_khmer: ចម្លើយចុងក្រោយ
+    title_eng: Final Answer
+    example_khmer: Tunsay likes apples.
+    example_eng: Tunsay likes apples.
+  explain_differently:
+    simple_khmer: ពូកែណាស់! ប្រយោគពេញលេញគឺ "Tunsay likes apples."
+    simple_eng: Awesome job! The complete sentence is "Tunsay likes apples."
+    analogy_title: ប្រយោគពេញលេញ (Full Sentence)
+    analogy_khmer: ទន្សាយចូលចិត្តញ៉ាំផ្លែប៉ោម!
+    analogy_eng: Tunsay loves eating apples!
+    analogy_type: apples

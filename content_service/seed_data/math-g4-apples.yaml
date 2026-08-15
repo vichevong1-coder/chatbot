@@ -1,0 +1,113 @@
+id: math-g4-apples
+title_khmer: ចំណោទគណិតវិទ្យា៖ ការគុណ
+title_eng: 'Math Problem: Multiplication'
+grade: 4
+subject: math
+problem_statement_khmer: មាន ៥ ប្រអប់។ ប្រអប់នីមួយៗមានផ្លែប៉ោម ៨ ផ្លែ។ តើមានផ្លែប៉ោមសរុបប៉ុន្មានផ្លែ?
+problem_statement_eng: There are 5 boxes. Each box has 8 apples. How many apples are there altogether?
+image_uri: https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600&auto=format&fit=crop&q=80
+steps:
+- id: step-1
+  step_number: 1
+  total_steps: 4
+  question_khmer: តើមានប្រអប់ចំនួនប៉ុន្មាននៅក្នុងចំណោទនេះ?
+  question_eng: How many boxes are there in the question?
+  input_format: number
+  correct_answer: '5'
+  hint1:
+    khmer: សូមមើលលេខដំបូងនៅក្នុងសំណួរ។
+    eng: Look at the first number mentioned in the question.
+  hint2:
+    khmer: សំណួរប្រាប់ថា "មាន ៥ ប្រអប់..."
+    eng: The question mentions "There are 5 boxes..."
+  hint3:
+    title_khmer: ឧទាហរណ៍ស្រដៀងគ្នា
+    title_eng: Similar Example
+    example_khmer: បើគេថា "មាន ៣ កញ្ចប់" នោះចំនួនកញ្ចប់គឺ ៣។ ដូច្នេះសម្រាប់សំណួរនេះ ចម្លើយគឺ ៥!
+    example_eng: If it says "There are 3 packs", the count is 3. So for this question, the answer is 5!
+  explain_differently:
+    simple_khmer: គិតថាជាប្រអប់កាតុងដែលដាក់នៅលើតុ។ រាប់ប្រអប់ទាំងនោះ៖ ១, ២, ៣, ៤, ៥។
+    simple_eng: 'Imagine cardboard boxes sitting on a table. Count them: 1, 2, 3, 4, 5.'
+    analogy_title: ប្រអប់ផ្លែឈើ (Fruit Boxes)
+    analogy_khmer: ស្រមៃមើលប្រអប់ចំនួន ៥ ត្រៀបគ្នានៅក្នុងហាងផលផ្លែឈើ។
+    analogy_eng: Picture 5 boxes lined up on a fruit shelf.
+    analogy_type: apples
+- id: step-2
+  step_number: 2
+  total_steps: 4
+  question_khmer: តើប្រអប់នីមួយៗមានផ្លែប៉ោមចំនួនប៉ុន្មានផ្លែ?
+  question_eng: How many apples are in EACH box?
+  input_format: number
+  correct_answer: '8'
+  hint1:
+    khmer: ពិនិត្យមើលចំនួនផ្លែប៉ោមនៅក្នុងប្រអប់មួយ។
+    eng: Check the number of apples inside one box.
+  hint2:
+    khmer: សំណួរនិយាយថា "ប្រអប់នីមួយៗមានផ្លែប៉ោម ៨ ផ្លែ..."
+    eng: The sentence says "Each box has 8 apples..."
+  hint3:
+    title_khmer: ឧទាហរណ៍ស្រដៀងគ្នា
+    title_eng: Similar Example
+    example_khmer: បើក្នុងប្រអប់មួយមានស្ករគ្រាប់ ៤ គ្រាប់ ចំនួនគឺ ៤។ ចំពោះប្រអប់ផ្លែប៉ោមយើង ចំនួនគឺ ៨!
+    example_eng: If one box holds 4 candies, the count is 4. For our apple box, the count is 8!
+  explain_differently:
+    simple_khmer: បើអ្នកបើកប្រអប់ទី១ រាប់ផ្លែប៉ោមក្នុងនោះ អ្នកនឹងឃើញ ៨ ផ្លែ។
+    simple_eng: 'If you open Box #1 and count the apples inside, you see 8 apples.'
+    analogy_title: ការរាប់ក្នុងប្រអប់ (Inside one box)
+    analogy_khmer: ប្រអប់នីមួយៗមានផ្លែប៉ោម ៨ ផ្លែដូចៗគ្នា។
+    analogy_eng: Every single box contains exactly 8 apples.
+    analogy_type: apples
+- id: step-3
+  step_number: 3
+  total_steps: 4
+  question_khmer: ដើម្បីរកចំនួនផ្លែប៉ោមសរុប តើយើងគួរបប្រើប្រមាណវិធីអ្វី?
+  question_eng: Which math operation should we use to find the total apples?
+  input_format: mcq
+  options:
+  - ការបូក ឬ ការគុណ (Addition or Multiplication)
+  - ការដក (Subtraction)
+  - ការចែក (Division)
+  correct_answer: ការបូក ឬ ការគុណ (Addition or Multiplication)
+  hint1:
+    khmer: យើងមានក្រុមស្មើៗគ្នាដែលត្រូវរួមបញ្ចូលគ្នា។
+    eng: We are combining equal groups together.
+  hint2:
+    khmer: ពេលយើងមាន ៥ ក្រុម ហើយក្រុមនីមួយៗមាន ៨ យើងអាចបូក ៨ ប្រាំដង ឬគុណ ៥ × ៨!
+    eng: When we have 5 groups of 8, we add 8 five times or multiply 5 × 8!
+  hint3:
+    title_khmer: ឧទាហរណ៍ប្រមាណវិធី
+    title_eng: Operation Example
+    example_khmer: ៣ ក្រុមនៃ ៤ = ៤ + ៤ + ៤ = ៣ × ៤ = ១២ (ប្រមាណវិធីគុណ!)
+    example_eng: 3 groups of 4 = 4 + 4 + 4 = 3 × 4 = 12 (Multiplication operation!)
+  explain_differently:
+    simple_khmer: ការគុណ គឺជាវិធីរហ័សនៃការបូកចំនួនដដែលៗជាច្រើនដង។
+    simple_eng: Multiplication is a shortcut for adding the same number repeatedly.
+    analogy_title: ផ្លូវកាត់គណិតវិទ្យា (Math Shortcut)
+    analogy_khmer: ជំនួសឲ្យការបូក ៨+៨+៨+៨+៨ យើងអាចគុណ ៥ × ៨ យ៉ាងលឿន!
+    analogy_eng: Instead of adding 8+8+8+8+8, we shortcut with 5 × 8!
+    analogy_type: apples
+- id: step-4
+  step_number: 4
+  total_steps: 4
+  question_khmer: ល្អណាស់! ឥឡូវគណនា ៥ × ៨ = ?
+  question_eng: Great job! Now calculate 5 × 8 = ?
+  input_format: number
+  correct_answer: '40'
+  hint1:
+    khmer: រាប់បន្ថែមម្តង ៥ ឬមើលមេគុណ ៥៖ ៥, ១០, ១៥, ២០, ២៥, ៣០, ៣៥...
+    eng: 'Count by 5s eight times: 5, 10, 15, 20, 25, 30, 35...'
+  hint2:
+    khmer: បន្ទាប់ពី ៣៥ បូក ៥ ទៀតគឺ...
+    eng: After 35, add 5 more to get...
+  hint3:
+    title_khmer: គន្លឹះមេគុណ ៥
+    title_eng: Times Table Trick
+    example_khmer: ៥ × ៧ = ៣៥ ដូច្នេះ ៥ × ៨ = ៣៥ + ៥ = ៤០!
+    example_eng: 5 × 7 = 35 so 5 × 8 = 35 + 5 = 40!
+  explain_differently:
+    simple_khmer: ប្រើម្រាមដៃរាប់មេ ៥ ចំនួន ៨ ដង៖ ៥, ១០, ១៥, ២០, ២៥, ៣០, ៣៥, ៤០!
+    simple_eng: 'Count by 5s eight times on your fingers: 5, 10, 15, 20, 25, 30, 35, 40!'
+    analogy_title: ការរាប់ជាក្រុម (Group Counting)
+    analogy_khmer: ផ្លែប៉ោមសរុបនៅក្នុងប្រអប់ទាំង ៥ គឺ ៤០ ផ្លែ!
+    analogy_eng: Total apples in all 5 boxes equal 40 apples!
+    analogy_type: apples
