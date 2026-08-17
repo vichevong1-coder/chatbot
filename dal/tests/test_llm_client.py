@@ -222,8 +222,14 @@ def test_genai_server_error_is_transient_and_client_error_is_not():
 
     from dal.llm_client import _is_transient
 
-    server = genai_errors.ServerError(503, {"error": {"message": "unavailable"}})
-    client_err = genai_errors.ClientError(401, {"error": {"message": "bad key"}})
+    import unittest.mock
+    mock_resp = unittest.mock.Mock()
+    mock_resp.body_segments = [{"error": {"message": "unavailable"}}]
+    mock_resp_client = unittest.mock.Mock()
+    mock_resp_client.body_segments = [{"error": {"message": "bad key"}}]
+
+    server = genai_errors.ServerError(503, mock_resp)
+    client_err = genai_errors.ClientError(401, mock_resp_client)
     assert _is_transient(server) is True
     assert _is_transient(client_err) is False
     assert _is_transient(asyncio.TimeoutError()) is True
@@ -284,3 +290,56 @@ def test_clients_package_exports():
     assert callable(clients.get_engine)
     assert callable(clients.get_session_factory)
     assert callable(clients.get_redis)
+
+
+def test_ollama_provider_flow(monkeypatch):
+    import unittest.mock
+    import httpx
+    from dal.llm_client import LlmClient, Language
+
+    monkeypatch.setenv("LLM_PROVIDER", "ollama")
+    monkeypatch.setenv("OLLAMA_MODEL", "llama3.2:3b")
+    monkeypatch.setenv("OLLAMA_URL", "http://fake-ollama:11434")
+
+    mock_response = unittest.mock.Mock()
+    mock_response.json.return_value = {
+        "choices": [
+            {
+                "message": {
+                    "role": "assistant",
+                    "content": "Socratic hint from Llama!"
+                }
+            }
+        ],
+        "usage": {
+            "prompt_tokens": 10,
+            "completion_tokens": 15,
+            "total_tokens": 25
+        }
+    }
+    mock_response.raise_for_status = unittest.mock.Mock()
+
+    async def fake_post(self, url, **kwargs):
+        assert url == "http://fake-ollama:11434/v1/chat/completions"
+        payload = kwargs.get("json", {})
+        assert payload["model"] == "llama3.2:3b"
+        assert payload["messages"][0]["role"] == "system"
+        assert payload["messages"][0]["content"] == "system instruction"
+        assert payload["messages"][1]["role"] == "user"
+        assert payload["messages"][1]["content"] == "prompt instruction"
+        return mock_response
+
+    monkeypatch.setattr(httpx.AsyncClient, "post", fake_post)
+
+    client = LlmClient()
+    result = asyncio.run(client.generate(
+        "prompt instruction",
+        language=Language.ENGLISH,
+        system_instruction="system instruction"
+    ))
+
+    assert result.from_fallback is False
+    assert result.text == "Socratic hint from Llama!"
+    assert result.prompt_tokens == 10
+    assert result.output_tokens == 15
+    assert result.total_tokens == 25

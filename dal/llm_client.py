@@ -37,6 +37,11 @@ logger = logging.getLogger(__name__)
 DEFAULT_MODEL_ENV = "GEMINI_MODEL"
 DEFAULT_MODEL = "gemini-3.7-flash"
 
+DEFAULT_PROVIDER_ENV = "LLM_PROVIDER"
+DEFAULT_PROVIDER = "gemini"
+DEFAULT_OLLAMA_URL = "http://localhost:11434"
+DEFAULT_OLLAMA_MODEL = "llama3.2:3b"
+
 # Values of GEMINI_API_KEY that mean "no key configured". server.ts checks for
 # 'MY_GEMINI_API_KEY'; .env.example ships 'replace-with-your-gemini-api-key'.
 _PLACEHOLDER_KEYS = frozenset({"", "MY_GEMINI_API_KEY", "replace-with-your-gemini-api-key"})
@@ -127,7 +132,14 @@ class LlmClient:
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
     ) -> None:
         self._api_key = api_key
-        self._model = model or os.environ.get(DEFAULT_MODEL_ENV, "").strip() or DEFAULT_MODEL
+        self._provider = os.environ.get(DEFAULT_PROVIDER_ENV, DEFAULT_PROVIDER).strip().lower()
+        if model:
+            self._model = model
+        elif self._provider == "ollama":
+            self._model = os.environ.get("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL).strip()
+        else:
+            self._model = os.environ.get(DEFAULT_MODEL_ENV, "").strip() or DEFAULT_MODEL
+        self._ollama_url = os.environ.get("OLLAMA_URL", DEFAULT_OLLAMA_URL).strip()
         self._timeout_seconds = timeout_seconds
         self._max_attempts = max(1, max_attempts)
         self._backoff_base_seconds = backoff_base_seconds
@@ -143,24 +155,54 @@ class LlmClient:
 
     def _resolve_call(self) -> _GenerateCall:
         if self._call is None:
-            # Imported lazily so a mocked client never needs the SDK wired up.
-            from google import genai
+            if self._provider == "ollama":
+                async def _ollama_call(
+                    *, model: str, prompt: str, system_instruction: str | None
+                ) -> Any:
+                    headers = {"Content-Type": "application/json"}
+                    messages = []
+                    if system_instruction:
+                        messages.append({"role": "system", "content": system_instruction})
+                    messages.append({"role": "user", "content": prompt})
 
-            client = genai.Client(api_key=self._effective_api_key())
+                    payload = {
+                        "model": model,
+                        "messages": messages,
+                        "stream": False,
+                        "options": {
+                            "temperature": 0.7
+                        }
+                    }
+                    async with httpx.AsyncClient() as client:
+                        response = await client.post(
+                            f"{self._ollama_url}/v1/chat/completions",
+                            json=payload,
+                            headers=headers,
+                            timeout=self._timeout_seconds,
+                        )
+                        response.raise_for_status()
+                        return response.json()
 
-            async def _sdk_call(
-                *, model: str, prompt: str, system_instruction: str | None
-            ) -> Any:
-                config = None
-                if system_instruction is not None:
-                    from google.genai import types
+                self._call = _ollama_call
+            else:
+                # Imported lazily so a mocked client never needs the SDK wired up.
+                from google import genai
 
-                    config = types.GenerateContentConfig(system_instruction=system_instruction)
-                return await client.aio.models.generate_content(
-                    model=model, contents=prompt, config=config
-                )
+                client = genai.Client(api_key=self._effective_api_key())
 
-            self._call = _sdk_call
+                async def _sdk_call(
+                    *, model: str, prompt: str, system_instruction: str | None
+                ) -> Any:
+                    config = None
+                    if system_instruction is not None:
+                        from google.genai import types
+
+                        config = types.GenerateContentConfig(system_instruction=system_instruction)
+                    return await client.aio.models.generate_content(
+                        model=model, contents=prompt, config=config
+                    )
+
+                self._call = _sdk_call
         return self._call
 
     # -- results ------------------------------------------------------------------
@@ -175,6 +217,23 @@ class LlmClient:
 
     @staticmethod
     def _result_from_response(response: Any, attempts: int) -> LlmResult | None:
+        if isinstance(response, dict):
+            choices = response.get("choices", [])
+            if not choices:
+                return None
+            text = choices[0].get("message", {}).get("content", "")
+            if not text:
+                return None
+            usage = response.get("usage", {})
+            return LlmResult(
+                text=text,
+                from_fallback=False,
+                prompt_tokens=usage.get("prompt_tokens"),
+                output_tokens=usage.get("completion_tokens"),
+                total_tokens=usage.get("total_tokens"),
+                attempts=attempts,
+            )
+
         text = getattr(response, "text", None)
         if not text:
             return None
@@ -202,7 +261,7 @@ class LlmClient:
 
         This method never raises. It never logs ``prompt`` or the generated text.
         """
-        if self._effective_api_key() is None:
+        if self._provider != "ollama" and self._effective_api_key() is None:
             logger.info("llm_client: no usable GEMINI_API_KEY; returning fallback")
             return self._fallback(language, attempts=0)
 
