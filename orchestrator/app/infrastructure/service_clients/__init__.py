@@ -46,6 +46,7 @@ class ServiceClients:
     content: Any
     pedagogy: Any
     auth: Any
+    grading: Any
 
 
 class BaseServiceClient:

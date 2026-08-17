@@ -17,6 +17,7 @@ from fastapi import FastAPI, Request
 
 from app.api.chat import router as chat_router
 from app.api.health import router as health_router
+from app.api.answers import router as answers_router
 from app.core.graph.builder import build_graph
 from app.infrastructure.service_clients import ServiceClients
 from app.infrastructure.service_clients.auth_client import AuthClient
@@ -24,6 +25,7 @@ from app.infrastructure.service_clients.content_client import ContentClient
 from app.infrastructure.service_clients.pedagogy_client import PedagogyClient
 from app.infrastructure.service_clients.safety_client import SafetyClient
 from app.infrastructure.service_clients.solver_client import SolverClient
+from app.infrastructure.service_clients.grading_client import GradingClient
 from app.session_store.redis_store import RedisSessionStore, SessionStore
 from app.utils.logging import request_id_var
 
@@ -35,13 +37,14 @@ def _default_clients(http: httpx.AsyncClient) -> ServiceClients:
         return os.environ.get(name, default).strip() or default
 
     return ServiceClients(
-        safety=SafetyClient(url("SAFETY_SERVICE_URL", "http://safety_service:8011"), http),
-        solver=SolverClient(url("SOLVER_SERVICE_URL", "http://solver_service:8004"), http),
-        content=ContentClient(url("CONTENT_SERVICE_URL", "http://content_service:8003"), http),
+        safety=SafetyClient(url("SAFETY_SERVICE_URL", "http://safety_service:9011"), http),
+        solver=SolverClient(url("SOLVER_SERVICE_URL", "http://solver_service:9004"), http),
+        content=ContentClient(url("CONTENT_SERVICE_URL", "http://content_service:9003"), http),
         pedagogy=PedagogyClient(
-            url("PEDAGOGY_SERVICE_URL", "http://pedagogy_service:8006"), http
+            url("PEDAGOGY_SERVICE_URL", "http://pedagogy_service:9006"), http
         ),
-        auth=AuthClient(url("AUTH_SERVICE_URL", "http://auth_service:8002"), http),
+        auth=AuthClient(url("AUTH_SERVICE_URL", "http://auth_service:9002"), http),
+        grading=GradingClient(url("GRADING_SERVICE_URL", "http://grading_service:9005"), http),
     )
 
 
@@ -81,6 +84,7 @@ def create_app(
 
     app.include_router(health_router)
     app.include_router(chat_router)
+    app.include_router(answers_router)
     return app
 
 

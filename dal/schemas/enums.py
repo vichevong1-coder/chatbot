@@ -4,7 +4,12 @@ Every value here is mirrored in frontend_tunsay/src/types.ts. Adding a member is
 breaking change on both sides — see .claude/contracts.md section 2.
 """
 
-from enum import StrEnum
+try:
+    from enum import StrEnum
+except ImportError:
+    from enum import Enum
+    class StrEnum(str, Enum):
+        pass
 
 
 class Language(StrEnum):

@@ -28,6 +28,6 @@ COPY content_service/app ./app
 COPY content_service/scripts ./scripts
 COPY content_service/seed_data ./seed_data
 
-EXPOSE 8003
+EXPOSE 9003
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8003"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "9003"]

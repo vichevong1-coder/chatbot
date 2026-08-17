@@ -32,7 +32,12 @@ def after_safety_gate(state: GraphState) -> str:
 
 
 def after_intent_router(state: GraphState) -> str:
-    return "solve" if state.get("intent") == "solve" else "explain"
+    intent = state.get("intent")
+    if intent == "solve":
+        return "solve"
+    elif intent == "check_answer":
+        return "check_answer"
+    return "explain"
 
 
 def after_solve(state: GraphState) -> str:
@@ -40,3 +45,9 @@ def after_solve(state: GraphState) -> str:
     if state.get("intent") == "explain":
         return "explain"
     return END
+
+
+def after_check_answer(state: GraphState) -> str:
+    if state.get("is_correct", False):
+        return END
+    return "explain"

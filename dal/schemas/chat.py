@@ -6,7 +6,11 @@ unauthenticated and carries no history. See .claude/contracts.md section 4.
 
 from __future__ import annotations
 
-from typing import Annotated, Self
+from typing import Annotated
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
 
 from pydantic import Field, model_validator
 
@@ -97,6 +101,7 @@ class AnswerRequest(TunsayModel):
     """
 
     session_id: NonBlank
+    student_id: str | None = None
     problem_id: NonBlank
     step_id: NonBlank
     student_answer: str

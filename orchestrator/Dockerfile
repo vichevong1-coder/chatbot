@@ -18,6 +18,6 @@ RUN pip install --no-cache-dir -r requirements.txt /srv/dal
 
 COPY orchestrator/app ./app
 
-EXPOSE 8001
+EXPOSE 9001
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "9001"]

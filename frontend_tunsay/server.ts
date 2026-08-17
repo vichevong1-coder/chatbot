@@ -7,7 +7,7 @@ import { createServer as createViteServer } from 'vite';
 // camelCase boundary. The Gemini call and the system prompt live in
 // pedagogy_service now. The browser keeps a single origin (:3000), so no CORS
 // gymnastics are needed in dev.
-const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:8000';
+const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:9000';
 
 async function proxyJson(
   req: express.Request,
@@ -46,12 +46,24 @@ async function proxyJson(
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  
+  let PORT = parseInt(process.env.PORT || '3000', 10);
+  const args = process.argv.slice(2);
+  const portIdx = args.findIndex(arg => arg === '-p' || arg === '--port');
+  if (portIdx !== -1 && args[portIdx + 1]) {
+    const parsed = parseInt(args[portIdx + 1], 10);
+    if (!isNaN(parsed)) {
+      PORT = parsed;
+    }
+  }
 
   app.use(express.json());
 
   // Tutor turn → gateway /chat → orchestrator graph → pedagogy → Gemini.
   app.post('/api/tutor', (req, res) => proxyJson(req, res, '/chat'));
+
+  // Answer checking → gateway /answers → orchestrator graph → grading.
+  app.post('/api/answers', (req, res) => proxyJson(req, res, '/answers'));
 
   // Auth → gateway /auth/* → auth_service (school code + PIN, no passwords).
   app.post('/api/auth/register', (req, res) => proxyJson(req, res, '/auth/register'));

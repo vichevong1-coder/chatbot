@@ -21,6 +21,7 @@ from app.core.graph.nodes.input_normalizer import input_normalizer
 from app.core.graph.nodes.intent_router import intent_router
 from app.core.graph.nodes.safety_gate import safety_gate
 from app.core.graph.nodes.solve import solve
+from app.core.graph.nodes.check_answer import check_answer
 from app.core.graph.state import GraphState
 from app.infrastructure.service_clients import ServiceClients
 
@@ -34,6 +35,7 @@ def build_graph(clients: ServiceClients):
     graph.add_node("intent_router", intent_router)
     graph.add_node("solve", partial(solve, clients=clients))
     graph.add_node("explain", partial(explain, clients=clients))
+    graph.add_node("check_answer", partial(check_answer, clients=clients))
 
     graph.add_edge(START, "input_normalizer")
     graph.add_conditional_edges(
@@ -43,7 +45,10 @@ def build_graph(clients: ServiceClients):
         "safety_gate", edges.after_safety_gate, ["intent_router", END]
     )
     graph.add_conditional_edges(
-        "intent_router", edges.after_intent_router, ["solve", "explain"]
+        "intent_router", edges.after_intent_router, ["solve", "explain", "check_answer"]
+    )
+    graph.add_conditional_edges(
+        "check_answer", edges.after_check_answer, ["explain", END]
     )
     graph.add_conditional_edges("solve", edges.after_solve, ["explain", END])
     graph.add_edge("explain", END)

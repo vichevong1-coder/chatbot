@@ -5,7 +5,7 @@ import { StepTrail } from './StepTrail';
 import { StepCard } from './StepCard';
 import { HintSheet } from './HintSheet';
 import { ExplanationCard } from './ExplanationCard';
-import { askTunsayTutor } from '../services/geminiService';
+import { askTunsayTutor, submitStepAnswer } from '../services/geminiService';
 import { getDisplayName } from '../utils/language';
 import { MOCK_PROBLEMS, generateHistoryChatForProblem } from '../data/mockProblems';
 import { Send, Mic, Camera, User, GraduationCap, Users, ArrowLeft, Plus, Calculator, Atom, BookOpen, Languages, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -215,26 +215,45 @@ export const ChatView: React.FC<ChatViewProps> = ({
     updateMessages(historyMsgs);
   };
 
-  const handleStepAnswer = (studentAnswer: string): boolean => {
-    if (!currentStep) return false;
+  const handleStepAnswer = async (studentAnswer: string): Promise<boolean> => {
+    if (!currentStep || !activeProblem) return false;
 
-    const isCorrect = studentAnswer.toLowerCase().trim() === currentStep.correctAnswer.toLowerCase().trim() ||
-      studentAnswer.includes(currentStep.correctAnswer);
+    // Call server-side checker
+    const gradingRes = await submitStepAnswer(
+      activeProblem.id,
+      currentStep.id,
+      studentAnswer,
+      profile.language
+    );
 
-    // Record message in chat
-    const newMsg: ChatMessage = {
+    const isCorrect = gradingRes.isCorrect;
+
+    // Record user answer in chat
+    const userMsg: ChatMessage = {
       id: Date.now().toString(),
       sender: 'user',
-      textEng: studentAnswer,
+      textKhmer: profile.language === 'km' ? studentAnswer : '',
+      textEng: profile.language === 'en' ? studentAnswer : '',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    const updated = [...messages, newMsg];
+    let updated = [...messages, userMsg];
+    updateMessages(updated);
+
+    // Record Tunsay's feedback in chat
+    const sayoMsg: ChatMessage = {
+      id: (Date.now() + 1).toString(),
+      sender: 'sayo',
+      textKhmer: gradingRes.feedbackKhmer,
+      textEng: gradingRes.feedbackEng,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    updated = [...updated, sayoMsg];
     updateMessages(updated);
 
     if (isCorrect) {
       // Progress step
-      if (activeProblem && currentStepIndex + 1 < activeProblem.steps.length) {
+      if (currentStepIndex + 1 < activeProblem.steps.length) {
         setTimeout(() => {
           setCurrentStepIndex((prev) => prev + 1);
         }, 800);

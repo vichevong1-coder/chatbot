@@ -6,7 +6,7 @@ import { Lightbulb, RefreshCw, Mic, CheckCircle, AlertCircle, ArrowRight, HelpCi
 interface StepCardProps {
   step: StepItem;
   language?: Language;
-  onAnswerSubmit: (answer: string) => boolean;
+  onAnswerSubmit: (answer: string) => boolean | Promise<boolean>;
   onOpenHints: () => void;
   onOpenExplainDifferently: () => void;
   onVoiceInputRequested?: () => void;
@@ -25,16 +25,16 @@ export const StepCard: React.FC<StepCardProps> = ({
   const [feedback, setFeedback] = useState<'none' | 'correct' | 'incorrect'>('none');
   const [typedAnswer, setTypedAnswer] = useState('');
 
-  const handleOptionClick = (optionText: string) => {
+  const handleOptionClick = async (optionText: string) => {
     setSelectedOption(optionText);
-    const isCorrect = onAnswerSubmit(optionText);
+    const isCorrect = await onAnswerSubmit(optionText);
     setFeedback(isCorrect ? 'correct' : 'incorrect');
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!typedAnswer.trim()) return;
-    const isCorrect = onAnswerSubmit(typedAnswer.trim());
+    const isCorrect = await onAnswerSubmit(typedAnswer.trim());
     setFeedback(isCorrect ? 'correct' : 'incorrect');
   };
 

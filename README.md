@@ -32,7 +32,7 @@ docker-compose up
 cd frontend_tunsay && npm install && npm run dev
 ```
 
-The frontend serves on `:3000` and the API gateway on `:8000`. The Python backend services and backing infrastructure (Postgres, Redis, Qdrant, MinIO) are fully configured in `docker-compose.yml`.
+The frontend serves on `:3000` and the API gateway on `:9000`. The Python backend services and backing infrastructure (Postgres, Redis, Qdrant, MinIO) are fully configured in `docker-compose.yml`.
 
 ## Documentation
 

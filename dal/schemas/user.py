@@ -13,7 +13,11 @@ same student account.
 
 from __future__ import annotations
 
-from typing import Annotated, Self
+from typing import Annotated
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
 
 from pydantic import Field, field_validator, model_validator
 

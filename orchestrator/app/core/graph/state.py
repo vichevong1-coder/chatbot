@@ -31,3 +31,5 @@ class GraphState(TypedDict, total=False):
     text_eng: str
     is_safety_refusal: bool
     is_parent_help: bool
+    is_correct: bool
+    misconception_code: str | None

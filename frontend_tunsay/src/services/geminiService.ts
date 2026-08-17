@@ -89,3 +89,35 @@ export async function askTunsayTutor(
 }
 
 export const askSayoTutor = askTunsayTutor;
+
+export async function submitStepAnswer(
+  problemId: string,
+  stepId: string,
+  studentAnswer: string,
+  language: Language = 'km'
+): Promise<{ isCorrect: boolean; feedbackKhmer: string; feedbackEng: string; advanceToStep?: number }> {
+  try {
+    const response = await fetch('/api/answers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({
+        sessionId,
+        problemId,
+        stepId,
+        studentAnswer,
+        language
+      })
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (err) {
+    console.error('Failed to submit step answer:', err);
+  }
+  // Fallback if backend is down
+  return {
+    isCorrect: false,
+    feedbackKhmer: language === 'km' ? 'មានបញ្ហាបច្ចេកទេសក្នុងការតភ្ជាប់។ សូមព្យាយាមម្តងទៀត។ 🐰' : '',
+    feedbackEng: language === 'en' ? 'Connection issue. Please try again. 🐰' : ''
+  };
+}

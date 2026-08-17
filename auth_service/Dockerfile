@@ -1,4 +1,4 @@
-# auth_service — port 8002.
+# auth_service — port 9002.
 #
 # NOTE: this Dockerfile expects the **repo root** as the build context so it can copy
 # the monorepo `dal/` package (not on PyPI). The root docker-compose.yml may need its
@@ -19,6 +19,6 @@ RUN pip install --no-cache-dir ./dal -r requirements.txt
 COPY auth_service/app ./app
 COPY auth_service/scripts ./scripts
 
-EXPOSE 8002
+EXPOSE 9002
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "9002"]

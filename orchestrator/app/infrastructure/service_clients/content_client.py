@@ -16,8 +16,8 @@ class ContentClient(BaseServiceClient):
     service_name = "content_service"
 
     async def get_problem(self, problem_id: str) -> dict[str, Any] | None:
-        """Returns the public problem dict, or None when unknown (404)."""
-        response = await self._request("GET", f"/problems/{problem_id}")
+        """Returns the full problem dict (including correct_answer), or None when unknown (404)."""
+        response = await self._request("GET", f"/admin/problems/{problem_id}")
         if response.status_code == 404:
             return None
         response.raise_for_status()

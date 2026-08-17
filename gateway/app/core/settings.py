@@ -24,9 +24,9 @@ class Settings:
     @classmethod
     def from_env(cls) -> "Settings":
         return cls(
-            auth_service_url=os.environ.get("AUTH_SERVICE_URL", "http://auth_service:8002").rstrip("/"),
-            orchestrator_url=os.environ.get("ORCHESTRATOR_URL", "http://orchestrator:8001").rstrip("/"),
-            content_service_url=os.environ.get("CONTENT_SERVICE_URL", "http://content_service:8003").rstrip("/"),
+            auth_service_url=os.environ.get("AUTH_SERVICE_URL", "http://auth_service:9002").rstrip("/"),
+            orchestrator_url=os.environ.get("ORCHESTRATOR_URL", "http://orchestrator:9001").rstrip("/"),
+            content_service_url=os.environ.get("CONTENT_SERVICE_URL", "http://content_service:9003").rstrip("/"),
             jwt_secret=os.environ.get("JWT_SECRET", ""),
             jwt_algorithm=os.environ.get("JWT_ALGORITHM", "HS256").strip() or "HS256",
             frontend_origin=os.environ.get("FRONTEND_ORIGIN", "http://localhost:3000"),
