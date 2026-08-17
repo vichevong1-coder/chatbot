@@ -39,6 +39,7 @@ class ExplainRequest(TunsayModel):
     language: Language
     mode: UserMode
     context: str | None = None  # optional problem/step text from the orchestrator
+    misconception_code: str | None = None  # optional classification from grading_service (P2.2)
 
 
 class ExplainResponse(TunsayModel):
@@ -59,5 +60,6 @@ async def explain(request: ExplainRequest) -> ExplainResponse:
         language=request.language,
         mode=request.mode,
         context=request.context,
+        misconception_code=request.misconception_code,
     )
     return ExplainResponse(**result)

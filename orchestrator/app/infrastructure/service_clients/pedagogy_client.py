@@ -18,6 +18,7 @@ class PedagogyClient(BaseServiceClient):
         language: str,
         mode: str,
         context: str | None = None,
+        misconception_code: str | None = None,
     ) -> dict[str, Any]:
         """Returns ``{text_khmer, text_eng, from_fallback, ...}``."""
         response = await self._request(
@@ -29,6 +30,7 @@ class PedagogyClient(BaseServiceClient):
                 "language": language,
                 "mode": mode,
                 "context": context,
+                "misconception_code": misconception_code,
             },
         )
         response.raise_for_status()

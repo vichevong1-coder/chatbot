@@ -97,17 +97,26 @@ class ExplanationGenerator:
     # -- prompt assembly (pure) ---------------------------------------------------
 
     def build_system_instruction(
-        self, *, grade: int, language: Language, mode: UserMode
+        self, *, grade: int, language: Language, mode: UserMode, misconception_code: str | None = None
     ) -> str:
-        """Band template + language instruction + mode block, all from YAML."""
+        """Band template + language instruction + mode block + optional misconception note."""
         band = band_for_grade(grade)
         spec = self._prompts[band.name]
-        language_instruction = spec["language_instructions"][str(Language(language))]
-        mode_block = spec["mode_instructions"][str(UserMode(mode))]
+        language_instruction = spec["language_instructions"][Language(language).value]
+        mode_block = spec["mode_instructions"][UserMode(mode).value]
         assembled = spec["system_instruction"].format(
             language_instruction=language_instruction
         )
-        return f"{assembled.rstrip()}\n{mode_block.rstrip()}"
+        result = f"{assembled.rstrip()}\n{mode_block.rstrip()}"
+
+        # Append misconception-specific Socratic coaching note (private to Gemini)
+        if misconception_code:
+            misconception_map = spec.get("misconception_instructions", {})
+            note = misconception_map.get(misconception_code)
+            if note:
+                result += f"\n\nSpecific Coaching Note for This Student:\n{note.rstrip()}"
+
+        return result
 
     @staticmethod
     def build_prompt(prompt: str, context: str | None) -> str:
@@ -126,6 +135,7 @@ class ExplanationGenerator:
         language: Language,
         mode: UserMode,
         context: str | None = None,
+        misconception_code: str | None = None,
     ) -> dict[str, Any]:
         """Generate an explanation; the result shape follows contracts.md §3/§4.
 
@@ -134,7 +144,8 @@ class ExplanationGenerator:
         """
         language = Language(language)
         system_instruction = self.build_system_instruction(
-            grade=grade, language=language, mode=UserMode(mode)
+            grade=grade, language=language, mode=UserMode(mode),
+            misconception_code=misconception_code,
         )
         result: LlmResult = await self._llm_client.generate(
             self.build_prompt(prompt, context),

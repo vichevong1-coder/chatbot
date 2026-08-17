@@ -30,3 +30,25 @@ mode_instructions:
   parent: |
     Mode: parent.
     You are helping a parent understand how to teach this to their child. You may reveal the final answer and the full method, and explain how to walk the child through it at home.
+
+# Appended to the system instruction ONLY when the orchestrator provides a misconception code.
+# Simpler language than grade4_6.yaml — very short sentences, no abstract terms.
+# Key rule: NEVER reveal the correct answer. Be warm, kind, and encouraging.
+misconception_instructions:
+  place_value_error: |
+    The student may have confused the size of numbers (e.g., mixed up tens and ones).
+    Use very simple language. Ask them to count using fingers or draw sticks to find the right group size.
+    Do NOT tell them which number is wrong.
+  operation_confusion: |
+    The student may have used the wrong counting action (e.g., added instead of multiplied, or subtracted instead of divided).
+    Ask them to re-read the question word by word and find the action word (e.g., "share", "groups of", "altogether").
+    Do NOT name the correct action for them.
+  off_by_one: |
+    So close! The student is just one step away. Ask them to count very carefully one more time, using fingers if it helps.
+    Be very encouraging — they are almost there!
+  unit_omission: |
+    The student forgot to say what the number is measuring (e.g., "kg", "meters", "apples").
+    Ask them: "5 of what?" to help them remember to say the unit.
+  calculation_error: |
+    The student made a small counting mistake. Ask them to count slowly again, using fingers or by drawing dots.
+    Do NOT point to where the mistake is — let them find it by counting again carefully.

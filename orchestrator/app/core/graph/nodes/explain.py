@@ -71,6 +71,12 @@ async def explain(state: GraphState, clients: ServiceClients) -> dict:
             grade = int(problem.get("grade") or DEFAULT_GRADE)
             context = _build_context(problem, language, state.get("active_step_index"))
 
+    # Append misconception code to context so the pedagogy service can tailor the prompt
+    misconception_code = state.get("misconception_code")
+    if misconception_code:
+        suffix = f"Student Misconception Code: {misconception_code}"
+        context = f"{context}\n\n{suffix}" if context else suffix
+
     try:
         result = await clients.pedagogy.explain(
             prompt=state.get("prompt", ""),
@@ -78,6 +84,7 @@ async def explain(state: GraphState, clients: ServiceClients) -> dict:
             language=language,
             mode=mode,
             context=context,
+            misconception_code=misconception_code,
         )
         text_khmer = result.get("text_khmer", "")
         text_eng = result.get("text_eng", "")
