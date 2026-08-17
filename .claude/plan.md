@@ -461,12 +461,13 @@ Speak or photograph a homework problem and get the same quality of tutoring as t
 
 ### P4.1 — `retrieval_service` (RAG)
 
-- **Files:** `app/core/retriever.py`, `app/ingest/`, `orchestrator/.../retrieval_client.py`
-- Ingest the WEG curriculum into Qdrant so explanations use the vocabulary and method the
-  child's own textbook uses. **Khmer embedding quality needs validating** — verify
-  retrieval relevance in Khmer specifically before wiring it into `explain`.
-- **Verify:** a curriculum-specific question retrieves the right passage; explanations cite
-  the textbook method rather than a generic one.
+- **Files:** `app/core/retriever.py`, `app/ingest/`, `orchestrator/.../retrieval_client.py`, `pedagogy_service/app/ai/prompts/explain_grade1_3.yaml`, `pedagogy_service/app/ai/prompts/explain_grade4_6.yaml`
+- **Embedding Model & Khmer Segmentation**: Commit to a high-quality multilingual model (e.g., `text-embedding-004` via Gemini API, or `multilingual-e5-large` locally). To handle Khmer's lack of word spaces, implement a segmentation preprocessing step using a lightweight tool like `khmer-nltk` or `sefr-cut` before chunking.
+- **Chunking Strategy**: Avoid raw character/token sliding windows. Instead, structure chunking boundaries around **logical textbook units** (lessons, chapters, or step-by-step example boxes) to keep the context intact.
+- **Prompt Wiring**: Update the prompt YAML templates (`explain_grade1_3.yaml` and `explain_grade4_6.yaml`) to accept a `{retrieved_context}` slot, and update the orchestrator's `explain.py` node to inject these textbook passages into the pedagogy request.
+- **Caching**: Skip explicit retrieval caching at the database layer; the existing explanation cache (Phase 2.4) already covers the hot path.
+- **Sequencing Decision**: Keeping RAG in Phase 4 (after voice/camera in Phase 3) is a deliberate choice to de-risk the complex UI features first. However, we will allow creating a stub `retrieval_service` returning mock context early if RAG demonstration is required for stakeholder reviews.
+- **Verify:** a curriculum-specific question retrieves the right passage; explanations cite the textbook method rather than a generic one.
 
 ### P4.2 — Cost controls
 
