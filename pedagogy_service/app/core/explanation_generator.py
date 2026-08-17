@@ -1,131 +1,91 @@
-"""Grade-banded explanation generation — pure orchestration around dal's LlmClient.
+"""Grade-banded explanation generation — pure LLM orchestration.
 
-This module owns three things and nothing else (no FastAPI imports here):
+This module now owns exactly ONE thing: calling the LLM and mapping
+the result onto the API response shape.
 
-- the **band table**: grade ranges → prompt YAML, a lookup rather than an ``if``
-  chain, so widening grade support is a table edit (.claude/plan.md P1.8);
-- **prompt assembly**: band template + language instruction + mode block, all read
-  from ``app/ai/prompts/*.yaml`` — the system prompt ported out of
-  ``frontend_tunsay/server.ts`` lives in those files, never in code;
-- the **LlmClient call** and mapping of its ``LlmResult`` onto the response shape
-  (single-language rule, .claude/contracts.md §3: the requested language is filled,
-  the other side is ``""``).
+All prompt concerns (band resolution, YAML loading, system instruction
+assembly) live in :mod:`app.core.prompt_manager`.
 
-Grade *validation* belongs to callers (dal's grade schema); this module accepts any
-structurally valid grade 1–12 and maps an unmapped grade (e.g. 8, once config
-widens) to the NEAREST implemented band instead of erroring.
+``ExplanationGenerator`` accepts an injectable ``PromptManager`` so tests
+can swap in a minimal single-band setup without touching the file system,
+and an injectable ``LlmClient`` so tests can swap in a fake ``call``.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-
-import yaml
 
 from dal.llm_client import LlmClient, LlmResult
 from dal.schemas.enums import Language, UserMode
 
-PROMPTS_DIR = Path(__file__).resolve().parent.parent / "ai" / "prompts"
+from app.core.prompt_manager import BANDS, PROMPTS_DIR, Band, PromptManager
+
+# Re-export for callers that previously imported these from here directly
+# (keeps backward compatibility with existing tests and conftest.py).
+__all__ = ["Band", "BANDS", "PROMPTS_DIR", "band_for_grade", "ExplanationGenerator"]
 
 
-@dataclass(frozen=True)
-class Band:
-    """One grade band and the prompt file that speaks its reading level."""
-
-    name: str
-    low: int
-    high: int
-    prompt_file: str
-
-    def distance(self, grade: int) -> int:
-        """0 when ``grade`` is inside the band, else distance to the nearer edge."""
-        if grade < self.low:
-            return self.low - grade
-        if grade > self.high:
-            return grade - self.high
-        return 0
-
-
-# The band table (a lookup, not an if-chain). Only *implemented* bands are listed:
-# explain_grade7_9.yaml and explain_grade10_12.yaml exist as reserved 0-byte stubs
-# (future scope — .claude/claude.md §4); add their rows here when they are filled.
-# An unmapped-but-valid grade falls back to the nearest listed band.
-BANDS: tuple[Band, ...] = (
-    Band(name="grade1_3", low=1, high=3, prompt_file="explain_grade1_3.yaml"),
-    Band(name="grade4_6", low=4, high=6, prompt_file="explain_grade4_6.yaml"),
-)
-
-
-def band_for_grade(grade: int, bands: tuple[Band, ...] = BANDS) -> Band:
-    """Pick the band containing ``grade``, or the nearest one when unmapped.
-
-    ``min`` over (distance, table order) — a grade inside a band has distance 0,
-    and grade 8 lands on grade4_6 (distance 2) rather than raising.
-    """
-    return min(bands, key=lambda band: band.distance(grade))
+def band_for_grade(grade: int) -> Band:
+    """Thin re-export so existing tests that import from here keep working."""
+    from app.core.prompt_manager import band_for_grade as _bfg
+    return _bfg(grade)
 
 
 class ExplanationGenerator:
-    """Loads and caches the prompt YAMLs once, then assembles + generates.
+    """Assembles prompts via PromptManager and calls the LLM.
 
     Parameters
     ----------
     llm_client:
         Injectable :class:`dal.llm_client.LlmClient`. Tests pass one built with a
         fake ``call``; production omits it and gets the real Gemini-backed client.
+    prompt_manager:
+        Injectable :class:`~app.core.prompt_manager.PromptManager`. Tests can pass
+        a manager built against a minimal YAML fixture; production omits it and
+        gets the real one built from ``app/ai/prompts/``.
     prompts_dir:
-        Where the band YAMLs live. Overridable for tests.
+        Kept for backward compatibility — ignored when ``prompt_manager`` is given.
     """
 
     def __init__(
         self,
         *,
         llm_client: LlmClient | None = None,
+        prompt_manager: PromptManager | None = None,
         prompts_dir: Path = PROMPTS_DIR,
     ) -> None:
         self._llm_client = llm_client or LlmClient()
-        self._prompts: dict[str, dict[str, Any]] = {}
-        for band in BANDS:
-            path = prompts_dir / band.prompt_file
-            data = yaml.safe_load(path.read_text(encoding="utf-8"))
-            if not isinstance(data, dict) or "system_instruction" not in data:
-                raise ValueError(f"prompt file {path} is missing 'system_instruction'")
-            self._prompts[band.name] = data
+        self._pm = prompt_manager or PromptManager(prompts_dir=prompts_dir)
 
-    # -- prompt assembly (pure) ---------------------------------------------------
+    # ------------------------------------------------------------------
+    # Thin delegation wrappers (kept for tests that call these directly)
+    # ------------------------------------------------------------------
 
     def build_system_instruction(
-        self, *, grade: int, language: Language, mode: UserMode, misconception_code: str | None = None
+        self,
+        *,
+        grade: int,
+        language: Language,
+        mode: UserMode,
+        misconception_code: str | None = None,
     ) -> str:
-        """Band template + language instruction + mode block + optional misconception note."""
-        band = band_for_grade(grade)
-        spec = self._prompts[band.name]
-        language_instruction = spec["language_instructions"][Language(language).value]
-        mode_block = spec["mode_instructions"][UserMode(mode).value]
-        assembled = spec["system_instruction"].format(
-            language_instruction=language_instruction
+        """Delegate to PromptManager.build_system_instruction."""
+        return self._pm.build_system_instruction(
+            grade=grade,
+            language=language,
+            mode=mode,
+            misconception_code=misconception_code,
         )
-        result = f"{assembled.rstrip()}\n{mode_block.rstrip()}"
-
-        # Append misconception-specific Socratic coaching note (private to Gemini)
-        if misconception_code:
-            misconception_map = spec.get("misconception_instructions", {})
-            note = misconception_map.get(misconception_code)
-            if note:
-                result += f"\n\nSpecific Coaching Note for This Student:\n{note.rstrip()}"
-
-        return result
 
     @staticmethod
     def build_prompt(prompt: str, context: str | None) -> str:
-        """The user-facing part of the request; context rides along when present."""
-        if context:
-            return f"{prompt}\n\nContext: {context}"
-        return prompt
+        """Thin wrapper kept for backward compatibility with existing tests."""
+        return PromptManager.build_user_prompt(prompt, context)
 
-    # -- generation ---------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # LLM generation
+    # ------------------------------------------------------------------
 
     async def explain(
         self,
@@ -143,12 +103,14 @@ class ExplanationGenerator:
         Tunsay-voiced fallback with ``from_fallback=True``.
         """
         language = Language(language)
-        system_instruction = self.build_system_instruction(
-            grade=grade, language=language, mode=UserMode(mode),
+        system_instruction = self._pm.build_system_instruction(
+            grade=grade,
+            language=language,
+            mode=UserMode(mode),
             misconception_code=misconception_code,
         )
         result: LlmResult = await self._llm_client.generate(
-            self.build_prompt(prompt, context),
+            self._pm.build_user_prompt(prompt, context),
             language=language,
             system_instruction=system_instruction,
         )
