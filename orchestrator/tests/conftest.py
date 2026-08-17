@@ -90,7 +90,7 @@ class FakePedagogyClient:
         self.calls: list[dict[str, Any]] = []
         self.down = False
 
-    async def explain(self, *, prompt, grade, language, mode, context=None) -> dict:
+    async def explain(self, *, prompt, grade, language, mode, context=None, misconception_code=None) -> dict:
         if self.down:
             raise ServiceUnavailable("pedagogy_service", "connection refused")
         self.calls.append(
@@ -100,6 +100,7 @@ class FakePedagogyClient:
                 "language": language,
                 "mode": mode,
                 "context": context,
+                "misconception_code": misconception_code,
             }
         )
         if language == "km":
@@ -114,6 +115,37 @@ class FakeAuthClient:
     async def get_me(self, token: str) -> dict:
         self.calls.append(token)
         return {"name": "សុជា (Sochea)", "grade": 4}
+
+
+class FakeGradingClient:
+    def __init__(self) -> None:
+        self.calls: list[dict[str, Any]] = []
+        self.down = False
+
+    async def grade(
+        self,
+        correct_answer: str,
+        student_answer: str,
+        input_format: str = "number",
+        options: list[str] | None = None,
+        language: str = "km",
+        question_text: str = ""
+    ) -> dict:
+        if self.down:
+            raise ServiceUnavailable("grading_service", "connection refused")
+        self.calls.append({
+            "correct_answer": correct_answer,
+            "student_answer": student_answer,
+            "input_format": input_format,
+            "options": options,
+            "language": language,
+            "question_text": question_text
+        })
+        is_correct = student_answer.strip() == correct_answer.strip()
+        misconception_code = None
+        if not is_correct:
+            misconception_code = "calculation_error"
+        return {"is_correct": is_correct, "misconception_code": misconception_code}
 
 
 # Public problem shape — correct_answer already stripped by content_service.
@@ -148,6 +180,7 @@ def fakes() -> ServiceClients:
         content=FakeContentClient({"math-g4-apples": APPLES_PROBLEM}),
         pedagogy=FakePedagogyClient(),
         auth=FakeAuthClient(),
+        grading=FakeGradingClient(),
     )
 
 
