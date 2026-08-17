@@ -15,6 +15,7 @@ dependencies = [
     "google-genai",
     "httpx",
     "psycopg[binary]",
+    "pyyaml",
 ]
 
 # This pyproject.toml lives *inside* the package directory, so the build root is `dal/`
