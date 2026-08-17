@@ -4,8 +4,8 @@ This document defines the roles, independent tasks, git branches, and mocking st
 
 ---
 
-## 👤 Member 1: AI Prompt Engineer
-* **Git Branch**: `feature/pedagogy-prompts`
+## 👤 Member 1: AI Prompt Engineer · ✅ COMPLETED & MERGED
+* **Git Branch**: `feature/pedagogy-prompts` (merged into `main` and `sovandeth`)
 * **Focus**: Misconception-Aware Pedagogy (Phase 2.2) and LLM prompting quality.
 
 ### Independent Workflow

@@ -101,7 +101,7 @@ root is not a git repo.
 - `.env.example` needs: `GEMINI_API_KEY`, `JWT_SECRET`, `JWT_ALGORITHM=HS256`,
   `JWT_EXPIRE_MINUTES`, `POSTGRES_{USER,PASSWORD,DB,HOST,PORT}`, `DATABASE_URL`,
   `REDIS_URL`, `QDRANT_URL`, `MINIO_{ENDPOINT,ACCESS_KEY,SECRET_KEY}`,
-  `FRONTEND_ORIGIN=http://localhost:3000`, `GATEWAY_URL=http://gateway:8000`, and one
+  `FRONTEND_ORIGIN=http://localhost:3000`, `GATEWAY_URL=http://gateway:9000`, and one
   `<SERVICE>_URL` per service.
 - **Verify:** `git status --short` shows no `.env`, no `node_modules`.
 
@@ -122,7 +122,7 @@ One root `docker-compose.yml`, 17 services, no obsolete `version:` key. Backing 
 (postgres 16, redis 7, qdrant, minio) have healthchecks and named volumes and start by
 default; the 12 app services plus the frontend sit behind a **`app` profile**, so the backing
 stack comes up cleanly even though every Dockerfile is still 0 bytes and no app image can
-build yet. Only `8000` (gateway) and `3000` (frontend) publish to the host — everything else
+build yet. Only `9000` (gateway) and `3000` (frontend) publish to the host — everything else
 uses `expose:`.
 
 **Verified live:** `docker compose config` passes; `docker compose up -d postgres redis` →
@@ -524,8 +524,8 @@ Strict dependency chain — do not start a task before its predecessor's verify 
 
 ### Phase 2 — Real tutoring
 
-- [ ] **P2.1** `grading_service` + `POST /answers` ⭐ *highest-value task* → *needs M1, D0.1*
-- [ ] **P2.2** Misconception-aware pedagogy → *needs P2.1*
+- [x] **P2.1** `grading_service` + `POST /answers` ⭐ *highest-value task* → *needs M1, D0.1* ✅ *2026-08-17*
+- [x] **P2.2** Misconception-aware pedagogy → *needs P2.1* ✅ *2026-08-17*
 - [ ] **P2.3** `student_profile_service` — mastery, stars, hint telemetry → *needs P2.1*
 - [ ] **P2.4** `clarify` node + session continuity + explanation cache → *needs P2.2*
 - [ ] **P2.5** Parent mode, properly → *needs P2.2*
