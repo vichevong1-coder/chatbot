@@ -148,6 +148,36 @@ class FakeGradingClient:
         return {"is_correct": is_correct, "misconception_code": misconception_code}
 
 
+class FakeProfileClient:
+    def __init__(self) -> None:
+        self.calls: list[dict[str, Any]] = []
+        self.down = False
+
+    async def get_profile(self, student_id: str) -> dict[str, Any]:
+        if self.down:
+            raise ServiceUnavailable("student_profile_service", "connection refused")
+        self.calls.append({"student_id": student_id})
+        return {"stars": 10, "completed_problems": []}
+
+    async def record_attempt(
+        self,
+        *,
+        student_id: str,
+        problem_id: str,
+        step_id: str,
+        is_correct: bool,
+    ) -> dict[str, Any]:
+        if self.down:
+            raise ServiceUnavailable("student_profile_service", "connection refused")
+        self.calls.append({
+            "student_id": student_id,
+            "problem_id": problem_id,
+            "step_id": step_id,
+            "is_correct": is_correct,
+        })
+        return {"status": "recorded"}
+
+
 # Public problem shape — correct_answer already stripped by content_service.
 APPLES_PROBLEM = {
     "id": "math-g4-apples",
@@ -181,6 +211,7 @@ def fakes() -> ServiceClients:
         pedagogy=FakePedagogyClient(),
         auth=FakeAuthClient(),
         grading=FakeGradingClient(),
+        profile=FakeProfileClient(),
     )
 
 
@@ -208,3 +239,16 @@ def post_chat(client: TestClient, prompt: str, **overrides: Any):
     }
     body.update(overrides)
     return client.post("/chat", json=body)
+
+
+def post_answer(client: TestClient, student_answer: str, **overrides: Any):
+    body = {
+        "session_id": "sess-1",
+        "student_id": "stu-1",
+        "problem_id": "math-g4-apples",
+        "step_id": "apples-step-1",
+        "student_answer": student_answer,
+        "language": "km",
+    }
+    body.update(overrides)
+    return client.post("/answers", json=body)

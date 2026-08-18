@@ -71,6 +71,14 @@ async def explain(state: GraphState, clients: ServiceClients) -> dict:
             grade = int(problem.get("grade") or DEFAULT_GRADE)
             context = _build_context(problem, language, state.get("active_step_index"))
 
+    # Append transcript summary if it gets long (to prevent context window overflow)
+    transcript = state.get("transcript") or []
+    if transcript:
+        from app.session_store.summarizer import summarize_transcript
+        _, summary = summarize_transcript(transcript, language)
+        if summary:
+            context = f"{summary}\n\n{context}" if context else summary
+
     # Append misconception code to context so the pedagogy service can tailor the prompt
     misconception_code = state.get("misconception_code")
     if misconception_code:

@@ -10,6 +10,7 @@ from tests.conftest import (
     REFUSAL_ENG,
     REFUSAL_KHMER,
     post_chat,
+    post_answer,
 )
 
 
@@ -253,3 +254,40 @@ def test_transcript_grows_by_two_per_turn_and_survives(client, store):
 def test_session_id_round_trips_in_the_response(client):
     body = post_chat(client, "hello", session_id="sess-echo").json()
     assert body["session_id"] == "sess-echo"
+
+
+def test_record_attempt_called_on_answer_check(client, fakes):
+    response = post_answer(
+        client,
+        student_answer="5",
+        student_id="stu-grad",
+        problem_id="math-g4-apples",
+        step_id="apples-step-1"
+    )
+    assert response.status_code == 200
+    # Grading check happened (correct answer in APPLES_PROBLEM step 1 is "+" not "5")
+    assert len(fakes.profile.calls) == 1
+    call = fakes.profile.calls[0]
+    assert call["student_id"] == "stu-grad"
+    assert call["problem_id"] == "math-g4-apples"
+    assert call["step_id"] == "apples-step-1"
+    assert call["is_correct"] is False  # "5" is incorrect for "+" MCQ
+
+
+def test_transcript_summarization_on_long_session(client, fakes, store):
+    session_id = "long-session-42"
+    # Pre-populate session with 8 turns (16 messages)
+    store.sessions[session_id] = [
+        {"sender": "user", "text_khmer": "hi", "text_eng": "", "id": "1", "timestamp": "now"},
+        {"sender": "sayo", "text_khmer": "hello", "text_eng": "", "id": "2", "timestamp": "now"},
+    ] * 8
+
+    # Query chat — explain node should trigger and use the summarizer
+    post_chat(client, "why do I multiply?", session_id=session_id)
+
+    # Verify that the pedagogy client received a context string containing
+    # the transcript summary
+    assert len(fakes.pedagogy.calls) == 1
+    pedagogy_context = fakes.pedagogy.calls[0]["context"]
+    assert "ការសន្ទនាមុន" in pedagogy_context or "Earlier conversation" in pedagogy_context
+

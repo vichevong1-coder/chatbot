@@ -118,9 +118,7 @@ async def check_answer(request: Request, body: AnswerRequest) -> AnswerResponse:
         "answer_check",
         student_id=body.student_id or "anonymous",
         session_id=body.session_id,
-        problem_id=body.problem_id,
-        step_id=body.step_id,
-        is_correct=is_correct,
+        intent="check_answer",
         duration_ms=(time.perf_counter() - started) * 1000,
     )
 

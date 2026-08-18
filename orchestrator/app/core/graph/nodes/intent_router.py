@@ -12,6 +12,9 @@ from app.core.graph.state import GraphState
 
 
 async def intent_router(state: GraphState) -> dict:
+    current_intent = state.get("intent")
+    if current_intent in ("check_answer", "greeting"):
+        return {}
     if heuristics.is_bare_arithmetic(state.get("normalized_prompt", "")):
         return {"intent": "solve"}
     return {"intent": "explain"}

@@ -26,6 +26,7 @@ from app.infrastructure.service_clients.pedagogy_client import PedagogyClient
 from app.infrastructure.service_clients.safety_client import SafetyClient
 from app.infrastructure.service_clients.solver_client import SolverClient
 from app.infrastructure.service_clients.grading_client import GradingClient
+from app.infrastructure.service_clients.profile_client import ProfileClient
 from app.session_store.redis_store import RedisSessionStore, SessionStore
 from app.utils.logging import request_id_var
 
@@ -45,6 +46,7 @@ def _default_clients(http: httpx.AsyncClient) -> ServiceClients:
         ),
         auth=AuthClient(url("AUTH_SERVICE_URL", "http://auth_service:9002"), http),
         grading=GradingClient(url("GRADING_SERVICE_URL", "http://grading_service:9005"), http),
+        profile=ProfileClient(url("PROFILE_SERVICE_URL", "http://student_profile_service:9008"), http),
     )
 
 
