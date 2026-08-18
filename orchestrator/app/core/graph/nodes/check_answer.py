@@ -69,15 +69,26 @@ async def check_answer(state: GraphState, clients: ServiceClients) -> dict[str, 
         is_correct = norm_student == norm_correct or norm_correct in norm_student
         misconception_code = None
 
+    # Notify profile service of the attempt
+    student_id = state.get("student_id")
+    step_id = step.get("id")
+    if student_id and problem_id and step_id:
+        try:
+            await clients.profile.record_attempt(
+                student_id=student_id,
+                problem_id=problem_id,
+                step_id=step_id,
+                is_correct=is_correct,
+            )
+        except ServiceUnavailable:
+            pass
+
     if is_correct:
         txt_km, txt_en = _pick(CONGRATS_KHMER, CONGRATS_ENG, language)
         
         # Advance the step index
         next_step_index = active_step_index + 1
         is_completed = next_step_index >= len(steps)
-        
-        # In a later phase, we'll notify profile service here
-        # (e.g. record_attempt and complete_problem)
         
         return {
             "is_correct": True,
