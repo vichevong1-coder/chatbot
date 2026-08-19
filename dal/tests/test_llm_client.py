@@ -343,3 +343,30 @@ def test_ollama_provider_flow(monkeypatch):
     assert result.prompt_tokens == 10
     assert result.output_tokens == 15
     assert result.total_tokens == 25
+
+
+def test_invalid_llm_provider_value_fails_loud(monkeypatch):
+    from dal.llm_client import LlmClient
+    monkeypatch.setenv("LLM_PROVIDER", "invalid-provider-typo")
+    with pytest.raises(ValueError) as exc:
+        LlmClient()
+    assert "Invalid LLM_PROVIDER" in str(exc.value)
+
+
+def test_ollama_unreachable_raises_custom_exception(monkeypatch):
+    import httpx
+    from dal.llm_client import LlmClient, Language, OllamaUnreachableError
+
+    monkeypatch.setenv("LLM_PROVIDER", "ollama")
+    monkeypatch.setenv("OLLAMA_URL", "http://unreachable-ollama:11434")
+
+    async def fake_post_connect_error(self, url, **kwargs):
+        raise httpx.ConnectError("Connection refused")
+
+    monkeypatch.setattr(httpx.AsyncClient, "post", fake_post_connect_error)
+
+    client = LlmClient(max_attempts=1)
+    result = asyncio.run(client.generate("q", language=Language.ENGLISH))
+    assert result.from_fallback is True
+    assert result.attempts == 1
+

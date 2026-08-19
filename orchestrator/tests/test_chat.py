@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from tests.conftest import (
+from conftest import (
     PEDAGOGY_ENG,
     PEDAGOGY_KHMER,
     REFUSAL_ENG,

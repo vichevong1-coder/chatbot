@@ -94,6 +94,10 @@ def _is_transient(exc: BaseException) -> bool:
     return False
 
 
+class OllamaUnreachableError(Exception):
+    """Ollama service is not reachable at the configured OLLAMA_URL."""
+
+
 class LlmClient:
     """Async Gemini client with per-attempt timeout, bounded retry and fallback.
 
@@ -133,6 +137,10 @@ class LlmClient:
     ) -> None:
         self._api_key = api_key
         self._provider = os.environ.get(DEFAULT_PROVIDER_ENV, DEFAULT_PROVIDER).strip().lower()
+        if self._provider not in ("gemini", "ollama"):
+            raise ValueError(
+                f"Invalid LLM_PROVIDER {self._provider!r}. Must be 'gemini' or 'ollama'."
+            )
         if model:
             self._model = model
         elif self._provider == "ollama":
@@ -158,7 +166,7 @@ class LlmClient:
             if self._provider == "ollama":
                 async def _ollama_call(
                     *, model: str, prompt: str, system_instruction: str | None
-                ) -> Any:
+                ) -> LlmResult:
                     headers = {"Content-Type": "application/json"}
                     messages = []
                     if system_instruction:
@@ -173,15 +181,35 @@ class LlmClient:
                             "temperature": 0.7
                         }
                     }
-                    async with httpx.AsyncClient() as client:
-                        response = await client.post(
-                            f"{self._ollama_url}/v1/chat/completions",
-                            json=payload,
-                            headers=headers,
-                            timeout=self._timeout_seconds,
-                        )
-                        response.raise_for_status()
-                        return response.json()
+                    try:
+                        async with httpx.AsyncClient() as client:
+                            response = await client.post(
+                                f"{self._ollama_url}/v1/chat/completions",
+                                json=payload,
+                                headers=headers,
+                                timeout=self._timeout_seconds,
+                            )
+                            response.raise_for_status()
+                            res = response.json()
+                    except (httpx.ConnectError, httpx.ConnectTimeout) as exc:
+                        raise OllamaUnreachableError(
+                            f"Ollama is not reachable at {self._ollama_url}. "
+                            f"Check if the Ollama service is running and the port is correct."
+                        ) from exc
+
+                    choices = res.get("choices", [])
+                    if not choices:
+                        raise ValueError("Ollama returned an empty choices list")
+                    text = choices[0].get("message", {}).get("content", "")
+                    usage = res.get("usage", {})
+                    return LlmResult(
+                        text=text,
+                        from_fallback=False,
+                        prompt_tokens=usage.get("prompt_tokens"),
+                        output_tokens=usage.get("completion_tokens"),
+                        total_tokens=usage.get("total_tokens"),
+                        attempts=0,
+                    )
 
                 self._call = _ollama_call
             else:
@@ -192,14 +220,24 @@ class LlmClient:
 
                 async def _sdk_call(
                     *, model: str, prompt: str, system_instruction: str | None
-                ) -> Any:
+                ) -> LlmResult:
                     config = None
                     if system_instruction is not None:
                         from google.genai import types
 
                         config = types.GenerateContentConfig(system_instruction=system_instruction)
-                    return await client.aio.models.generate_content(
+                    response = await client.aio.models.generate_content(
                         model=model, contents=prompt, config=config
+                    )
+                    text = getattr(response, "text", None) or ""
+                    usage = getattr(response, "usage_metadata", None)
+                    return LlmResult(
+                        text=text,
+                        from_fallback=False,
+                        prompt_tokens=getattr(usage, "prompt_token_count", None),
+                        output_tokens=getattr(usage, "candidates_token_count", None),
+                        total_tokens=getattr(usage, "total_token_count", None),
+                        attempts=0,
                     )
 
                 self._call = _sdk_call
@@ -217,6 +255,10 @@ class LlmClient:
 
     @staticmethod
     def _result_from_response(response: Any, attempts: int) -> LlmResult | None:
+        if isinstance(response, LlmResult):
+            response.attempts = attempts
+            return response
+
         if isinstance(response, dict):
             choices = response.get("choices", [])
             if not choices:
