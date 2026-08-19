@@ -181,6 +181,14 @@ That is inherent, and is exactly why grading must move server-side in P2.1.
 Model id via `GEMINI_MODEL` env (default `gemini-3.7-flash`, still unverified). The SDK
 call and sleep are constructor-injectable — tests never patch google internals.
 
+*   **Local LLM Integration (Ollama)**: Enables testing without Gemini API keys by setting `LLM_PROVIDER=ollama`.
+    *   **Khmer Capability Risk**: Note that Ollama (`llama3.2:3b`) has a very limited Khmer corpus. This is strictly scoped as an offline/development fallback; production must continue using `gemini` to avoid tutoring quality degradation.
+    *   **Static Toggle**: Handled via `LLM_PROVIDER` environment variable, not runtime auto-failover, to prevent silent quality regressions if Gemini is throttled.
+    *   **Boundary Normalization**: Both provider calls wrap their responses into a clean `LlmResult` dataclass at the provider call boundaries, avoiding raw response type-sniffing downstream.
+    *   **Blocking (No Streaming)**: General pedagogy responses are configured as blocking requests (no streaming SSE protocol required for this phase).
+    *   **Connection Error Protection**: If `OLLAMA_URL` is unreachable, the client catches connection errors and raises `OllamaUnreachableError` with a clear warning.
+    *   **Typo Protection**: Invalid/typo values in `LLM_PROVIDER` raise `ValueError` loudly at startup/initialization.
+
 ### P1.3 — `auth_service` · ✅ **DONE 2026-08-15**
 
 School-code + optional 4-digit PIN, no password/email/role; bcrypt PIN hashing; HS256 JWT
@@ -342,7 +350,7 @@ Closes the hole in `contracts.md` §4: `correct_answer` currently ships to the b
   `"០.៥"` and `"0.5"` and `"1/2"` all → correct where equivalent; `curl` the problem
   endpoint and confirm no `correct_answer` field reaches the client.
 
-### P2.2 — Misconception-aware pedagogy
+### P2.2 — Misconception-aware pedagogy · ✅ **DONE 2026-08-17**
 
 - **Files:** `pedagogy_service/app/core/explanation_generator.py`, both prompt YAMLs,
   `orchestrator/.../nodes/explain.py`
@@ -352,7 +360,7 @@ Closes the hole in `contracts.md` §4: `correct_answer` currently ships to the b
 - **Verify:** a golden-query test — the same wrong answer with two different misconception
   codes yields materially different explanations.
 
-### P2.3 — `student_profile_service`
+### P2.3 — `student_profile_service` · ✅ **DONE 2026-08-18**
 
 - **Files:** `app/core/mastery_model.py`, `app/infrastructure/progress_repository.py`,
   `app/api/`, `orchestrator/.../nodes/recommend_next.py`, `.../profile_client.py`
@@ -366,7 +374,7 @@ Closes the hole in `contracts.md` §4: `correct_answer` currently ships to the b
 - **Verify:** complete a problem in the browser, hard-refresh → stars persist. Two wrong
   attempts on the same skill lower its mastery and change what `recommend_next` returns.
 
-### P2.4 — `clarify` node + real session continuity
+### P2.4 — `clarify` node + real session continuity · ✅ **DONE 2026-08-17**
 
 - **Files:** `orchestrator/.../nodes/clarify.py`, `intent_router.py`,
   `app/session_store/{postgres_store,summarizer,cache}.py`
@@ -379,7 +387,7 @@ Closes the hole in `contracts.md` §4: `correct_answer` currently ships to the b
   with expected routing. A repeated explanation request is a cache hit (log assertion) and
   costs zero tokens.
 
-### P2.5 — Parent mode, properly
+### P2.5 — Parent mode, properly · ✅ **DONE 2026-08-18**
 
 Currently a single canned paragraph in `geminiService.ts`.
 
@@ -390,7 +398,7 @@ Currently a single canned paragraph in `geminiService.ts`.
 - **Verify:** the same question in `mode: student` vs `mode: parent` returns substantively
   different content; student mode never leaks the final answer before the last step.
 
-### ✅ Milestone 2
+### ✅ Milestone 2 — **REACHED 2026-08-18**
 
 Server-side grading, misconception-driven explanations, persistent progress, working safety
 gate, no `correct_answer` in any client payload.
