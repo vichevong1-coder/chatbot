@@ -50,11 +50,8 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={() => onSelectTab('home')}
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-xl text-[11px] sm:text-sm font-black transition-all cursor-pointer flex items-center gap-1 border sm:border-2 border-[#2A1E4D] ${
-                  activeTab === 'home'
-                    ? 'bg-[#FFCB3D] text-[#2A1E4D] shadow-[1px_1px_0px_#2A1E4D]'
-                    : 'bg-white/95 text-[#2A1E4D] hover:bg-white shadow-[1px_1px_0px_#2A1E4D]'
-                }`}
+                // Always inactive: this toolbar only renders while activeTab === 'chat'.
+                className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-xl text-[11px] sm:text-sm font-black transition-all cursor-pointer flex items-center gap-1 border sm:border-2 border-[#2A1E4D] bg-white/95 text-[#2A1E4D] hover:bg-white shadow-[1px_1px_0px_#2A1E4D]"
               >
                 <Home className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                 <span className="hidden min-[380px]:inline">{isKhmer ? 'ទំព័រដើម' : 'Home'}</span>
@@ -76,11 +73,8 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={() => onSelectTab('profile')}
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-xl text-[11px] sm:text-sm font-black transition-all cursor-pointer flex items-center gap-1 border sm:border-2 border-[#2A1E4D] ${
-                  activeTab === 'profile'
-                    ? 'bg-[#FFCB3D] text-[#2A1E4D] shadow-[1px_1px_0px_#2A1E4D]'
-                    : 'bg-white/95 text-[#2A1E4D] hover:bg-white shadow-[1px_1px_0px_#2A1E4D]'
-                }`}
+                // Always inactive: this toolbar only renders while activeTab === 'chat'.
+                className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-xl text-[11px] sm:text-sm font-black transition-all cursor-pointer flex items-center gap-1 border sm:border-2 border-[#2A1E4D] bg-white/95 text-[#2A1E4D] hover:bg-white shadow-[1px_1px_0px_#2A1E4D]"
               >
                 <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                 <span className="hidden min-[380px]:inline">{isKhmer ? 'គណនី' : 'Profile'}</span>
@@ -133,11 +127,8 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => onSelectTab('chat')}
-            className={`px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-xl sm:rounded-3xl text-xs sm:text-base font-black transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 border-2.5 sm:border-3 border-[#2A1E4D] ${
-              activeTab === 'chat'
-                ? 'bg-[#FFCB3D] text-[#2A1E4D] shadow-[2.5px_2.5px_0px_#2A1E4D] sm:shadow-[3px_3px_0px_#2A1E4D] -translate-y-0.5'
-                : 'bg-white text-[#2A1E4D] shadow-[2px_2px_0px_#2A1E4D] sm:shadow-[2.5px_2.5px_0px_#2A1E4D] hover:bg-[#FFCB3D]/20 hover:-translate-y-0.5'
-            }`}
+            // Always inactive: this button only renders while activeTab !== 'chat'.
+            className="px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-xl sm:rounded-3xl text-xs sm:text-base font-black transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 border-2.5 sm:border-3 border-[#2A1E4D] bg-white text-[#2A1E4D] shadow-[2px_2px_0px_#2A1E4D] sm:shadow-[2.5px_2.5px_0px_#2A1E4D] hover:bg-[#FFCB3D]/20 hover:-translate-y-0.5"
           >
             <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
             <span>{isKhmer ? 'លំហាត់' : 'Homework'}</span>

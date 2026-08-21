@@ -25,6 +25,8 @@ export const StepCard: React.FC<StepCardProps> = ({
   const [feedback, setFeedback] = useState<'none' | 'correct' | 'incorrect'>('none');
   const [typedAnswer, setTypedAnswer] = useState('');
 
+  const socraticPrompt = isKhmer ? step.socraticPromptKhmer : step.socraticPromptEng;
+
   const handleOptionClick = async (optionText: string) => {
     setSelectedOption(optionText);
     const isCorrect = await onAnswerSubmit(optionText);
@@ -59,15 +61,20 @@ export const StepCard: React.FC<StepCardProps> = ({
         </div>
       </div>
 
-      {/* Tunsay Socratic Guiding Prompt */}
-      <div className="p-4 bg-[#EAF2FF] rounded-2xl border-3 border-[#2A1E4D] shadow-[3px_3px_0px_#2A1E4D] space-y-2">
-        <p className="text-xs font-black text-[#6C4FF6] uppercase tracking-wider">
-          {isKhmer ? 'សំណួរណែនាំពីទន្សាយ៖' : "Tunsay's Guiding Prompt:"}
-        </p>
-        <p className="text-sm sm:text-base font-black text-[#2A1E4D] leading-relaxed">
-          {isKhmer ? step.socraticPromptKhmer : step.socraticPromptEng}
-        </p>
-      </div>
+      {/* Tunsay Socratic Guiding Prompt.
+          No step in the corpus carries socraticPrompt* (see types.ts), so this
+          panel rendered as an empty blue box on every problem. Guarded rather
+          than deleted: the slot is a real product idea waiting on content. */}
+      {socraticPrompt && (
+        <div className="p-4 bg-[#EAF2FF] rounded-2xl border-3 border-[#2A1E4D] shadow-[3px_3px_0px_#2A1E4D] space-y-2">
+          <p className="text-xs font-black text-[#6C4FF6] uppercase tracking-wider">
+            {isKhmer ? 'សំណួរណែនាំពីទន្សាយ៖' : "Tunsay's Guiding Prompt:"}
+          </p>
+          <p className="text-sm sm:text-base font-black text-[#2A1E4D] leading-relaxed">
+            {socraticPrompt}
+          </p>
+        </div>
+      )}
 
       {/* Answer Options or Input Area */}
       {step.options ? (
@@ -77,12 +84,12 @@ export const StepCard: React.FC<StepCardProps> = ({
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {step.options.map((opt, idx) => {
-              const isSelected = selectedOption === opt.eng || selectedOption === opt.khmer;
+              const isSelected = selectedOption === opt;
               return (
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => handleOptionClick(isKhmer ? opt.khmer : opt.eng)}
+                  onClick={() => handleOptionClick(opt)}
                   className={`p-4 rounded-2xl border-3 font-black text-sm sm:text-base transition-all text-left flex items-center justify-between cursor-pointer ${
                     isSelected && feedback === 'correct'
                       ? 'bg-[#6FCF6F] border-[#2A1E4D] text-[#2A1E4D] shadow-[3px_3px_0px_#2A1E4D]'
@@ -91,7 +98,7 @@ export const StepCard: React.FC<StepCardProps> = ({
                       : 'bg-white border-[#2A1E4D] text-[#2A1E4D] hover:bg-[#FFCB3D] shadow-[3px_3px_0px_#2A1E4D] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#2A1E4D]'
                   }`}
                 >
-                  <span>{isKhmer ? opt.khmer : opt.eng}</span>
+                  <span>{opt}</span>
                   {isSelected && feedback === 'correct' && (
                     <CheckCircle className="w-5 h-5 text-[#2A1E4D] stroke-[3]" />
                   )}

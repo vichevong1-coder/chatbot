@@ -28,6 +28,13 @@ export interface StepItem {
   questionKhmer: string;
   questionEng: string;
   inputFormat: 'mcq' | 'number' | 'text';
+  /** OPTIONAL and currently never populated — absent from .claude/contracts.md,
+   *  from dal's StepItem schema, and from every seed_data YAML. StepCard renders
+   *  a "Guiding Prompt" panel from it, which is why it is typed at all; the panel
+   *  hides itself when the field is missing. Authoring these, or dropping the
+   *  panel, is a content decision nobody has made yet. */
+  socraticPromptKhmer?: string;
+  socraticPromptEng?: string;
   options?: string[];
   correctAnswer: string;
   hint1: {

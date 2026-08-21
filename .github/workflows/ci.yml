@@ -18,10 +18,12 @@ jobs:
           - content_service
           - dal
           - gateway
+          - grading_service
           - orchestrator
           - pedagogy_service
           - safety_service
           - solver_service
+          - student_profile_service
     steps:
       - uses: actions/checkout@v4
 
