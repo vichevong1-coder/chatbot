@@ -42,7 +42,7 @@ jobs:
           fi
 
       - name: Install test dependencies
-        run: pip install pytest aiosqlite
+        run: pip install pytest aiosqlite pillow
 
       - name: Run tests
         working-directory: ${{ matrix.service }}

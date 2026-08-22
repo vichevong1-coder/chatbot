@@ -10,3 +10,6 @@ uvicorn[standard]
 httpx
 langgraph
 redis
+# chat_audio.py / chat_image.py accept multipart uploads (File/Form); FastAPI
+# raises at import time without this, so it is a runtime dep, not a test-only one.
+python-multipart>=0.0.9

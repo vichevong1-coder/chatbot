@@ -179,9 +179,11 @@ export const ChatView: React.FC<ChatViewProps> = ({
           id: (Date.now() + 1).toString(),
           sender: 'sayo',
           textKhmer: sayoRes.textKhmer,
+          textEng: sayoRes.textEng,
           isSafetyRefusal: sayoRes.isSafetyRefusal,
           isParentHelp: profile.mode === 'parent',
           suggestedNext: sayoRes.suggestedNext,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         updateMessages([...updatedWithUser, sayoMsg]);
       });
@@ -296,6 +298,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
       isSafetyRefusal: sayoRes.isSafetyRefusal,
       isParentHelp: profile.mode === 'parent',
       suggestedNext: sayoRes.suggestedNext,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
     updateMessages([...updatedWithUser, sayoMsg]);
