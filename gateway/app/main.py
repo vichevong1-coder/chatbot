@@ -23,7 +23,7 @@ from app.core.settings import Settings
 from app.middleware.auth_verify import AuthVerifyMiddleware
 from app.middleware.cors import add_cors
 from app.middleware.rate_limit import RateLimiter, RateLimitMiddleware
-from app.routes import auth, chat, chat_audio, problems, answers
+from app.routes import auth, chat, chat_audio, chat_image, problems, answers, hints, profile
 
 SERVICE_NAME = "gateway"
 
@@ -51,8 +51,11 @@ def create_app(
     app.include_router(auth.router)
     app.include_router(chat.router)
     app.include_router(chat_audio.router)
+    app.include_router(chat_image.router)
     app.include_router(problems.router)
     app.include_router(answers.router)
+    app.include_router(hints.router)
+    app.include_router(profile.router)
 
     @app.get("/health")
     async def health(request: Request) -> dict[str, str]:

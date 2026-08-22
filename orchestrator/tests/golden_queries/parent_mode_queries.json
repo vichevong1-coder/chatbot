@@ -1,0 +1,34 @@
+[
+  {
+    "prompt": "How can I explain division of apples to my child?",
+    "problem_id": "math-g4-apples",
+    "step_index": 0,
+    "language": "en",
+    "expected_mode": "parent",
+    "expected_is_parent_help": true
+  },
+  {
+    "prompt": "តើខ្ញុំគួរណែនាំកូនឱ្យយល់ពីវិធីចែកផ្លែប៉ោមដោយរបៀបណា?",
+    "problem_id": "math-g4-apples",
+    "step_index": 0,
+    "language": "km",
+    "expected_mode": "parent",
+    "expected_is_parent_help": true
+  },
+  {
+    "prompt": "What visual metaphor helps explain fractions?",
+    "problem_id": "math-g4-fractions",
+    "step_index": 0,
+    "language": "en",
+    "expected_mode": "parent",
+    "expected_is_parent_help": true
+  },
+  {
+    "prompt": "របៀបបង្រៀនកូនអំពីប្រភាគ",
+    "problem_id": "math-g4-fractions",
+    "step_index": 0,
+    "language": "km",
+    "expected_mode": "parent",
+    "expected_is_parent_help": true
+  }
+]

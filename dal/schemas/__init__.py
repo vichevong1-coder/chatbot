@@ -11,6 +11,8 @@ from dal.schemas.chat import (
     ChatMessage,
     ChatRequest,
     ChatResponse,
+    HintRequest,
+    HintResponse,
 )
 from dal.schemas.enums import (
     AnalogyType,

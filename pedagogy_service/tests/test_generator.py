@@ -14,9 +14,11 @@ from app.core.explanation_generator import BANDS, band_for_grade
 # -- band table -------------------------------------------------------------------
 
 
-def test_band_table_covers_grades_1_to_6():
+def test_band_table_covers_grades_1_to_12():
     assert band_for_grade(2).name == "grade1_3"
     assert band_for_grade(5).name == "grade4_6"
+    assert band_for_grade(8).name == "grade7_9"
+    assert band_for_grade(11).name == "grade10_12"
 
 
 def test_band_table_is_a_lookup_not_an_if_chain():
@@ -24,14 +26,14 @@ def test_band_table_is_a_lookup_not_an_if_chain():
     assert {band.name: band.prompt_file for band in BANDS} == {
         "grade1_3": "explain_grade1_3.yaml",
         "grade4_6": "explain_grade4_6.yaml",
+        "grade7_9": "explain_grade7_9.yaml",
+        "grade10_12": "explain_grade10_12.yaml",
     }
 
 
-@pytest.mark.parametrize("grade", [7, 8, 12])
-def test_unmapped_grade_falls_back_to_nearest_band(grade: int):
-    # 7-9 and 10-12 are reserved 0-byte stubs; until they're filled, the nearest
-    # implemented band is grade4_6. No error for any structurally valid grade.
-    assert band_for_grade(grade).name == "grade4_6"
+@pytest.mark.parametrize("grade,expected_band", [(0, "grade1_3"), (13, "grade10_12")])
+def test_unmapped_grade_falls_back_to_nearest_band(grade: int, expected_band: str):
+    assert band_for_grade(grade).name == expected_band
 
 
 # -- prompt assembly --------------------------------------------------------------
@@ -61,12 +63,12 @@ def test_grade_2_and_grade_5_select_different_bands(generator):
     assert g2 != g5
 
 
-@pytest.mark.parametrize("grade", [8, 12])
-def test_unmapped_grade_assembles_with_nearest_band(generator, grade: int):
+@pytest.mark.parametrize("grade,expected_snippet", [(8, "Grade 7–9"), (12, "Grade 10–12")])
+def test_grade_assembles_with_appropriate_band(generator, grade: int, expected_snippet: str):
     text = generator.build_system_instruction(
         grade=grade, language=Language.ENGLISH, mode=UserMode.STUDENT
     )
-    assert "Grade 4–6" in text  # nearest band, no error
+    assert expected_snippet in text
 
 
 def test_language_instruction_km_ported_verbatim(generator):

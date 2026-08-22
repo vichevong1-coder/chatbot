@@ -24,7 +24,8 @@ class GraphState(TypedDict, total=False):
     transcript: list[dict[str, Any]]  # dal ChatMessage dicts, prior turns
 
     # Routing
-    intent: str  # "greeting" | "solve" | "explain"
+    intent: str  # "greeting" | "solve" | "explain" | "hint"
+    hint_level: int  # 0-3, tracks progressive hint escalation
 
     # Outward-facing result (maps straight onto dal ChatResponse)
     text_khmer: str
@@ -33,3 +34,4 @@ class GraphState(TypedDict, total=False):
     is_parent_help: bool
     is_correct: bool
     misconception_code: str | None
+    suggested_next: str | None

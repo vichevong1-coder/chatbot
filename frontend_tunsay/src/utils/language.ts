@@ -37,3 +37,10 @@ export function getDisplayName(name: string, isKhmer: boolean): string {
   return name;
 }
 
+/**
+ * Translates Khmer numeral glyphs (០-៩) into Latin digits (0-9).
+ */
+export function khmerToLatinDigits(input: string): string {
+  return input.replace(/[០-៩]/g, (char) => (char.charCodeAt(0) - 0x17E0).toString());
+}
+

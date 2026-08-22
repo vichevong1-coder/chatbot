@@ -13,14 +13,10 @@ export async function askTunsayTutor(
   userPrompt: string,
   mode: UserMode = 'student',
   problemContext?: HomeworkProblem,
-  language: Language = 'km'
-): Promise<{ textKhmer: string; textEng: string; isSafetyRefusal?: boolean }> {
+  language: Language = 'km',
+  activeStepIndex: number = 0
+): Promise<{ textKhmer: string; textEng: string; isSafetyRefusal?: boolean; suggestedNext?: string | null }> {
   try {
-    // P1.10: the request now carries the .claude/contracts.md §4 chat contract
-    // (camelCase on the browser wire; the gateway translates). problemContext
-    // is no longer shipped whole — the orchestrator loads the problem by id
-    // from content_service rather than trusting a client blob. studentId is
-    // omitted on purpose: the gateway injects it from the verified JWT.
     const response = await fetch('/api/tutor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
@@ -30,16 +26,17 @@ export async function askTunsayTutor(
         mode,
         language,
         problemId: problemContext?.id,
-        activeStepIndex: 0,
+        activeStepIndex,
       }),
     });
 
     if (response.ok) {
       const data = await response.json();
       return {
-        textKhmer: data.textKhmer || '',
-        textEng: data.textEng || '',
-        isSafetyRefusal: data.isSafetyRefusal || false
+        textKhmer: data.textKhmer || data.text_khmer || '',
+        textEng: data.textEng || data.text_eng || '',
+        isSafetyRefusal: data.isSafetyRefusal || data.is_safety_refusal || false,
+        suggestedNext: data.suggestedNext || data.suggested_next || null,
       };
     }
   } catch (err) {
@@ -119,5 +116,128 @@ export async function submitStepAnswer(
     isCorrect: false,
     feedbackKhmer: language === 'km' ? 'មានបញ្ហាបច្ចេកទេសក្នុងការតភ្ជាប់។ សូមព្យាយាមម្តងទៀត។ 🐰' : '',
     feedbackEng: language === 'en' ? 'Connection issue. Please try again. 🐰' : ''
+  };
+}
+
+export async function fetchAIHint(
+  problemId: string,
+  stepId: string,
+  hintLevel: number,
+  language: Language = 'km'
+): Promise<{ hintKhmer: string; hintEng: string; hintLevel: number }> {
+  try {
+    const response = await fetch('/api/hints', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({
+        sessionId,
+        problemId,
+        stepId,
+        hintLevel,
+        language
+      })
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (err) {
+    console.error('Failed to fetch AI hint:', err);
+  }
+  return {
+    hintKhmer: language === 'km' ? 'សូមពិនិត្យមើលសំណួរម្តងទៀតដោយប្រុងប្រយ័ត្ន ឬសួរគ្រូបង្រៀនរបស់អ្នកសម្រាប់ជំនួយបន្ថែម! 🐰' : '',
+    hintEng: language === 'en' ? 'Please read the question carefully again or ask your teacher for extra help! 🐰' : '',
+    hintLevel
+  };
+}
+
+export async function deductHintStars(
+  hintLevel: number
+): Promise<{ starsRemaining: number }> {
+  try {
+    const response = await fetch('/api/profile/hints', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({
+        hintLevel,
+      }),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (err) {
+    console.error('Failed to deduct hint stars:', err);
+  }
+  return { starsRemaining: -1 };
+}
+
+export async function sendVoiceTurn(
+  audioBlob: Blob,
+  mode: UserMode = 'student',
+  problemContext?: HomeworkProblem,
+  language: Language = 'km',
+  activeStepIndex: number = 0
+): Promise<{ textKhmer: string; textEng: string; isSafetyRefusal?: boolean }> {
+  try {
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'voice_query.webm');
+    formData.append('session_id', sessionId);
+    formData.append('mode', mode);
+    formData.append('language', language);
+    if (problemContext?.id) formData.append('problem_id', problemContext.id);
+    formData.append('active_step_index', String(activeStepIndex));
+
+    const response = await fetch('/api/chat/audio', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: formData,
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        textKhmer: data.textKhmer || data.text_khmer || '',
+        textEng: data.textEng || data.text_eng || '',
+        isSafetyRefusal: data.isSafetyRefusal || data.is_safety_refusal || false,
+      };
+    }
+  } catch (err) {
+    console.error('Voice chat error:', err);
+  }
+  return {
+    textKhmer: language === 'km' ? 'មិនអីទេ! តោះយើងពិនិត្យសំណួរនេះជាមួយគ្នាណា 🐰' : '',
+    textEng: language === 'en' ? "No problem! Let's look at it together. 🐰" : '',
+  };
+}
+
+export async function sendImageTurn(
+  imageBlob: Blob,
+  mode: UserMode = 'student',
+  language: Language = 'km'
+): Promise<{ textKhmer: string; textEng: string; isSafetyRefusal?: boolean }> {
+  try {
+    const formData = new FormData();
+    formData.append('file', imageBlob, 'homework_photo.jpg');
+    formData.append('session_id', sessionId);
+    formData.append('mode', mode);
+    formData.append('language', language);
+
+    const response = await fetch('/api/chat/image', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: formData,
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        textKhmer: data.textKhmer || data.text_khmer || '',
+        textEng: data.textEng || data.text_eng || '',
+        isSafetyRefusal: data.isSafetyRefusal || data.is_safety_refusal || false,
+      };
+    }
+  } catch (err) {
+    console.error('Image chat error:', err);
+  }
+  return {
+    textKhmer: language === 'km' ? 'ខ្ញុំបានទទួលរូបថតហើយ! តោះយើងចាប់ផ្តើមរៀនជាមួយគ្នា 🐰' : '',
+    textEng: language === 'en' ? "I received your photo! Let's solve it together 🐰" : '',
   };
 }

@@ -1,0 +1,89 @@
+id: math-g6-ratio
+title_khmer: 'គណិតវិទ្យា៖ ផលធៀប និងសមាមាត្រ'
+title_eng: 'Math: Ratios and Proportions'
+grade: 6
+subject: math
+problem_statement_khmer: 'ដើម្បីលាយថ្នាំពណ៌ទឹកក្រូច ដារ៉ាត្រូវលាយថ្នាំពណ៌ក្រហម និងថ្នាំពណ៌លឿងតាមផលធៀប ២ : ៣ (ក្រហម ២ ភាគ និងលឿង ៣ ភាគ)។ ប្រសិនបើដារ៉ាប្រើថ្នាំពណ៌ក្រហមចំនួន ៦ កំប៉ុង តើគាត់ត្រូវប្រើថ្នាំពណ៌លឿងចំនួនប៉ុន្មានកំប៉ុង?'
+problem_statement_eng: 'To mix orange paint, Dara mixes red paint and yellow paint in the ratio of 2 : 3 (2 parts red to 3 parts yellow). If Dara uses 6 cans of red paint, how many cans of yellow paint does he need?'
+image_uri: https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=600&auto=format&fit=crop&q=80
+steps:
+- id: ratio-step-1
+  step_number: 1
+  total_steps: 3
+  question_khmer: 'តើផលធៀបរវាងថ្នាំពណ៌ក្រហម និងថ្នាំពណ៌លឿងដែលបានកំណត់ក្នុងចំណោទគឺប៉ុន្មាន?'
+  question_eng: 'What is the ratio of red paint to yellow paint given in the problem?'
+  input_format: mcq
+  options:
+  - '២ : ៣ (2 : 3)'
+  - '៣ : ២ (3 : 2)'
+  - '២ : ៦ (2 : 6)'
+  - '៦ : ៣ (6 : 3)'
+  correct_answer: '២ : ៣ (2 : 3)'
+  hint1:
+    khmer: 'សូមពិនិត្យមើលលំដាប់នៃពណ៌៖ ក្រហម ២ ភាគ និងលឿង ៣ ភាគ។'
+    eng: 'Look at the order of colors in the problem statement (2 parts red to 3 parts yellow).'
+  hint2:
+    khmer: 'ផលធៀបក្រហមទៅលឿងសរសេរជា ២ : ៣!'
+    eng: 'The ratio of red to yellow is written as 2 : 3!'
+  hint3:
+    title_khmer: 'ឧទាហរណ៍ផលធៀប'
+    title_eng: 'Ratio Example'
+    example_khmer: 'បើស្ករ ២ ស្លាបព្រា និងអំបិល ៣ ស្លាបព្រា ផលធៀបស្ករទៅអំបិលគឺ ២ : ៣។'
+    example_eng: 'If 2 spoons of sugar and 3 spoons of salt, the ratio is 2 : 3.'
+  explain_differently:
+    simple_khmer: 'ផលធៀបប្រៀបធៀបបរិមាណទាំងពីរតាមលំដាប់ គឺក្រហមមុន លឿងក្រោយ (២ : ៣)។'
+    simple_eng: 'A ratio compares two quantities in order: red parts first, then yellow parts (2 : 3).'
+    analogy_title: 'ការលាយថ្នាំពណ៌ (Paint Mixing)'
+    analogy_khmer: 'រាល់ពេលដាក់ថ្នាំក្រហម ២ កំប៉ុង ត្រូវដាក់ថ្នាំលឿង ៣ កំប៉ុង។'
+    analogy_eng: 'For every 2 cans of red paint, you mix in 3 cans of yellow paint.'
+    analogy_type: water
+- id: ratio-step-2
+  step_number: 2
+  total_steps: 3
+  question_khmer: 'ថ្នាំពណ៌ក្រហមកើនពី ២ កំប៉ុង ទៅ ៦ កំប៉ុង (៦ ÷ ២ = ? ដង)។ តើមេគុណសមាមាត្រស្មើនឹងប៉ុន្មាន?'
+  question_eng: 'Red paint increased from 2 to 6 cans (6 ÷ 2 = ? times). What is the scale factor?'
+  input_format: number
+  correct_answer: '3'
+  hint1:
+    khmer: 'គណនាផលចែករវាងចំនួនកំប៉ុងថ្មី និងចំនួនចាស់៖ ៦ ចែកនឹង ២។'
+    eng: 'Divide the new amount by the original amount: 6 divided by 2.'
+  hint2:
+    khmer: 'គិតថាតើ ២ គុណនឹងប៉ុន្មានទើបស្មើ ៦? (២ × ៣ = ៦)'
+    eng: 'Think what number multiplied by 2 equals 6? (2 × 3 = 6)'
+  hint3:
+    title_khmer: 'ការរកមេគុណសមាមាត្រ'
+    title_eng: 'Finding Scale Factor'
+    example_khmer: 'បើពី ៤ ទៅ ១២ យើងយក ១២ ÷ ៤ = ៣។ ដូចគ្នានេះ ៦ ÷ ២ = ៣!'
+    example_eng: 'If going from 4 to 12, we do 12 ÷ 4 = 3. Similarly, 6 ÷ 2 = 3!'
+  explain_differently:
+    simple_khmer: 'យើងត្រូវគុណបរិមាណដើមនឹង ៣ ដង ដើម្បីបានថ្នាំពណ៌ក្រហម ៦ កំប៉ុង។'
+    simple_eng: 'We multiply the original amount by 3 times to get 6 cans of red paint.'
+    analogy_title: 'មេគុណពង្រីក (Scaling Multiplier)'
+    analogy_khmer: 'ក្រហមកើនឡើង ៣ ដង ដូច្នេះលឿងក៏ត្រូវកើនឡើង ៣ ដងដែរ។'
+    analogy_eng: 'Red increased by 3 times, so yellow must also increase by 3 times.'
+    analogy_type: water
+- id: ratio-step-3
+  step_number: 3
+  total_steps: 3
+  question_khmer: 'ឥឡូវគុណបរិមាណថ្នាំពណ៌លឿងដើម (៣ កំប៉ុង) នឹងមេគុណ ៣ ដើម្បីរកចំនួនថ្នាំពណ៌លឿងដែលត្រូវការ៖ ៣ × ៣ = ? (កំប៉ុង)'
+  question_eng: 'Now multiply the original yellow paint (3 cans) by the scale factor 3: 3 × 3 = ? (cans)'
+  input_format: number
+  correct_answer: '9'
+  hint1:
+    khmer: 'ក្នុងសមាមាត្រ ពេលក្រហមគុណនឹង ៣ នោះលឿងក៏ត្រូវគុណនឹង ៣ ដែរ៖ ៣ × ៣ = ?'
+    eng: 'In a proportion, since red is multiplied by 3, yellow must also be multiplied by 3: 3 × 3 = ?'
+  hint2:
+    khmer: 'គណនាមេគុណ ៣ គុណនឹង ៣ (៣ × ៣)។'
+    eng: 'Calculate 3 times 3 (3 × 3).'
+  hint3:
+    title_khmer: 'គណនាសមាមាត្រស្មើគ្នា'
+    title_eng: 'Equivalent Ratio Calculation'
+    example_khmer: '២/៣ = (២ × ៣) / (៣ × ៣) = ៦/៩។ ចម្លើយគឺ ៩!'
+    example_eng: '2/3 = (2 × 3) / (3 × 3) = 6/9. The answer is 9!'
+  explain_differently:
+    simple_khmer: 'ដើម្បីរក្សាពណ៌ឲ្យដូចដើម បើថ្នាំក្រហមកើន ៣ ដង (៦ កំប៉ុង) ថ្នាំលឿងក៏ត្រូវកើន ៣ ដង (៩ កំប៉ុង)។'
+    simple_eng: 'To keep the exact same shade, 3 times the red (6 cans) needs 3 times the yellow (9 cans).'
+    analogy_title: 'សមាមាត្រថ្នាំពណ៌ (Balanced Paint Ratio)'
+    analogy_khmer: 'ថ្នាំពណ៌លឿងសរុបដែលត្រូវប្រើគឺ ៩ កំប៉ុង!'
+    analogy_eng: 'The total yellow paint needed is 9 cans!'
+    analogy_type: water

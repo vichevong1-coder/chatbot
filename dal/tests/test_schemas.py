@@ -36,7 +36,7 @@ SEED_DIR = os.path.join(
 # science-g4-water has a known authoring defect: sci-step-1 declares total_steps=3 on a
 # 2-step problem. Documented in .claude/contracts.md section 6. The schema is *supposed*
 # to reject it, so it is quarantined here rather than silently tolerated.
-KNOWN_BAD = {"science-g4-water"}
+KNOWN_BAD = set()
 
 
 def _seed_files() -> list[str]:
@@ -79,8 +79,9 @@ def test_seed_problem_round_trips(path: str) -> None:
 
 
 def test_known_defect_is_actually_caught() -> None:
-    """The xfail above must be a real rejection, not a parse that happens to pass."""
+    """total_steps mismatch must be caught by validation."""
     raw = _load(os.path.join(SEED_DIR, "science-g4-water.yaml"))
+    raw["steps"][0]["total_steps"] = 3
     with pytest.raises(ValidationError, match="total_steps"):
         HomeworkProblem.model_validate(raw)
 

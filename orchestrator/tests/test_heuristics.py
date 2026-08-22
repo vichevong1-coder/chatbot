@@ -29,3 +29,25 @@ def test_greeting_detection_is_exact_match_only():
     assert heuristics.is_greeting("សួស្តី")
     assert not heuristics.is_greeting("hi, why do I multiply?")  # real question
     assert not heuristics.is_greeting("5*8")
+
+
+def test_hint_request_detection():
+    assert heuristics.is_hint_request("can you give me a hint?")
+    assert heuristics.is_hint_request("I need a hint")
+    assert heuristics.is_hint_request("សុំតម្រុយមួយ")
+    assert not heuristics.is_hint_request("5*8")
+    assert not heuristics.is_hint_request("hello")
+
+
+def test_clarify_request_detection():
+    assert heuristics.is_clarify_request("?")
+    assert heuristics.is_clarify_request("???")
+    assert heuristics.is_clarify_request("what")
+    assert heuristics.is_clarify_request("math")
+    assert heuristics.is_clarify_request("លំហាត់")
+    assert heuristics.is_clarify_request("")
+    assert heuristics.is_clarify_request("help")
+    assert not heuristics.is_clarify_request("why do I multiply?")
+    assert not heuristics.is_clarify_request("5*8")
+    assert not heuristics.is_clarify_request("what is 5*8?")
+

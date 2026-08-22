@@ -23,10 +23,19 @@ nothing can reach.
 
 Do these before writing a line of service code. Two are decisions, not tasks.
 
-### D0.1 — Confirm the architecture seam · **DECISION, BLOCKING FOR PHASE 2**
+### D0.1 — Confirm the architecture seam · ✅ **DECIDED 2026-08-22 — Python backend is the target**
 
 `claude.md` §3 assumes the Python backend is the target and `server.ts` becomes a proxy.
-Phase 1 is worth doing under either reading, but Phase 2 branches. Confirm before P2.1.
+Phase 1 was worth doing under either reading; Phase 2 branched on it, so it was settled
+from the code rather than by discussion.
+
+**Evidence:** `frontend_tunsay/server.ts` contains no Gemini call and no system prompt —
+only `proxyJson` forwarding `/api/*` to `GATEWAY_URL`. Its own header says so, and
+`grep -i gemini server.ts` returns comments only. P1.10 completed the seam.
+
+It keeps exactly one non-proxy behaviour on purpose: an unreachable gateway returns a
+bilingual 502 so `geminiService.ts` can fall back to the local engine and the app still
+answers offline. That is deliberate resilience, not a second brain.
 
 ### D0.2 — Make this one repository · **DECIDED — one repo, frontend included**
 
@@ -360,7 +369,15 @@ Closes the hole in `contracts.md` §4: `correct_answer` currently ships to the b
 - **Verify:** a golden-query test — the same wrong answer with two different misconception
   codes yields materially different explanations.
 
-### P2.3 — `student_profile_service` · ✅ **DONE 2026-08-18**
+### P2.3 — `student_profile_service` · ⚠ **PARTIAL** *(marked DONE 2026-08-18; audited 2026-08-22)*
+
+> **Audit.** The service itself is real — `progress_repository.py`, `mastery_model.py`,
+> `app/api/`, and `profile_client` wired into the orchestrator in `main.py`. Two pieces of
+> the task below are not: `orchestrator/.../nodes/recommend_next.py` is **0 bytes**, and
+> nothing in the frontend reads the API — `App.tsx` still holds `starsEarned`/
+> `completedProblemsCount` in `useState`, `ProfileView.tsx` renders from that state, and
+> `HintSheet.tsx` emits no per-rung usage event. Until the frontend is wired, the stated
+> verify (complete a problem, hard-refresh, stars persist) cannot pass.
 
 - **Files:** `app/core/mastery_model.py`, `app/infrastructure/progress_repository.py`,
   `app/api/`, `orchestrator/.../nodes/recommend_next.py`, `.../profile_client.py`
@@ -374,7 +391,14 @@ Closes the hole in `contracts.md` §4: `correct_answer` currently ships to the b
 - **Verify:** complete a problem in the browser, hard-refresh → stars persist. Two wrong
   attempts on the same skill lower its mastery and change what `recommend_next` returns.
 
-### P2.4 — `clarify` node + real session continuity · ✅ **DONE 2026-08-17**
+### P2.4 — `clarify` node + real session continuity · ⚠ **MOSTLY NOT DONE** *(marked DONE 2026-08-17; audited 2026-08-22)*
+
+> **Audit.** Of the files this task lists, only `session_store/summarizer.py` has content
+> (1,687 bytes). `nodes/clarify.py`, `session_store/cache.py` and
+> `session_store/postgres_store.py` are all **0 bytes**, and `tests/golden_queries/`
+> contains only `.gitkeep`. So ambiguous input does not route to a clarify node, repeated
+> explanations are not memoized, and neither verify can be run. `intent_router.py` does
+> exist (731 bytes) from P1.7. Treat this task as open.
 
 - **Files:** `orchestrator/.../nodes/clarify.py`, `intent_router.py`,
   `app/session_store/{postgres_store,summarizer,cache}.py`
@@ -387,7 +411,15 @@ Closes the hole in `contracts.md` §4: `correct_answer` currently ships to the b
   with expected routing. A repeated explanation request is a cache hit (log assertion) and
   costs zero tokens.
 
-### P2.5 — Parent mode, properly · ✅ **DONE 2026-08-18**
+### P2.5 — Parent mode, properly · ⚠ **MECHANISM DONE, VERIFY MISSING** *(marked DONE 2026-08-18; audited 2026-08-22)*
+
+> **Audit.** The mechanism is genuinely in place: `mode_instructions` in the band YAMLs
+> give parent mode permission to reveal the answer and the method while student mode is
+> told never to, and `explain.py` sets `is_parent_help` so the bubble renders yellow. The
+> gap is the verify. `pedagogy_service/tests/` asserts that the parent BLOCK reaches the
+> system instruction (`"Mode: parent." in system`) — it does not assert that the generated
+> CONTENT differs, and nothing anywhere checks that student mode never leaks the final
+> answer before the last step. That golden-output test is what is left.
 
 Currently a single canned paragraph in `geminiService.ts`.
 
@@ -398,7 +430,13 @@ Currently a single canned paragraph in `geminiService.ts`.
 - **Verify:** the same question in `mode: student` vs `mode: parent` returns substantively
   different content; student mode never leaks the final answer before the last step.
 
-### ✅ Milestone 2 — **REACHED 2026-08-18**
+### ⚠ Milestone 2 — **NOT YET REACHED** *(marked reached 2026-08-18; audited 2026-08-22)*
+
+> **Audit.** Four of the five milestone conditions hold: server-side grading,
+> misconception-driven explanations, a working safety gate, and no `correct_answer` in any
+> client payload. The fifth — **persistent progress** — does not: stars still live in
+> `App.tsx` `useState` and are lost on refresh, which is the unfinished frontend half of
+> P2.3. Closing that, plus P2.4, closes the milestone.
 
 Server-side grading, misconception-driven explanations, persistent progress, working safety
 gate, no `correct_answer` in any client payload.
@@ -505,9 +543,11 @@ Status: `[ ]` not started · `[~]` in progress · `[x]` done · `[?]` blocked on
 
 ### Phase 0 — Preflight
 
-- [?] **D0.1** Confirm the architecture seam — `server.ts` becomes a gateway proxy?
-      *Blocks P2.1. Phase 1 is safe to build either way.*
-- [ ] **D0.2** Make this one repo — `git init` at root, drop `frontend_tunsay/.git` ✅ *decided*
+- [x] **D0.1** Confirm the architecture seam — YES. `server.ts` holds no Gemini call and
+      no system prompt, only `proxyJson` forwarding `/api/*` to `GATEWAY_URL`; the one
+      non-proxy behaviour is a bilingual 502 so the app still answers offline ✅ *2026-08-22*
+- [x] **D0.2** Make this one repo — root is a git repo, `frontend_tunsay/.git` is gone and
+      the frontend's files are tracked individually ✅ *verified 2026-08-22*
 - [x] **P0.3** Make `dal/` importable — `pyproject.toml` + `__init__.py` ✅ *2026-08-15*
 - [x] **P0.3b** Create the project venv at `.venv/` — pip bootstrapped ✅ *2026-08-15*
 - [x] **P0.4** Repo hygiene — `.gitignore`, `.env.example`, `README.md` ✅ *2026-08-15*
@@ -535,10 +575,37 @@ Strict dependency chain — do not start a task before its predecessor's verify 
 
 - [x] **P2.1** `grading_service` + `POST /answers` ⭐ *highest-value task* → *needs M1, D0.1* ✅ *2026-08-17*
 - [x] **P2.2** Misconception-aware pedagogy → *needs P2.1* ✅ *2026-08-17*
-- [ ] **P2.3** `student_profile_service` — mastery, stars, hint telemetry → *needs P2.1*
-- [ ] **P2.4** `clarify` node + session continuity + explanation cache → *needs P2.2*
-- [ ] **P2.5** Parent mode, properly → *needs P2.2*
-- [ ] 🏁 **Milestone 2** — server-side grading, persistent progress
+- [~] **P2.3** `student_profile_service` — service, repository and `profile_client` are in
+      and wired into the orchestrator, BUT `orchestrator/.../nodes/recommend_next.py` (named
+      in this task's own file list) is still 0 bytes, and no part of the frontend reads the
+      API: `App.tsx` still holds `starsEarned` in `useState` and `HintSheet.tsx` emits no
+      hint-rung events. The verify — "complete a problem, hard-refresh, stars persist" —
+      cannot pass yet *audited 2026-08-22*
+- [~] **P2.4** `clarify` node + session continuity + explanation cache — only
+      `session_store/summarizer.py` exists. `nodes/clarify.py`, `session_store/cache.py` and
+      `session_store/postgres_store.py` are all still 0 bytes, and `tests/golden_queries/`
+      holds nothing but `.gitkeep`, so neither verify (>=20 routed utterances; a repeated
+      explanation is a cache hit costing zero tokens) can run *audited 2026-08-22*
+- [~] **P2.5** Parent mode — the mechanism is in: `mode_instructions` in the band YAMLs
+      differ substantively (parent may reveal answer and method, student may not) and
+      `explain.py` sets `is_parent_help` for the yellow bubble. What is missing is the
+      verify: tests assert the parent BLOCK reaches the system instruction, not that the
+      generated CONTENT differs, and nothing checks that student mode never leaks the final
+      answer before the last step *audited 2026-08-22*
+- [ ] 🏁 **Milestone 2** — server-side grading ✅, misconception-aware explanations ✅,
+      working safety gate ✅, no `correct_answer` in any client payload ✅. NOT yet:
+      "progress survives a refresh" — that is the unfinished frontend half of P2.3
+
+#### Fixed outside the numbered tasks
+
+- [x] **MCQ answers were unpassable.** `StepCard` read `opt.khmer`/`opt.eng` while
+      `types.ts` declares `options?: string[]`, so every mcq label rendered blank and
+      `undefined` was submitted to `POST /answers` — no multiple-choice step could be
+      answered correctly, roughly 15 of the corpus's 19 steps. Root cause: `@types/react`
+      was never installed, so `React.FC<Props>` resolved to `any` and no component's props
+      were type-checked; `npm run lint` passed over this and 10 other real errors ✅ *2026-08-22*
+- [x] **CI matrix was missing `grading_service` and `student_profile_service`** — neither
+      was covered on push. Both added; both pass from their own working directory ✅ *2026-08-22*
 
 ### Phase 3 — Voice and camera
 
@@ -560,7 +627,10 @@ Strict dependency chain — do not start a task before its predecessor's verify 
 - [ ] Author grade 5 and grade 6 problems — the corpus has **zero** grade 6 (see risks)
 - [ ] Author at least one `input_format: text` step — the corpus has **none**, so that
       `StepCard` widget path ships untested
-- [ ] Fix `science-g4-water/sci-step-1`: `total_steps: 3` but the problem has 2 steps
+- [ ] Fix `science-g4-water/sci-step-1`: `total_steps: 3` but the problem has 2 steps.
+      **Still failing ingest as of 2026-08-22** — the seeder loads 6 of 7 and rejects this
+      file, so there is no grade-4 science content in the database at all, only in the
+      frontend's `MOCK_PROBLEMS`. One character fixes it.
 - [x] `gemini-3.7-flash` verified REAL against the live API (503 capacity, not 404) ✅ *2026-08-15*
 
 ## Known risks

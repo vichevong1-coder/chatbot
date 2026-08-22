@@ -30,7 +30,7 @@ async def test_list_problems_public_shape(client):
     r = await client.get("/problems")
     assert r.status_code == 200
     problems = r.json()
-    assert len(problems) == 6  # science-g4-water was rejected at ingest
+    assert len(problems) == 9
     assert_no_answers(r)
     # Steps and their scaffolding are intact — only the answer key is stripped.
     apples = next(p for p in problems if p["id"] == "math-g4-apples")
@@ -44,6 +44,7 @@ async def test_list_problems_filters(client):
         "english-g4-grammar",
         "math-g4-apples",
         "math-g4-fractions",
+        "science-g4-water",
     }
 
     r = await client.get("/problems", params={"subject": "math"})
@@ -51,10 +52,11 @@ async def test_list_problems_filters(client):
         "math-g3-perimeter",
         "math-g4-apples",
         "math-g4-fractions",
+        "math-g6-ratio",
     }
 
     r = await client.get("/problems", params={"grade": 4, "subject": "science"})
-    assert r.json() == []  # science-g4-water is the rejected file
+    assert {p["id"] for p in r.json()} == {"science-g4-water"}
 
     r = await client.get("/problems", params={"subject": "alchemy"})
     assert r.status_code == 422  # closed vocabulary
@@ -129,4 +131,4 @@ async def test_admin_delete_then_404(client):
     assert (await client.get("/admin/problems/math-g3-perimeter")).status_code == 404
     assert (await client.delete("/admin/problems/math-g3-perimeter")).status_code == 404
     # the rest of the catalog is untouched
-    assert len((await client.get("/problems")).json()) == 5
+    assert len((await client.get("/problems")).json()) == 8

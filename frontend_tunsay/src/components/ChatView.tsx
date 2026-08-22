@@ -5,7 +5,7 @@ import { StepTrail } from './StepTrail';
 import { StepCard } from './StepCard';
 import { HintSheet } from './HintSheet';
 import { ExplanationCard } from './ExplanationCard';
-import { askTunsayTutor, submitStepAnswer } from '../services/geminiService';
+import { askTunsayTutor, submitStepAnswer, fetchAIHint, deductHintStars } from '../services/geminiService';
 import { getDisplayName } from '../utils/language';
 import { MOCK_PROBLEMS, generateHistoryChatForProblem } from '../data/mockProblems';
 import { Send, Mic, Camera, User, GraduationCap, Users, ArrowLeft, Plus, Calculator, Atom, BookOpen, Languages, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -173,16 +173,15 @@ export const ChatView: React.FC<ChatViewProps> = ({
       updateMessages(updatedWithUser);
       setIsSayoThinking(true);
 
-      askTunsayTutor(queryText, profile.mode, activeProblem, profile.language).then((sayoRes) => {
+      askTunsayTutor(queryText, profile.mode, activeProblem, profile.language, currentStepIndex).then((sayoRes) => {
         setIsSayoThinking(false);
         const sayoMsg: ChatMessage = {
           id: (Date.now() + 1).toString(),
           sender: 'sayo',
           textKhmer: sayoRes.textKhmer,
-          textEng: sayoRes.textEng,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           isSafetyRefusal: sayoRes.isSafetyRefusal,
-          isParentHelp: profile.mode === 'parent'
+          isParentHelp: profile.mode === 'parent',
+          suggestedNext: sayoRes.suggestedNext,
         };
         updateMessages([...updatedWithUser, sayoMsg]);
       });
@@ -285,7 +284,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
     updateMessages(updatedWithUser);
     setIsSayoThinking(true);
 
-    const sayoRes = await askTunsayTutor(userText, profile.mode, activeProblem, profile.language);
+    const sayoRes = await askTunsayTutor(userText, profile.mode, activeProblem, profile.language, currentStepIndex);
 
     setIsSayoThinking(false);
 
@@ -294,9 +293,9 @@ export const ChatView: React.FC<ChatViewProps> = ({
       sender: 'sayo',
       textKhmer: sayoRes.textKhmer,
       textEng: sayoRes.textEng,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isSafetyRefusal: sayoRes.isSafetyRefusal,
-      isParentHelp: profile.mode === 'parent'
+      isParentHelp: profile.mode === 'parent',
+      suggestedNext: sayoRes.suggestedNext,
     };
 
     updateMessages([...updatedWithUser, sayoMsg]);
@@ -493,6 +492,21 @@ export const ChatView: React.FC<ChatViewProps> = ({
                     {displayText}
                   </p>
 
+                  {msg.suggestedNext && (
+                    <div className="mt-3 pt-2 border-t-2 border-[#2A1E4D]/20">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const found = MOCK_PROBLEMS.find((p) => p.id === msg.suggestedNext);
+                          if (found) handleSelectTopicCard(found);
+                        }}
+                        className="px-3.5 py-1.5 bg-[#FFCB3D] hover:bg-[#6FCF6F] text-[#2A1E4D] font-black text-xs rounded-xl border-2 border-[#2A1E4D] shadow-[2px_2px_0px_#2A1E4D] inline-flex items-center gap-1.5 transition-all cursor-pointer hover:-translate-y-0.5"
+                      >
+                        <span>🎯 {isKhmer ? 'សាកល្បងលំហាត់បន្ទាប់ដែលបានណែនាំ' : 'Try Recommended Next Problem'}</span>
+                      </button>
+                    </div>
+                  )}
+
                   <span className={`text-[10px] mt-2 block text-right font-black opacity-80`}>
                     {msg.timestamp}
                   </span>
@@ -666,9 +680,17 @@ export const ChatView: React.FC<ChatViewProps> = ({
         <>
           <HintSheet
             step={currentStep}
+            problemId={activeProblem?.id}
             isOpen={isHintOpen}
             language={profile.language}
             onClose={() => setIsHintOpen(false)}
+            onRequestAIHint={async (hintLevel) => {
+              if (!activeProblem?.id || !currentStep?.id) return { hintKhmer: '', hintEng: '' };
+              return await fetchAIHint(activeProblem.id, currentStep.id, hintLevel, profile.language);
+            }}
+            onDeductStars={async (hintLevel) => {
+              return await deductHintStars(hintLevel);
+            }}
           />
 
           <ExplanationCard

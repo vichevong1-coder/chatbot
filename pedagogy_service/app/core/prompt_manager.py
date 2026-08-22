@@ -55,11 +55,11 @@ class Band:
         return 0
 
 
-# Only *implemented* bands are listed here.
-# Stub files (grade7_9, grade10_12) exist but are 0-byte — add rows when ready.
 BANDS: tuple[Band, ...] = (
     Band(name="grade1_3", low=1, high=3, prompt_file="explain_grade1_3.yaml"),
     Band(name="grade4_6", low=4, high=6, prompt_file="explain_grade4_6.yaml"),
+    Band(name="grade7_9", low=7, high=9, prompt_file="explain_grade7_9.yaml"),
+    Band(name="grade10_12", low=10, high=12, prompt_file="explain_grade10_12.yaml"),
 )
 
 

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Mic, X, Volume2 } from 'lucide-react';
 import { TunsayAvatar } from './TunsayAvatar';
 import { Language } from '../types';
+import { sendVoiceTurn } from '../services/geminiService';
 
 interface VoiceModalProps {
   isOpen: boolean;
@@ -20,6 +21,8 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [tunsaySpeech, setTunsaySpeech] = useState('');
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -33,11 +36,42 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleStartListening = () => {
+  const handleStartListening = async () => {
     setIsListening(true);
     setTranscript('');
     setTunsaySpeech('');
+    audioChunksRef.current = [];
 
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          stream.getTracks().forEach((track) => track.stop());
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          if (audioBlob.size > 0) {
+            const res = await sendVoiceTurn(audioBlob, 'student', undefined, language);
+            const speechText = isKhmer ? (res.textKhmer || res.textEng) : (res.textEng || res.textKhmer);
+            setTunsaySpeech(speechText || (isKhmer ? 'ខ្ញុំបានស្តាប់ឮហើយ! តោះគិតទាំងអស់គ្នា 🐰' : "I heard you! Let's think together 🐰"));
+          }
+        };
+
+        mediaRecorder.start();
+        return;
+      }
+    } catch {
+      /* Fallback to simulated mic */
+    }
+
+    // Simulated voice fallback
     setTimeout(() => {
       setTranscript(isKhmer ? 'ខ្ញុំមិនយល់សំណួរនេះទេ...' : 'I do not understand this question...');
     }, 1200);
@@ -50,6 +84,13 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
           : "No problem! Let's look at it together."
       );
     }, 3200);
+  };
+
+  const handleStopListening = () => {
+    setIsListening(false);
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
   };
 
   const handleSendVoiceQuery = () => {
@@ -120,7 +161,7 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
           ) : (
             <button
               type="button"
-              onClick={() => setIsListening(false)}
+              onClick={handleStopListening}
               className="w-full py-4 bg-[#FF6FA3] text-white font-black text-base rounded-2xl border-3 border-[#2A1E4D] shadow-[4px_4px_0px_#2A1E4D] flex items-center justify-center gap-2 animate-pulse cursor-pointer"
             >
               <span className="w-3 h-3 rounded-full bg-white animate-ping" />

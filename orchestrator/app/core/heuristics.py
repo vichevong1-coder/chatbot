@@ -66,3 +66,74 @@ def is_greeting(normalized_prompt: str) -> bool:
     the safety gate and the LLM entirely (zero tokens, zero service calls)."""
     text = _EDGE_PUNCT_RE.sub("", normalized_prompt.lower())
     return text in _GREETINGS
+
+_HINT_KEYWORDS = {"hint", "clue", "give hint", "give a hint", "need a hint", "តម្រុយ", "សុំតម្រុយ", "សូមតម្រុយ", "ប្រាប់តម្រុយ"}
+
+def is_hint_request(normalized_prompt: str) -> bool:
+    """True when the prompt contains keywords explicitly asking for a hint."""
+    text = normalized_prompt.lower()
+    return any(keyword in text for keyword in _HINT_KEYWORDS)
+
+
+_RECOMMEND_KEYWORDS = {
+    "recommend",
+    "next problem",
+    "next exercise",
+    "what should i do next",
+    "suggest",
+    "another problem",
+    "practice next",
+    "លំហាត់បន្ទាប់",
+    "លំហាត់ថ្មី",
+    "ណែនាំលំហាត់",
+    "សូមណែនាំ",
+    "លំហាត់ផ្សេងទៀត",
+    "តើគួរធ្វើលំហាត់អ្វីបន្ទាប់",
+}
+
+
+def is_recommend_request(normalized_prompt: str) -> bool:
+    """True when the prompt asks for a next problem recommendation."""
+    text = normalized_prompt.lower()
+    return any(keyword in text for keyword in _RECOMMEND_KEYWORDS)
+
+
+_CLARIFY_KEYWORDS = {
+    "?",
+    "??",
+    "???",
+    "what",
+    "why",
+    "how",
+    "help",
+    "math",
+    "science",
+    "english",
+    "homework",
+    "exercise",
+    "lesson",
+    "problem",
+    "question",
+    "លំហាត់",
+    "គណិត",
+    "គណិតវិទ្យា",
+    "ជួយ",
+    "ជួយផង",
+    "មេរៀន",
+    "សំណួរ",
+    "វិទ្យាសាស្ត្រ",
+    "អង់គ្លេស",
+}
+
+
+def is_clarify_request(normalized_prompt: str) -> bool:
+    """True when the prompt is ultra-short, vague, or empty and needs clarification."""
+    text = normalized_prompt.strip().lower()
+    if not text:
+        return True
+    clean = _EDGE_PUNCT_RE.sub("", text)
+    if not clean:
+        return True
+    return clean in _CLARIFY_KEYWORDS or text in _CLARIFY_KEYWORDS
+
+

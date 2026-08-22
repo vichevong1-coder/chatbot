@@ -37,6 +37,7 @@ def make_settings(**overrides) -> Settings:
         auth_service_url="http://auth",
         orchestrator_url="http://orch",
         content_service_url="http://content",
+        student_profile_service_url="http://profile",
         jwt_secret=TEST_SECRET,
         jwt_algorithm="HS256",
         frontend_origin=FRONTEND_ORIGIN,
@@ -139,6 +140,31 @@ class FakeUpstreams:
                     "id": path.rsplit("/", 1)[1],
                     "title_khmer": "ចែកផ្លែប៉ោម",
                     "title_eng": "Sharing Apples",
+                },
+            )
+
+        if host == "profile" and path.startswith("/profile/"):
+            if path == "/profile/hints":
+                return httpx.Response(
+                    200,
+                    json={
+                        "success": True,
+                        "remaining_stars": 14,
+                    },
+                )
+            if path == "/profile/attempts":
+                return httpx.Response(
+                    201,
+                    json={"status": "recorded"},
+                )
+            student_id = path.rsplit("/", 1)[1]
+            return httpx.Response(
+                200,
+                json={
+                    "student_id": student_id,
+                    "stars": 15,
+                    "completed_problems_count": 5,
+                    "mastery_levels": {"fractions": 0.8},
                 },
             )
 

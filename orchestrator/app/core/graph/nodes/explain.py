@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from app.core.graph.state import GraphState
 from app.infrastructure.service_clients import ServiceClients, ServiceUnavailable
+from app.session_store import cache
 
 DEFAULT_GRADE = 4  # TODO(P2): pull the real grade from the auth profile (auth_client.get_me)
 
@@ -62,6 +63,9 @@ async def explain(state: GraphState, clients: ServiceClients) -> dict:
     context: str | None = None
 
     problem_id = state.get("problem_id")
+    step_index = state.get("active_step_index")
+    misconception_code = state.get("misconception_code")
+
     if problem_id:
         try:
             problem = await clients.content.get_problem(problem_id)
@@ -69,7 +73,35 @@ async def explain(state: GraphState, clients: ServiceClients) -> dict:
             problem = None  # content down/unknown → explain without context
         if problem:
             grade = int(problem.get("grade") or DEFAULT_GRADE)
-            context = _build_context(problem, language, state.get("active_step_index"))
+            context = _build_context(problem, language, step_index)
+    else:
+        student_id = state.get("student_id")
+        if student_id and student_id != "anonymous":
+            try:
+                prof = await clients.profile.get_profile(student_id)
+                if prof and prof.get("grade"):
+                    grade = int(prof["grade"])
+            except ServiceUnavailable:
+                pass
+
+    # Check explanation cache for identical problem step queries
+    cache_key = cache.hash_explanation_key(
+        problem_id=problem_id,
+        step_index=step_index,
+        grade=grade,
+        misconception_code=misconception_code,
+        language=language,
+        mode=mode,
+    )
+    if problem_id:
+        cached = await cache.get(cache_key)
+        if cached:
+            return {
+                "intent": "explain",
+                "text_khmer": cached.get("text_khmer", ""),
+                "text_eng": cached.get("text_eng", ""),
+                "is_parent_help": mode == "parent",
+            }
 
     # Append transcript summary if it gets long (to prevent context window overflow)
     transcript = state.get("transcript") or []
@@ -80,7 +112,6 @@ async def explain(state: GraphState, clients: ServiceClients) -> dict:
             context = f"{summary}\n\n{context}" if context else summary
 
     # Append misconception code to context so the pedagogy service can tailor the prompt
-    misconception_code = state.get("misconception_code")
     if misconception_code:
         suffix = f"Student Misconception Code: {misconception_code}"
         context = f"{context}\n\n{suffix}" if context else suffix
@@ -96,6 +127,8 @@ async def explain(state: GraphState, clients: ServiceClients) -> dict:
         )
         text_khmer = result.get("text_khmer", "")
         text_eng = result.get("text_eng", "")
+        if problem_id and (text_khmer or text_eng):
+            await cache.set(cache_key, text_khmer=text_khmer, text_eng=text_eng)
     except ServiceUnavailable:
         text_khmer, text_eng = _pick(FALLBACK_KHMER, FALLBACK_ENG, language)
 

@@ -59,12 +59,11 @@ async def session_factory():
 
 @pytest.fixture
 async def seeded_factory(session_factory):
-    """The database after a real seed run: 6 valid problems loaded, science-g4-water
-    rejected (the known corpus defect, .claude/contracts.md section 6)."""
+    """The database after a real seed run: 9 valid problems loaded."""
     from scripts.seed_exercises import main as seed_main
 
     rc = await seed_main(session_factory=session_factory)
-    assert rc == 1  # the defective file must fail ingest — see test_seed_loader
+    assert rc == 0
     return session_factory
 
 

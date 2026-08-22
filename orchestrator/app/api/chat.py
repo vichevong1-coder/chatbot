@@ -71,7 +71,7 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
         is_safety_refusal=result.get("is_safety_refusal", False),
         is_parent_help=result.get("is_parent_help", False),
         session_id=body.session_id,
-        suggested_next=None,  # recommend_next arrives in Phase 2
+        suggested_next=result.get("suggested_next"),
     )
 
     # Persist the turn: the child's message + Tunsay's reply (single-language

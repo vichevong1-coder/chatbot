@@ -44,6 +44,33 @@ async function proxyJson(
   }
 }
 
+async function proxyRaw(req: express.Request, res: express.Response, targetPath: string) {
+  try {
+    const upstream = await fetch(`${GATEWAY_URL}${targetPath}`, {
+      method: req.method,
+      headers: {
+        ...(req.headers.authorization ? { Authorization: req.headers.authorization } : {}),
+        ...(req.headers['content-type'] ? { 'Content-Type': req.headers['content-type'] } : {}),
+      },
+      body: req as any,
+      // @ts-ignore
+      duplex: 'half',
+    });
+    const text = await upstream.text();
+    res
+      .status(upstream.status)
+      .type(upstream.headers.get('content-type') || 'application/json')
+      .send(text);
+  } catch (err) {
+    console.error('Gateway proxy error:', (err as Error).message);
+    res.status(502).json({
+      error: 'gateway_unreachable',
+      messageKhmer: 'មិនអីទេ! តោះយើងពិនិត្យមើលសំណួរនេះជាមួយគ្នាណា។ 🐰',
+      messageEng: "No problem! Let's look at this step together. 🐰",
+    });
+  }
+}
+
 async function startServer() {
   const app = express();
   
@@ -57,6 +84,10 @@ async function startServer() {
     }
   }
 
+  // Audio and Image multipart uploads proxy before express.json()
+  app.post('/api/chat/audio', (req, res) => proxyRaw(req, res, '/chat/audio'));
+  app.post('/api/chat/image', (req, res) => proxyRaw(req, res, '/chat/image'));
+
   app.use(express.json());
 
   // Tutor turn → gateway /chat → orchestrator graph → pedagogy → Gemini.
@@ -65,10 +96,21 @@ async function startServer() {
   // Answer checking → gateway /answers → orchestrator graph → grading.
   app.post('/api/answers', (req, res) => proxyJson(req, res, '/answers'));
 
+  // Hints → gateway /hints → orchestrator graph → pedagogy → Gemini.
+  app.post('/api/hints', (req, res) => proxyJson(req, res, '/hints'));
+
   // Auth → gateway /auth/* → auth_service (school code + PIN, no passwords).
   app.post('/api/auth/register', (req, res) => proxyJson(req, res, '/auth/register'));
   app.post('/api/auth/login', (req, res) => proxyJson(req, res, '/auth/login'));
   app.get('/api/auth/me', (req, res) => proxyJson(req, res, '/auth/me'));
+
+  // Profile → gateway /profile/* → student_profile_service (stars, attempts, mastery).
+  app.get('/api/profile', (req, res) => proxyJson(req, res, '/profile'));
+  app.get('/api/profile/:id', (req, res) =>
+    proxyJson(req, res, `/profile/${encodeURIComponent(req.params.id)}`),
+  );
+  app.post('/api/profile/attempts', (req, res) => proxyJson(req, res, '/profile/attempts'));
+  app.post('/api/profile/hints', (req, res) => proxyJson(req, res, '/profile/hints'));
 
   // Problem catalog (public shape — correct_answer is stripped server-side).
   app.get('/api/problems', (req, res) => {

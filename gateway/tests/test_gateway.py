@@ -56,6 +56,9 @@ class TestAuthVerify:
     def test_problems_requires_token(self, client):
         assert client.get("/problems").status_code == 401
 
+    def test_profile_requires_token(self, client):
+        assert client.get("/profile/student-1").status_code == 401
+
     def test_auth_me_requires_token_and_forwards_authorization(self, client, upstreams):
         assert client.get("/auth/me").status_code == 401
         token = make_token()
@@ -304,3 +307,55 @@ class TestFailureAndHealth:
         assert sent.url.path == "/chat/audio"
         assert sent.headers["content-type"].startswith("multipart/form-data")
         assert b"fake-audio-bytes" in sent.content
+
+
+# ---------------------------------------------------------------------------
+# /profile
+# ---------------------------------------------------------------------------
+
+
+class TestProfile:
+    def test_profile_requires_token(self, client):
+        assert client.get("/profile/student-1").status_code == 401
+        assert client.post("/profile/hints", json={"rung": 1}).status_code == 401
+        assert client.post("/profile/attempts", json={"problemId": "p1", "isCorrect": True}).status_code == 401
+
+    def test_get_profile_injects_verified_student_id_and_camelcases(self, client, upstreams):
+        token = make_token("student-real")
+        # Even if client requests a forged student_id in path, gateway injects verified student_id
+        response = client.get("/profile/impersonated-student", headers=bearer(token))
+        assert response.status_code == 200
+        sent = upstreams.requests[-1]
+        assert sent.url.path == "/profile/student-real"
+        body = response.json()
+        assert body["studentId"] == "student-real"
+        assert body["completedProblemsCount"] == 5
+        assert "completed_problems_count" not in body
+        assert body["masteryLevels"] == {"fractions": 0.8}
+
+    def test_profile_hints_injects_verified_student_id(self, client, upstreams):
+        token = make_token("student-real")
+        response = client.post(
+            "/profile/hints",
+            json={"rung": 2, "studentId": "impersonated", "problemId": "p-1", "stepId": "s-1"},
+            headers=bearer(token),
+        )
+        assert response.status_code == 200
+        sent = upstreams.last_json()
+        assert sent["student_id"] == "student-real"
+        assert sent["rung"] == 2
+        body = response.json()
+        assert body["remainingStars"] == 14
+        assert "remaining_stars" not in body
+
+    def test_profile_attempts_injects_verified_student_id(self, client, upstreams):
+        token = make_token("student-real")
+        response = client.post(
+            "/profile/attempts",
+            json={"studentId": "fake", "problemId": "p-1", "stepId": "s-1", "isCorrect": True},
+            headers=bearer(token),
+        )
+        assert response.status_code == 201
+        sent = upstreams.last_json()
+        assert sent["student_id"] == "student-real"
+        assert sent["is_correct"] is True

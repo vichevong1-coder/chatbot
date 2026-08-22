@@ -5,7 +5,7 @@ grade: 4
 subject: math
 problem_statement_khmer: សុខាបានញ៉ាំនំភីហ្សា ២/៨ ផ្ទាំង ហើយប្អូនស្រីរបស់គេញ៉ាំ ៣/៨ ផ្ទាំង។ តើអ្នកទាំងពីរញ៉ាំនំភីហ្សាសរុបស្មើនឹងភាគប៉ុន្មាននៃផ្ទាំង?
 problem_statement_eng: Sokha ate 2/8 of a pizza, and his sister ate 3/8. What fraction of the pizza did they eat in total?
-image_uri: https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&auto=format&fit=crop&q=80
+image_uri: https://images.unsplash.com/phot-1513104890138-7c749659a591?w=600&auto=format&fit=crop&q=80
 steps:
 - id: frac-step-1
   step_number: 1

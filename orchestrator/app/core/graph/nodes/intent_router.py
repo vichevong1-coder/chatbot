@@ -15,6 +15,13 @@ async def intent_router(state: GraphState) -> dict:
     current_intent = state.get("intent")
     if current_intent in ("check_answer", "greeting"):
         return {}
-    if heuristics.is_bare_arithmetic(state.get("normalized_prompt", "")):
+    normalized = state.get("normalized_prompt", "")
+    if heuristics.is_hint_request(normalized):
+        return {"intent": "hint"}
+    if heuristics.is_recommend_request(normalized):
+        return {"intent": "recommend_next"}
+    if heuristics.is_bare_arithmetic(normalized):
         return {"intent": "solve"}
+    if heuristics.is_clarify_request(normalized):
+        return {"intent": "clarify"}
     return {"intent": "explain"}

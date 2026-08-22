@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StepItem, Language } from '../types';
 import { TunsayAvatar } from './TunsayAvatar';
-import { Lightbulb, RefreshCw, Mic, CheckCircle, AlertCircle, ArrowRight, HelpCircle } from 'lucide-react';
+import { Lightbulb, RefreshCw, Mic, CheckCircle, AlertCircle, ArrowRight, HelpCircle, MessageSquare } from 'lucide-react';
 
 interface StepCardProps {
   step: StepItem;
@@ -24,20 +24,40 @@ export const StepCard: React.FC<StepCardProps> = ({
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'none' | 'correct' | 'incorrect'>('none');
   const [typedAnswer, setTypedAnswer] = useState('');
+  const [wrongCount, setWrongCount] = useState(0);
+
+  useEffect(() => {
+    setWrongCount(0);
+    setSelectedOption(null);
+    setFeedback('none');
+    setTypedAnswer('');
+  }, [step.id]);
 
   const socraticPrompt = isKhmer ? step.socraticPromptKhmer : step.socraticPromptEng;
 
   const handleOptionClick = async (optionText: string) => {
     setSelectedOption(optionText);
     const isCorrect = await onAnswerSubmit(optionText);
-    setFeedback(isCorrect ? 'correct' : 'incorrect');
+    if (isCorrect) {
+      setFeedback('correct');
+      setWrongCount(0);
+    } else {
+      setFeedback('incorrect');
+      setWrongCount((prev) => prev + 1);
+    }
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!typedAnswer.trim()) return;
     const isCorrect = await onAnswerSubmit(typedAnswer.trim());
-    setFeedback(isCorrect ? 'correct' : 'incorrect');
+    if (isCorrect) {
+      setFeedback('correct');
+      setWrongCount(0);
+    } else {
+      setFeedback('incorrect');
+      setWrongCount((prev) => prev + 1);
+    }
   };
 
   return (
@@ -161,6 +181,45 @@ export const StepCard: React.FC<StepCardProps> = ({
           >
             {isKhmer ? 'តម្រុយ' : 'Hint'}
           </button>
+        </div>
+      )}
+
+      {/* Still Stuck Escalation Panel */}
+      {wrongCount >= 2 && (
+        <div className="p-4 bg-[#F1EFFF] rounded-2xl border-3 border-[#2A1E4D] shadow-[3px_3px_0px_#2A1E4D] space-y-3 animate-fadeIn">
+          <div className="flex items-center gap-2 text-[#6C4FF6] font-black text-xs sm:text-sm uppercase tracking-wider">
+            <HelpCircle className="w-4 h-4" />
+            <span>{isKhmer ? 'នៅតែជាប់មែនទេ? សាកល្បងជម្រើសទាំងនេះ៖' : 'Still stuck? Try these options:'}</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={onOpenHints}
+              className="p-2.5 bg-[#FFCB3D] text-[#2A1E4D] hover:bg-white rounded-xl font-black text-xs border-2 border-[#2A1E4D] shadow-[2px_2px_0px_#2A1E4D] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            >
+              <Lightbulb className="w-3.5 h-3.5 fill-[#2A1E4D]" />
+              <span>{isKhmer ? 'មើលតម្រុយធំជាង' : 'Show Bigger Hint'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={onOpenExplainDifferently}
+              className="p-2.5 bg-[#3EC6E0] text-[#2A1E4D] hover:bg-white rounded-xl font-black text-xs border-2 border-[#2A1E4D] shadow-[2px_2px_0px_#2A1E4D] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>{isKhmer ? 'ពន្យល់តាមរបៀបផ្សេង' : 'Explain Differently'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const chatInput = document.querySelector('input[type="text"]') as HTMLInputElement | null;
+                chatInput?.focus();
+              }}
+              className="p-2.5 bg-[#6FCF6F] text-[#2A1E4D] hover:bg-white rounded-xl font-black text-xs border-2 border-[#2A1E4D] shadow-[2px_2px_0px_#2A1E4D] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>{isKhmer ? 'សួរទន្សាយដោយផ្ទាល់' : 'Ask Tunsay Chat'}</span>
+            </button>
+          </div>
         </div>
       )}
 

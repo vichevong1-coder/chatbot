@@ -3,6 +3,7 @@ import { Camera, Upload, RefreshCw, CheckCircle, ArrowLeft, Sparkles, ChevronLef
 import { TunsayAvatar } from './TunsayAvatar';
 import { HomeworkProblem, Language } from '../types';
 import { MOCK_PROBLEMS } from '../data/mockProblems';
+import { sendImageTurn } from '../services/geminiService';
 
 interface HomeworkScannerProps {
   language?: Language;
@@ -18,12 +19,14 @@ export const HomeworkScanner: React.FC<HomeworkScannerProps> = ({
   const isKhmer = language === 'km';
   const [stage, setStage] = useState<'capture' | 'preview' | 'analyzing' | 'confirm'>('capture');
   const [imageUri, setImageUri] = useState<string>('');
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [selectedProblem, setSelectedProblem] = useState<HomeworkProblem>(MOCK_PROBLEMS[0]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sampleScrollRef = useRef<HTMLDivElement>(null);
 
   const handleSelectSample = (problem: HomeworkProblem) => {
     setSelectedProblem(problem);
+    setUploadedFile(null);
     setImageUri(problem.imageUri || 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600&auto=format&fit=crop&q=80');
     setStage('preview');
   };
@@ -31,17 +34,32 @@ export const HomeworkScanner: React.FC<HomeworkScannerProps> = ({
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setUploadedFile(file);
       const url = URL.createObjectURL(file);
       setImageUri(url);
       setStage('preview');
     }
   };
 
-  const handleConfirmPhoto = () => {
+  const handleConfirmPhoto = async () => {
     setStage('analyzing');
+    if (uploadedFile) {
+      try {
+        const ocrResult = await sendImageTurn(uploadedFile, 'student', language);
+        if (ocrResult && (ocrResult.textKhmer || ocrResult.textEng)) {
+          setSelectedProblem((prev) => ({
+            ...prev,
+            problemStatementKhmer: ocrResult.textKhmer || prev.problemStatementKhmer,
+            problemStatementEng: ocrResult.textEng || prev.problemStatementEng,
+          }));
+        }
+      } catch {
+        /* fallback to sample problem */
+      }
+    }
     setTimeout(() => {
       setStage('confirm');
-    }, 2200);
+    }, 1500);
   };
 
   return (

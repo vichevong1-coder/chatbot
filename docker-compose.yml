@@ -174,8 +174,6 @@ services:
     container_name: tunsay-orchestrator
     expose:
       - "9001"
-    ports:
-      - "9001:9001"
     depends_on:
       # Session store + explanation cache in Redis; postgres_store in Postgres.
       postgres:
@@ -239,7 +237,9 @@ services:
 
   retrieval_service:
     <<: *app-service
-    build: ./retrieval_service
+    build:
+      context: .
+      dockerfile: retrieval_service/Dockerfile
     container_name: tunsay-retrieval-service
     expose:
       - "9007"
@@ -262,7 +262,9 @@ services:
 
   stt_service:
     <<: *app-service
-    build: ./stt_service
+    build:
+      context: .
+      dockerfile: stt_service/Dockerfile
     container_name: tunsay-stt-service
     expose:
       - "9009"
@@ -273,7 +275,9 @@ services:
 
   ocr_service:
     <<: *app-service
-    build: ./ocr_service
+    build:
+      context: .
+      dockerfile: ocr_service/Dockerfile
     container_name: tunsay-ocr-service
     expose:
       - "9010"
@@ -292,10 +296,9 @@ services:
 
   frontend_tunsay:
     <<: *app-service
-    # NOTE: frontend_tunsay/ is a teammate's separate repo (claude.md §1, D0.2)
-    # and has no Dockerfile yet. This entry reserves the contract; the image
-    # will not build until one is added there.
-    build: ./frontend_tunsay
+    build:
+      context: .
+      dockerfile: frontend_tunsay/Dockerfile
     container_name: tunsay-frontend
     # Published to the host — the browser loads the SPA from here.
     ports:

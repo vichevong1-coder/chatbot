@@ -9,7 +9,7 @@ image_uri: https://images.unsplash.com/photo-1548839140-29a749e1cf4e?w=600&auto=
 steps:
 - id: sci-step-1
   step_number: 1
-  total_steps: 3
+  total_steps: 2
   question_khmer: តើដុំទឹកកកមុនពេលរលាយស្ថិតក្នុងសភាពអ្វី? (រឹង, រាវ, ឬ ឧស្ម័ន)
   question_eng: What state of matter is the ice cube BEFORE it melts? (Solid, Liquid, or Gas)
   input_format: mcq

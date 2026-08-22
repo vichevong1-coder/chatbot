@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { UserProfile, Grade, Language } from '../types';
-import { registerOrLogin } from '../api/client';
+import { registerOrLogin, getLastIdentity, saveLastIdentity, clearLastIdentity } from '../api/client';
+import { khmerToLatinDigits } from '../utils/language';
 import { TunsayAvatar } from './TunsayAvatar';
 import { 
   School, 
@@ -16,7 +17,9 @@ import {
   ArrowRight,
   Zap,
   BookOpen,
-  Check
+  Check,
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 
 interface LoginViewProps {
@@ -34,18 +37,22 @@ export const LoginView: React.FC<LoginViewProps> = ({
 }) => {
   const isKhmer = language === 'km';
 
-  // Entry selection state: 'select' | 'school-code' | 'public-signup' | 'returning-login'
-  const [flowMode, setFlowMode] = useState<'select' | 'school-code' | 'public-signup' | 'returning-login'>('select');
+  // Entry selection state: 'select' | 'school-code' | 'public-signup' | 'returning-login' | 'quick-return'
+  const [flowMode, setFlowMode] = useState<'select' | 'school-code' | 'public-signup' | 'returning-login' | 'quick-return'>(
+    () => (getLastIdentity() ? 'quick-return' : 'select')
+  );
 
   // Form Fields
-  const [schoolCode, setSchoolCode] = useState('');
+  const [schoolCode, setSchoolCode] = useState(() => getLastIdentity()?.schoolCode ?? '');
   const [schoolCodeConfirmed, setSchoolCodeConfirmed] = useState(false);
-  const [studentName, setStudentName] = useState('');
+  const [studentName, setStudentName] = useState(() => getLastIdentity()?.studentName ?? '');
   const [pin, setPin] = useState('');
   const [grade, setGrade] = useState<Grade>(4);
-  const [classNameOption, setClassNameOption] = useState<string>('Class A');
   const [parentContact, setParentContact] = useState('');
-  const [publicSignupStep, setPublicSignupStep] = useState<1 | 2 | 3>(1);
+
+  // Error Message state (bilingual)
+  const [errorMessage, setErrorMessage] = useState<{ khmer: string; eng: string } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Helper Modal for "Don't have a code?"
   const [showCodeHelpModal, setShowCodeHelpModal] = useState(false);
@@ -61,6 +68,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
 
   // DEV Auto-fill handler
   const handleFillDemoData = () => {
+    setErrorMessage(null);
     if (flowMode === 'select' || flowMode === 'school-code') {
       setFlowMode('school-code');
       setSchoolCode('TUNSAY-G4-DEMO');
@@ -72,7 +80,6 @@ export const LoginView: React.FC<LoginViewProps> = ({
       setGrade(4);
       setParentContact('parent@tunsay.app');
       setPin('1234');
-      setPublicSignupStep(3);
     } else if (flowMode === 'returning-login') {
       setSchoolCode('TUNSAY-G4-DEMO');
       setStudentName('សុជា (Sochea)');
@@ -80,63 +87,119 @@ export const LoginView: React.FC<LoginViewProps> = ({
     }
   };
 
-  // P1.10: the three flows now hit the real auth_service through the gateway
-  // (school code + optional PIN — no passwords, .claude/contracts.md §4).
-  // When the backend is unreachable, registerOrLogin returns null and we fall
-  // back to local state so the offline demo keeps working.
   const handleFinishSchoolCodeLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!studentName.trim()) return;
-    const profile = await registerOrLogin({
-      studentName: studentName.trim(),
-      schoolCode: schoolCode.trim() || undefined,
-      pin: pin || undefined,
-      language,
-    });
-    onLoginSuccess({
-      name: studentName,
-      grade: resolvedSchool?.grade || 4,
-      language,
-      mode: 'student',
-      ...(profile ?? {}),
-    });
+    setErrorMessage(null);
+    setIsSubmitting(true);
+    try {
+      const normalizedPin = pin.trim() ? khmerToLatinDigits(pin.trim()) : undefined;
+      const profile = await registerOrLogin({
+        studentName: studentName.trim(),
+        schoolCode: schoolCode.trim() || undefined,
+        pin: normalizedPin,
+        language,
+      });
+      if (!profile) {
+        setErrorMessage({
+          khmer: 'លេខកូដសាលា ឬ PIN មិនត្រឹមត្រូវ សូមព្យាយាមម្តងទៀត',
+          eng: 'Invalid school code or PIN. Please check your credentials and try again.',
+        });
+        return;
+      }
+      saveLastIdentity({ studentName: studentName.trim(), schoolCode: schoolCode.trim() || undefined });
+      onLoginSuccess({
+        name: studentName,
+        grade: resolvedSchool?.grade || 4,
+        language,
+        mode: 'student',
+        ...profile,
+      });
+    } catch (err) {
+      setErrorMessage({
+        khmer: 'មានបញ្ហាក្នុងការភ្ជាប់ទៅម៉ាស៊ីនមេ សូមព្យាយាមម្តងទៀត',
+        eng: 'An error occurred while connecting. Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFinishPublicSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!studentName.trim()) return;
-    const profile = await registerOrLogin({
-      studentName: studentName.trim(),
-      grade,
-      className: classNameOption,
-      parentContact: parentContact.trim() || undefined,
-      pin: pin || undefined,
-      language,
-    });
-    onLoginSuccess({
-      name: studentName,
-      grade,
-      language,
-      mode: 'student',
-      ...(profile ?? {}),
-    });
+    setErrorMessage(null);
+    setIsSubmitting(true);
+    try {
+      const normalizedPin = pin.trim() ? khmerToLatinDigits(pin.trim()) : undefined;
+      const profile = await registerOrLogin({
+        studentName: studentName.trim(),
+        grade,
+        parentContact: parentContact.trim() || undefined,
+        pin: normalizedPin,
+        language,
+      });
+      if (!profile) {
+        setErrorMessage({
+          khmer: 'មិនអាចបង្កើតគណនីបានទេ សូមពិនិត្យព័ត៌មានម្តងទៀត',
+          eng: 'Could not create profile. Please check your details and try again.',
+        });
+        return;
+      }
+      saveLastIdentity({ studentName: studentName.trim() });
+      onLoginSuccess({
+        name: studentName,
+        grade,
+        language,
+        mode: 'student',
+        ...profile,
+      });
+    } catch (err) {
+      setErrorMessage({
+        khmer: 'មានបញ្ហាក្នុងការភ្ជាប់ទៅម៉ាស៊ីនមេ សូមព្យាយាមម្តងទៀត',
+        eng: 'An error occurred while connecting. Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFinishReturningLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const profile = await registerOrLogin({
-      studentName: (studentName || 'សុជា (Sochea)').trim(),
-      schoolCode: schoolCode.trim() || undefined,
-      pin: pin || undefined,
-      language,
-    });
-    onLoginSuccess({
-      name: studentName || 'សុជា (Sochea)',
-      grade: 4,
-      language,
-      mode: 'student',
-      ...(profile ?? {}),
-    });
+    const finalName = (studentName || 'សុជា (Sochea)').trim();
+    setErrorMessage(null);
+    setIsSubmitting(true);
+    try {
+      const normalizedPin = pin.trim() ? khmerToLatinDigits(pin.trim()) : undefined;
+      const profile = await registerOrLogin({
+        studentName: finalName,
+        schoolCode: schoolCode.trim() || undefined,
+        pin: normalizedPin,
+        language,
+      });
+      if (!profile) {
+        setErrorMessage({
+          khmer: 'លេខកូដសាលា ឬ PIN មិនត្រឹមត្រូវ សូមព្យាយាមម្តងទៀត',
+          eng: 'Invalid school code or PIN. Please check your credentials and try again.',
+        });
+        return;
+      }
+      saveLastIdentity({ studentName: finalName, schoolCode: schoolCode.trim() || undefined });
+      onLoginSuccess({
+        name: studentName || 'សុជា (Sochea)',
+        grade: 4,
+        language,
+        mode: 'student',
+        ...profile,
+      });
+    } catch (err) {
+      setErrorMessage({
+        khmer: 'មានបញ្ហាក្នុងការភ្ជាប់ទៅម៉ាស៊ីនមេ សូមព្យាយាមម្តងទៀត',
+        eng: 'An error occurred while connecting. Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -145,11 +208,11 @@ export const LoginView: React.FC<LoginViewProps> = ({
       <div className="max-w-2xl mx-auto w-full flex items-center justify-between gap-4 mb-4">
         <button
           type="button"
-          onClick={flowMode === 'select' ? onBackToLanding : () => setFlowMode('select')}
+          onClick={flowMode === 'select' || flowMode === 'quick-return' ? onBackToLanding : () => setFlowMode('select')}
           className="px-3.5 py-2 bg-white hover:bg-[#FFCB3D] text-[#2A1E4D] rounded-2xl border-2.5 border-[#2A1E4D] shadow-[2.5px_2.5px_0px_#2A1E4D] font-black text-xs sm:text-sm flex items-center gap-1.5 transition-all cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 stroke-[3]" />
-          <span>{flowMode === 'select' ? (isKhmer ? 'ត្រឡប់ក្រោយ' : 'Welcome Page') : (isKhmer ? 'ជ្រើសរើសឡើងវិញ' : 'Back')}</span>
+          <span>{flowMode === 'select' || flowMode === 'quick-return' ? (isKhmer ? 'ត្រឡប់ក្រោយ' : 'Welcome Page') : (isKhmer ? 'ជ្រើសរើសឡើងវិញ' : 'Back')}</span>
         </button>
 
         {/* Language Switcher */}
@@ -192,6 +255,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
             {flowMode === 'school-code' && (isKhmer ? 'បញ្ចូលលេខកូដសាលារៀន' : 'Enter School Code')}
             {flowMode === 'public-signup' && (isKhmer ? 'ចុះឈ្មោះរៀនដោយខ្លួនឯង' : 'Self Sign-up')}
             {flowMode === 'returning-login' && (isKhmer ? 'ចូលប្រើប្រាស់គណនី' : 'Welcome Back!')}
+            {flowMode === 'quick-return' && (isKhmer ? `សូមស្វាគមន៍មកវិញ ${studentName}!` : `Welcome back, ${studentName}!`)}
           </h1>
 
           <p className="text-xs sm:text-sm font-bold text-[#2A1E4D]/75 leading-relaxed [text-wrap:balance]">
@@ -199,8 +263,20 @@ export const LoginView: React.FC<LoginViewProps> = ({
             {flowMode === 'school-code' && (isKhmer ? 'បញ្ចូលលេខកូដដែលទទួលបានពីគ្រូបង្រៀន' : 'Enter the code provided by your teacher')}
             {flowMode === 'public-signup' && (isKhmer ? 'បង្កើតគណនីសម្រាប់សិស្សសេរី' : 'Create an independent student profile')}
             {flowMode === 'returning-login' && (isKhmer ? 'បញ្ចូលលេខកូដ ឬឈ្មោះ និង PIN' : 'Enter your credentials to log in')}
+            {flowMode === 'quick-return' && (isKhmer ? 'ចុចដើម្បីបន្ត ឬបញ្ចូល PIN' : 'Tap to continue, or enter your PIN')}
           </p>
         </div>
+
+        {/* Error Banner */}
+        {errorMessage && (
+          <div className="p-4 bg-[#FF6FA3] text-white rounded-2xl border-3 border-[#2A1E4D] shadow-[3px_3px_0px_#2A1E4D] flex items-start gap-3 animate-fadeIn">
+            <AlertCircle className="w-5 h-5 stroke-[2.5] shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="font-black text-sm leading-snug">{errorMessage.khmer}</div>
+              <div className="text-xs font-semibold opacity-95 mt-1 leading-snug">{errorMessage.eng}</div>
+            </div>
+          </div>
+        )}
 
         {/* FLOW 1: ENTRY CHOICE CARDS */}
         {flowMode === 'select' && (
@@ -209,6 +285,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
             <button
               type="button"
               onClick={() => {
+                setErrorMessage(null);
                 setFlowMode('school-code');
                 setSchoolCodeConfirmed(false);
               }}
@@ -235,7 +312,10 @@ export const LoginView: React.FC<LoginViewProps> = ({
             {/* Option B: Public Self-Signup Card */}
             <button
               type="button"
-              onClick={() => setFlowMode('public-signup')}
+              onClick={() => {
+                setErrorMessage(null);
+                setFlowMode('public-signup');
+              }}
               className="w-full p-4 sm:p-5 bg-[#F8FAFC] hover:bg-[#3EC6E0] text-left rounded-2xl border-3 border-[#2A1E4D] shadow-[4px_4px_0px_#2A1E4D] hover:-translate-y-0.5 active:translate-y-0.5 transition-all cursor-pointer group flex items-start gap-4"
             >
               <div className="w-12 h-12 bg-[#FFCB3D] text-[#2A1E4D] rounded-2xl border-2 border-[#2A1E4D] shadow-[2px_2px_0px_#2A1E4D] flex items-center justify-center shrink-0 font-black mt-0.5">
@@ -255,7 +335,10 @@ export const LoginView: React.FC<LoginViewProps> = ({
             <div className="pt-3 text-center border-t-2 border-[#2A1E4D]/10">
               <button
                 type="button"
-                onClick={() => setFlowMode('returning-login')}
+                onClick={() => {
+                  setErrorMessage(null);
+                  setFlowMode('returning-login');
+                }}
                 className="text-xs font-black text-[#6C4FF6] hover:underline cursor-pointer"
               >
                 {isKhmer ? 'មានគណនីរួចហើយ? ចូលប្រើប្រាស់នៅទីនេះ' : 'Already have an account? Log in here'}
@@ -287,6 +370,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                       type="text"
                       value={schoolCode}
                       onChange={(e) => {
+                        setErrorMessage(null);
                         setSchoolCode(e.target.value.toUpperCase());
                         setSchoolCodeConfirmed(false);
                       }}
@@ -347,6 +431,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                       <button
                         type="button"
                         onClick={() => {
+                          setErrorMessage(null);
                           setSchoolCode('');
                           setSchoolCodeConfirmed(false);
                         }}
@@ -380,7 +465,10 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   </div>
                   <button
                     type="button"
-                    onClick={() => setSchoolCodeConfirmed(false)}
+                    onClick={() => {
+                      setErrorMessage(null);
+                      setSchoolCodeConfirmed(false);
+                    }}
                     className="text-[11px] font-black text-[#6C4FF6] underline hover:text-[#5839EE] shrink-0 cursor-pointer"
                   >
                     {isKhmer ? 'ប្តូរ' : 'Change'}
@@ -395,7 +483,10 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   <input
                     type="text"
                     value={studentName}
-                    onChange={(e) => setStudentName(e.target.value)}
+                    onChange={(e) => {
+                      setErrorMessage(null);
+                      setStudentName(e.target.value);
+                    }}
                     placeholder={isKhmer ? 'ឧ. សុជា (Sochea)' : 'e.g. Sochea'}
                     className="w-full px-4 py-3.5 bg-[#F8FAFC] rounded-2xl border-3 border-[#2A1E4D] text-base font-bold text-[#2A1E4D] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6C4FF6]"
                     required
@@ -412,7 +503,10 @@ export const LoginView: React.FC<LoginViewProps> = ({
                     type="password"
                     maxLength={4}
                     value={pin}
-                    onChange={(e) => setPin(e.target.value)}
+                    onChange={(e) => {
+                      setErrorMessage(null);
+                      setPin(khmerToLatinDigits(e.target.value));
+                    }}
                     placeholder="1 2 3 4"
                     className="w-full px-4 py-3 bg-[#F8FAFC] rounded-2xl border-3 border-[#2A1E4D] text-base font-bold text-[#2A1E4D] tracking-widest focus:bg-white focus:outline-none"
                   />
@@ -421,220 +515,148 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={!studentName.trim()}
+                  disabled={!studentName.trim() || isSubmitting}
                   className="w-full py-4 bg-[#FFCB3D] hover:bg-[#FFD768] text-[#2A1E4D] font-black text-base rounded-2xl border-3 border-[#2A1E4D] shadow-[4px_4px_0px_#2A1E4D] hover:-translate-y-0.5 active:translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
                 >
-                  <span>{isKhmer ? 'ចូលរៀនជាមួយទន្សាយ' : 'Start Learning with Tunsay'}</span>
-                  <ArrowRight className="w-5 h-5 stroke-[3]" />
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>{isKhmer ? 'កំពុងចូល...' : 'Logging in...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{isKhmer ? 'ចូលរៀនជាមួយទន្សាយ' : 'Start Learning with Tunsay'}</span>
+                      <ArrowRight className="w-5 h-5 stroke-[3]" />
+                    </>
+                  )}
                 </button>
               </div>
             )}
           </form>
         )}
 
-        {/* FLOW 3: PUBLIC SELF-SIGNUP PATH */}
+        {/* FLOW 3: PUBLIC SELF-SIGNUP PATH (single screen) */}
         {flowMode === 'public-signup' && (
           <form onSubmit={handleFinishPublicSignup} className="space-y-4 pt-1">
-            {/* Step Progress Indicator */}
-            <div className="flex items-center justify-between gap-1 pb-2 border-b-2 border-[#2A1E4D]/10">
-              <div className="flex items-center gap-1.5 text-xs font-black text-[#2A1E4D]">
-                <span className="w-5 h-5 bg-[#3EC6E0] text-white rounded-full flex items-center justify-center text-[11px]">
-                  {publicSignupStep}
-                </span>
-                <span>
-                  {publicSignupStep === 1 && (isKhmer ? 'ជំហានទី ១: ឈ្មោះសិស្ស' : 'Step 1: Your Name')}
-                  {publicSignupStep === 2 && (isKhmer ? 'ជំហានទី ២: ថ្នាក់ & បន្ទប់' : 'Step 2: Grade & Class')}
-                  {publicSignupStep === 3 && (isKhmer ? 'ជំហានទី ៣: ព័ត៌មាន & PIN' : 'Step 3: Contact & PIN')}
-                </span>
-              </div>
-              <div className="text-[11px] font-extrabold text-[#2A1E4D]/60">
-                {publicSignupStep} / 3
+            <div className="space-y-1.5">
+              <label className="text-xs font-black text-[#2A1E4D] uppercase tracking-wider">
+                {isKhmer ? 'តើអ្នកឈ្មោះអ្វី?' : 'What is your name?'}
+              </label>
+              <input
+                type="text"
+                value={studentName}
+                onChange={(e) => {
+                  setErrorMessage(null);
+                  setStudentName(e.target.value);
+                }}
+                placeholder={isKhmer ? 'ឧ. សុជា (Sochea)' : 'e.g. Sochea'}
+                className="w-full px-4 py-3.5 bg-[#F8FAFC] rounded-2xl border-3 border-[#2A1E4D] text-base font-bold text-[#2A1E4D] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6C4FF6]"
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-black text-[#2A1E4D] uppercase tracking-wider">
+                {isKhmer ? 'ភាសារៀនសូត្រចម្បង' : 'Preferred Learning Language'}
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => onSelectLanguage('km')}
+                  className={`p-3 rounded-xl border-2 border-[#2A1E4D] font-black text-xs transition-all cursor-pointer ${
+                    isKhmer ? 'bg-[#FFCB3D] text-[#2A1E4D] shadow-[2px_2px_0px_#2A1E4D]' : 'bg-white text-[#2A1E4D]/70'
+                  }`}
+                >
+                  ភាសាខ្មែរ (Khmer)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectLanguage('en')}
+                  className={`p-3 rounded-xl border-2 border-[#2A1E4D] font-black text-xs transition-all cursor-pointer ${
+                    !isKhmer ? 'bg-[#FFCB3D] text-[#2A1E4D] shadow-[2px_2px_0px_#2A1E4D]' : 'bg-white text-[#2A1E4D]/70'
+                  }`}
+                >
+                  English
+                </button>
               </div>
             </div>
 
-            {/* Step 1: Name & Preferred Language */}
-            {publicSignupStep === 1 && (
-              <div className="space-y-4 animate-fadeIn">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-black text-[#2A1E4D] uppercase tracking-wider">
-                    {isKhmer ? 'តើអ្នកឈ្មោះអ្វី?' : 'What is your name?'}
-                  </label>
-                  <input
-                    type="text"
-                    value={studentName}
-                    onChange={(e) => setStudentName(e.target.value)}
-                    placeholder={isKhmer ? 'ឧ. សុជា (Sochea)' : 'e.g. Sochea'}
-                    className="w-full px-4 py-3.5 bg-[#F8FAFC] rounded-2xl border-3 border-[#2A1E4D] text-base font-bold text-[#2A1E4D] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6C4FF6]"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-black text-[#2A1E4D] uppercase tracking-wider">
-                    {isKhmer ? 'ភាសារៀនសូត្រចម្បង' : 'Preferred Learning Language'}
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onSelectLanguage('km')}
-                      className={`p-3 rounded-xl border-2 border-[#2A1E4D] font-black text-xs transition-all cursor-pointer ${
-                        isKhmer ? 'bg-[#FFCB3D] text-[#2A1E4D] shadow-[2px_2px_0px_#2A1E4D]' : 'bg-white text-[#2A1E4D]/70'
-                      }`}
-                    >
-                      ភាសាខ្មែរ (Khmer)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onSelectLanguage('en')}
-                      className={`p-3 rounded-xl border-2 border-[#2A1E4D] font-black text-xs transition-all cursor-pointer ${
-                        !isKhmer ? 'bg-[#FFCB3D] text-[#2A1E4D] shadow-[2px_2px_0px_#2A1E4D]' : 'bg-white text-[#2A1E4D]/70'
-                      }`}
-                    >
-                      English
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  disabled={!studentName.trim()}
-                  onClick={() => setPublicSignupStep(2)}
-                  className="w-full py-3.5 bg-[#3EC6E0] hover:bg-[#32B4CD] text-white font-black text-sm rounded-2xl border-3 border-[#2A1E4D] shadow-[3px_3px_0px_#2A1E4D] disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 mt-2"
-                >
-                  <span>{isKhmer ? 'បន្តទៅជ្រើសរើសថ្នាក់ →' : 'Next: Choose Grade & Class →'}</span>
-                </button>
-              </div>
-            )}
-
-            {/* Step 2: Grade & Class Selection */}
-            {publicSignupStep === 2 && (
-              <div className="space-y-4 animate-fadeIn">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-black text-[#2A1E4D] uppercase tracking-wider">
-                    {isKhmer ? 'ជ្រើសរើសថ្នាក់រៀន (ថ្នាក់ទី ១–៦)' : 'Select Grade (Grades 1–6)'}
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {([1, 2, 3, 4, 5, 6] as Grade[]).map((g) => (
-                      <button
-                        key={g}
-                        type="button"
-                        onClick={() => setGrade(g)}
-                        className={`p-3 rounded-2xl border-3 border-[#2A1E4D] font-black text-sm transition-all cursor-pointer ${
-                          grade === g
-                            ? 'bg-[#FFCB3D] text-[#2A1E4D] shadow-[3px_3px_0px_#2A1E4D] -translate-y-0.5'
-                            : 'bg-white text-[#2A1E4D] hover:bg-[#EAF2FF]'
-                        }`}
-                      >
-                        {isKhmer ? `ថ្នាក់ទី ${g}` : `Grade ${g}`}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-black text-[#2A1E4D] uppercase tracking-wider">
-                    {isKhmer ? 'ជ្រើសរើសបន្ទប់ / កម្រិត' : 'Select Class / Section'}
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {['Class A', 'Class B', 'Class C', 'Home Study'].map((cls) => (
-                      <button
-                        key={cls}
-                        type="button"
-                        onClick={() => setClassNameOption(cls)}
-                        className={`p-2.5 rounded-xl border-2 border-[#2A1E4D] font-bold text-xs transition-all cursor-pointer ${
-                          classNameOption === cls
-                            ? 'bg-[#6C4FF6] text-white shadow-[2px_2px_0px_#2A1E4D]'
-                            : 'bg-white text-[#2A1E4D] hover:bg-[#F8FAFC]'
-                        }`}
-                      >
-                        {cls}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pt-1">
+            <div className="space-y-1.5">
+              <label className="text-xs font-black text-[#2A1E4D] uppercase tracking-wider">
+                {isKhmer ? 'ជ្រើសរើសថ្នាក់រៀន (ថ្នាក់ទី ១–៦)' : 'Select Grade (Grades 1–6)'}
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {([1, 2, 3, 4, 5, 6] as Grade[]).map((g) => (
                   <button
+                    key={g}
                     type="button"
-                    onClick={() => setPublicSignupStep(1)}
-                    className="w-1/3 py-3 bg-white hover:bg-[#F8FAFC] text-[#2A1E4D] font-black text-xs rounded-2xl border-2.5 border-[#2A1E4D] cursor-pointer"
+                    onClick={() => {
+                      setErrorMessage(null);
+                      setGrade(g);
+                    }}
+                    className={`p-3 rounded-2xl border-3 border-[#2A1E4D] font-black text-sm transition-all cursor-pointer ${
+                      grade === g
+                        ? 'bg-[#FFCB3D] text-[#2A1E4D] shadow-[3px_3px_0px_#2A1E4D] -translate-y-0.5'
+                        : 'bg-white text-[#2A1E4D] hover:bg-[#EAF2FF]'
+                    }`}
                   >
-                    {isKhmer ? 'ត្រឡប់' : 'Back'}
+                    {isKhmer ? `ថ្នាក់ទី ${g}` : `Grade ${g}`}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setPublicSignupStep(3)}
-                    className="w-2/3 py-3 bg-[#3EC6E0] hover:bg-[#32B4CD] text-white font-black text-sm rounded-2xl border-3 border-[#2A1E4D] shadow-[3px_3px_0px_#2A1E4D] flex items-center justify-center gap-1 cursor-pointer"
-                  >
-                    <span>{isKhmer ? 'បន្ត →' : 'Next →'}</span>
-                  </button>
-                </div>
+                ))}
               </div>
-            )}
+            </div>
 
-            {/* Step 3: Parent Contact & PIN + Summary */}
-            {publicSignupStep === 3 && (
-              <div className="space-y-4 animate-fadeIn">
-                {/* Profile Summary Card */}
-                <div className="p-3.5 bg-[#ECFDF5] rounded-2xl border-2 border-[#2A1E4D] shadow-[3px_3px_0px_#2A1E4D] space-y-1.5">
-                  <div className="text-[11px] font-black text-[#059669] uppercase tracking-wider">
-                    {isKhmer ? 'ពិនិត្យប្រវត្តិរូបសង្ខេប' : 'Profile Preview'}
-                  </div>
-                  <div className="flex items-center justify-between text-xs font-bold text-[#2A1E4D]">
-                    <span className="font-black text-sm text-[#2A1E4D]">{studentName}</span>
-                    <span className="px-2 py-0.5 bg-[#FFCB3D] rounded-md border border-[#2A1E4D] text-[#2A1E4D]">
-                      {isKhmer ? `ថ្នាក់ទី ${grade}` : `Grade ${grade}`} • {classNameOption}
-                    </span>
-                  </div>
-                </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-black text-[#2A1E4D] uppercase tracking-wider">
+                {isKhmer ? 'អ៊ីមែល ឬលេខទូរស័ព្ទអាណាព្យាបាល (ស្រេចចិត្ត)' : 'Parent / Guardian Contact (Optional)'}
+              </label>
+              <input
+                type="text"
+                value={parentContact}
+                onChange={(e) => {
+                  setErrorMessage(null);
+                  setParentContact(e.target.value);
+                }}
+                placeholder="parent@example.com / 012 345 678"
+                className="w-full px-4 py-3 bg-[#F8FAFC] rounded-2xl border-3 border-[#2A1E4D] text-sm font-bold text-[#2A1E4D] focus:bg-white focus:outline-none"
+              />
+            </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-black text-[#2A1E4D] uppercase tracking-wider">
-                    {isKhmer ? 'អ៊ីមែល ឬលេខទូរស័ព្ទអាណាព្យាបាល' : 'Parent / Guardian Contact'}
-                  </label>
-                  <input
-                    type="text"
-                    value={parentContact}
-                    onChange={(e) => setParentContact(e.target.value)}
-                    placeholder="parent@example.com / 012 345 678"
-                    className="w-full px-4 py-3 bg-[#F8FAFC] rounded-2xl border-3 border-[#2A1E4D] text-sm font-bold text-[#2A1E4D] focus:bg-white focus:outline-none"
-                    required
-                  />
-                </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-black text-[#2A1E4D] uppercase tracking-wider flex items-center gap-1">
+                <KeyRound className="w-3.5 h-3.5 text-[#6C4FF6]" />
+                <span>{isKhmer ? 'លេខ PIN សម្ងាត់ (៤ ខ្ទង់)' : 'Simple 4-digit PIN (Optional)'}</span>
+              </label>
+              <input
+                type="password"
+                maxLength={4}
+                value={pin}
+                onChange={(e) => {
+                  setErrorMessage(null);
+                  setPin(khmerToLatinDigits(e.target.value));
+                }}
+                placeholder="1 2 3 4"
+                className="w-full px-4 py-3 bg-[#F8FAFC] rounded-2xl border-3 border-[#2A1E4D] text-base font-bold text-[#2A1E4D] tracking-widest focus:bg-white focus:outline-none"
+              />
+            </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-black text-[#2A1E4D] uppercase tracking-wider flex items-center gap-1">
-                    <KeyRound className="w-3.5 h-3.5 text-[#6C4FF6]" />
-                    <span>{isKhmer ? 'លេខ PIN សម្ងាត់ (៤ ខ្ទង់)' : 'Simple 4-digit PIN (Optional)'}</span>
-                  </label>
-                  <input
-                    type="password"
-                    maxLength={4}
-                    value={pin}
-                    onChange={(e) => setPin(e.target.value)}
-                    placeholder="1 2 3 4"
-                    className="w-full px-4 py-3 bg-[#F8FAFC] rounded-2xl border-3 border-[#2A1E4D] text-base font-bold text-[#2A1E4D] tracking-widest focus:bg-white focus:outline-none"
-                  />
-                </div>
-
-                <div className="flex gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setPublicSignupStep(2)}
-                    className="w-1/3 py-3.5 bg-white hover:bg-[#F8FAFC] text-[#2A1E4D] font-black text-xs rounded-2xl border-2.5 border-[#2A1E4D] cursor-pointer"
-                  >
-                    {isKhmer ? 'ត្រឡប់' : 'Back'}
-                  </button>
-                  <button
-                    type="submit"
-                    className="w-2/3 py-3.5 bg-[#6FCF6F] hover:bg-[#5EBF5E] text-[#2A1E4D] font-black text-sm rounded-2xl border-3 border-[#2A1E4D] shadow-[4px_4px_0px_#2A1E4D] hover:-translate-y-0.5 active:translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <Check className="w-5 h-5 stroke-[3]" />
-                    <span>{isKhmer ? 'បង្កើតគណនី និងរៀន' : 'Create Account & Start'}</span>
-                  </button>
-                </div>
-              </div>
-            )}
+            <button
+              type="submit"
+              disabled={!studentName.trim() || isSubmitting}
+              className="w-full py-3.5 bg-[#6FCF6F] hover:bg-[#5EBF5E] text-[#2A1E4D] font-black text-sm rounded-2xl border-3 border-[#2A1E4D] shadow-[4px_4px_0px_#2A1E4D] hover:-translate-y-0.5 active:translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>{isKhmer ? 'កំពុងបង្កើត...' : 'Creating...'}</span>
+                </>
+              ) : (
+                <>
+                  <Check className="w-5 h-5 stroke-[3]" />
+                  <span>{isKhmer ? 'បង្កើតគណនី និងរៀន' : 'Create Account & Start'}</span>
+                </>
+              )}
+            </button>
           </form>
         )}
 
@@ -648,7 +670,10 @@ export const LoginView: React.FC<LoginViewProps> = ({
               <input
                 type="text"
                 value={studentName}
-                onChange={(e) => setStudentName(e.target.value)}
+                onChange={(e) => {
+                  setErrorMessage(null);
+                  setStudentName(e.target.value);
+                }}
                 placeholder={isKhmer ? 'បញ្ចូលឈ្មោះ ឬលេខកូដ' : 'Enter name or code'}
                 className="w-full px-4 py-3.5 bg-[#F8FAFC] rounded-2xl border-3 border-[#2A1E4D] text-base font-bold text-[#2A1E4D] focus:bg-white focus:outline-none"
                 required
@@ -663,7 +688,10 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 type="password"
                 maxLength={4}
                 value={pin}
-                onChange={(e) => setPin(e.target.value)}
+                onChange={(e) => {
+                  setErrorMessage(null);
+                  setPin(khmerToLatinDigits(e.target.value));
+                }}
                 placeholder="1 2 3 4"
                 className="w-full px-4 py-3 bg-[#F8FAFC] rounded-2xl border-3 border-[#2A1E4D] text-base font-bold text-[#2A1E4D] tracking-widest focus:bg-white focus:outline-none"
                 required
@@ -672,12 +700,82 @@ export const LoginView: React.FC<LoginViewProps> = ({
 
             <button
               type="submit"
-              className="w-full py-4 bg-[#FFCB3D] hover:bg-[#FFD768] text-[#2A1E4D] font-black text-base rounded-2xl border-3 border-[#2A1E4D] shadow-[4px_4px_0px_#2A1E4D] hover:-translate-y-0.5 active:translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2 mt-2"
+              disabled={isSubmitting}
+              className="w-full py-4 bg-[#FFCB3D] hover:bg-[#FFD768] text-[#2A1E4D] font-black text-base rounded-2xl border-3 border-[#2A1E4D] shadow-[4px_4px_0px_#2A1E4D] hover:-translate-y-0.5 active:translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
             >
-              <span>{isKhmer ? 'ចូលប្រើប្រាស់' : 'Log In'}</span>
-              <ArrowRight className="w-5 h-5 stroke-[3]" />
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>{isKhmer ? 'កំពុងចូល...' : 'Logging in...'}</span>
+                </>
+              ) : (
+                <>
+                  <span>{isKhmer ? 'ចូលប្រើប្រាស់' : 'Log In'}</span>
+                  <ArrowRight className="w-5 h-5 stroke-[3]" />
+                </>
+              )}
             </button>
           </form>
+        )}
+
+        {/* FLOW 5: QUICK RETURN (remembered identity on this device) */}
+        {flowMode === 'quick-return' && (
+          <div className="space-y-4 pt-1">
+            <form onSubmit={handleFinishReturningLogin} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-black text-[#2A1E4D] uppercase tracking-wider flex items-center gap-1">
+                  <KeyRound className="w-3.5 h-3.5 text-[#6C4FF6]" />
+                  <span>{isKhmer ? 'លេខ PIN សម្ងាត់ (៤ ខ្ទង់)' : '4-Digit PIN'}</span>
+                </label>
+                <input
+                  type="password"
+                  maxLength={4}
+                  value={pin}
+                  onChange={(e) => {
+                    setErrorMessage(null);
+                    setPin(khmerToLatinDigits(e.target.value));
+                  }}
+                  placeholder="1 2 3 4"
+                  className="w-full px-4 py-3 bg-[#F8FAFC] rounded-2xl border-3 border-[#2A1E4D] text-base font-bold text-[#2A1E4D] tracking-widest focus:bg-white focus:outline-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-4 bg-[#FFCB3D] hover:bg-[#FFD768] text-[#2A1E4D] font-black text-base rounded-2xl border-3 border-[#2A1E4D] shadow-[4px_4px_0px_#2A1E4D] hover:-translate-y-0.5 active:translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>{isKhmer ? 'កំពុងចូល...' : 'Logging in...'}</span>
+                  </>
+                ) : (
+                  <>
+                    <span>{isKhmer ? 'ចូលប្រើប្រាស់' : 'Continue'}</span>
+                    <ArrowRight className="w-5 h-5 stroke-[3]" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setErrorMessage(null);
+                  clearLastIdentity();
+                  setStudentName('');
+                  setSchoolCode('');
+                  setPin('');
+                  setFlowMode('select');
+                }}
+                className="text-xs font-black text-[#6C4FF6] hover:underline cursor-pointer"
+              >
+                {isKhmer ? 'មិនមែនអ្នក? ប្រើគណនីផ្សេង' : 'Not you? Use a different account'}
+              </button>
+            </div>
+          </div>
         )}
 
         {/* DEV AUTO-FILL TESTING TOOL BUTTON */}

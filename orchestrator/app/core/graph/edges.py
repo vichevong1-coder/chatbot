@@ -37,7 +37,18 @@ def after_intent_router(state: GraphState) -> str:
         return "solve"
     elif intent == "check_answer":
         return "check_answer"
+    elif intent == "hint":
+        return "hint"
+    elif intent == "recommend_next":
+        return "recommend_next"
+    elif intent == "clarify":
+        return "clarify"
     return "explain"
+
+
+def after_hint(state: GraphState) -> str:
+    """Hint node always terminates — the response is the hint itself."""
+    return END
 
 
 def after_solve(state: GraphState) -> str:

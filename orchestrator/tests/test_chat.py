@@ -291,3 +291,48 @@ def test_transcript_summarization_on_long_session(client, fakes, store):
     pedagogy_context = fakes.pedagogy.calls[0]["context"]
     assert "ការសន្ទនាមុន" in pedagogy_context or "Earlier conversation" in pedagogy_context
 
+
+# ---------------------------------------------------------------------------
+# Clarify path
+# ---------------------------------------------------------------------------
+
+
+def test_clarify_question_student_khmer(client, fakes):
+    body = post_chat(client, "?", language="km").json()
+    assert "ទន្សាយ" in body["text_khmer"]
+    assert body["text_eng"] == ""
+    assert body["is_parent_help"] is False
+    assert fakes.pedagogy.calls == []
+    assert fakes.solver.calls == []
+
+
+def test_clarify_question_student_english(client, fakes):
+    body = post_chat(client, "what", language="en").json()
+    assert "help" in body["text_eng"].lower()
+    assert body["text_khmer"] == ""
+    assert body["is_parent_help"] is False
+    assert fakes.pedagogy.calls == []
+
+
+def test_clarify_question_parent_mode(client, fakes):
+    body = post_chat(client, "math", language="km", mode="parent").json()
+    assert body["is_parent_help"] is True
+    assert "បង្រៀនកូន" in body["text_khmer"]
+
+
+# ---------------------------------------------------------------------------
+# Explanation Cache
+# ---------------------------------------------------------------------------
+
+
+def test_explanation_cache_memoizes_identical_queries(client, fakes):
+    # First query with a problem_id
+    post_chat(client, "explain this problem", problem_id="math-g4-apples", active_step_index=0)
+    assert len(fakes.pedagogy.calls) == 1
+
+    # Second identical query
+    post_chat(client, "explain this problem again", problem_id="math-g4-apples", active_step_index=0)
+    # Pedagogy should NOT be called again because result is cached
+    assert len(fakes.pedagogy.calls) == 1
+
+

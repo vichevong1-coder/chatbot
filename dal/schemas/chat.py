@@ -117,3 +117,22 @@ class AnswerResponse(TunsayModel):
     feedback_khmer: str = ""
     feedback_eng: str = ""
     advance_to_step: int | None = Field(default=None, ge=0)
+
+
+class HintRequest(TunsayModel):
+    """POST /hints — request an AI-generated progressive hint for a problem step."""
+
+    session_id: NonBlank
+    student_id: str | None = None
+    problem_id: NonBlank
+    step_id: NonBlank
+    hint_level: int = Field(default=1, ge=1, le=3)
+    language: Language = Language.KHMER
+
+
+class HintResponse(TunsayModel):
+    """Bilingual AI-generated hint response."""
+
+    hint_khmer: str = ""
+    hint_eng: str = ""
+    hint_level: int = 1

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserProfile, HomeworkProblem, Grade, Subject, Language, ChatMessage } from './types';
 import { Header } from './components/Header';
 import { HomeView } from './components/HomeView';
@@ -9,12 +9,40 @@ import { VoiceModal } from './components/VoiceModal';
 import { CelebrationOverlay } from './components/CelebrationOverlay';
 import { LandingView } from './components/LandingView';
 import { LoginView } from './components/LoginView';
+import { DemoEntryView } from './components/DemoEntryView';
 import { getDisplayName } from './utils/language';
-import { signOut } from './api/client';
+import { signOut, registerOrLogin, getToken, fetchStudentProfile } from './api/client';
+import { getDemoGrade, setDemoGrade, clearDemoGrade } from './api/demoSession';
+
+/**
+ * DEMO MODE — on by default, so a fresh clone lands straight in the tutor.
+ * Set VITE_DEMO_MODE=false (frontend_tunsay/.env) to restore landing + login.
+ *
+ * It skips the sign-in SCREENS, not authentication: the gateway rejects every
+ * /chat, /problems and /answers call without a JWT, so the demo still mints a
+ * real token from auth_service. Nothing about the backend is loosened, and no
+ * code is commented out — LandingView and LoginView are untouched and return
+ * the moment the flag is off.
+ */
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE !== 'false';
+
+/**
+ * One demo account PER GRADE, and the grade is what makes them distinct.
+ *
+ * registerOrLogin registers, then falls back to login when the account already
+ * exists — and login returns the profile as first stored. With a single shared
+ * demo name, picking grade 5 would silently sign you back into the grade-4
+ * account and the picker would appear to do nothing. Keep the grade in the name.
+ */
+const demoStudentName = (grade: Grade): string =>
+  `សិស្សសាកល្បង ថ្នាក់ទី ${grade} (Demo G${grade})`;
 
 export default function App() {
-  // Page mode: 'landing' (Public Welcome) | 'login' (Sign-in Page) | 'app' (In-app student experience)
-  const [pageMode, setPageMode] = useState<'landing' | 'login' | 'app'>('landing');
+  // Page mode: 'demo' (grade picker, demo mode only) | 'landing' (Public Welcome)
+  // | 'login' (Sign-in Page) | 'app' (In-app student experience)
+  const [pageMode, setPageMode] = useState<'demo' | 'landing' | 'login' | 'app'>(
+    DEMO_MODE ? 'demo' : 'landing'
+  );
 
   const [profile, setProfile] = useState<UserProfile>({
     name: 'សុជា (Sochea)',
@@ -50,6 +78,28 @@ export default function App() {
     setProfile((prev) => ({ ...prev, ...updated }));
   };
 
+  const refreshProfileStats = async () => {
+    try {
+      const data = await fetchStudentProfile();
+      if (data) {
+        setProfile((prev) => ({
+          ...prev,
+          starsEarned: data.stars ?? prev.starsEarned,
+          completedProblemsCount: data.completedProblemsCount ?? prev.completedProblemsCount,
+        }));
+      }
+    } catch {
+      // Backend unreachable or offline
+    }
+  };
+
+  // Sync profile when token is already present
+  useEffect(() => {
+    if (getToken()) {
+      refreshProfileStats();
+    }
+  }, []);
+
   const handleStartChatWithProblem = (problem?: HomeworkProblem, initialQuery?: string) => {
     setActiveProblem(problem);
     setInitialChatQuery(initialQuery);
@@ -72,6 +122,56 @@ export default function App() {
     setIsCelebrationOpen(true);
   };
 
+  /**
+   * Demo sign-in: mint a real JWT for this grade's demo account, then enter.
+   * Returns false when the backend is unreachable so DemoEntryView can say so
+   * instead of dropping the child into an app where every call 401s.
+   */
+  const handleDemoStart = async (grade: Grade): Promise<boolean> => {
+    // Same grade as last time and the token is still ours? Reuse it. Demo
+    // accounts carry no school code, and the users unique constraint is on
+    // (school_code, student_name) — NULLs compare distinct in SQL, so
+    // registering again would create ANOTHER account rather than 409ing into
+    // the login fallback. See api/demoSession.ts.
+    if (getToken() && getDemoGrade() === grade) {
+      handleUpdateProfile({ grade, mode: 'student' });
+      setPageMode('app');
+      setActiveTab('home');
+      refreshProfileStats();
+      return true;
+    }
+
+    // Switching grades means switching demo accounts — drop the old token so
+    // the child is not left holding a JWT for a different student.
+    signOut();
+    clearDemoGrade();
+
+    const authed = await registerOrLogin({
+      studentName: demoStudentName(grade),
+      grade,
+      language: profile.language,
+    });
+    if (!authed) return false;
+
+    setDemoGrade(grade);
+    handleUpdateProfile({ ...authed, grade, mode: 'student' });
+    setPageMode('app');
+    setActiveTab('home');
+    refreshProfileStats();
+    return true;
+  };
+
+  // 0. DEMO ENTRY — grade picker, no account. Only reachable while DEMO_MODE.
+  if (pageMode === 'demo') {
+    return (
+      <DemoEntryView
+        language={profile.language}
+        onSelectLanguage={(language: Language) => handleUpdateProfile({ language })}
+        onStart={handleDemoStart}
+      />
+    );
+  }
+
   // 1. PUBLIC MARKETING LANDING PAGE
   if (pageMode === 'landing') {
     return (
@@ -89,10 +189,11 @@ export default function App() {
       <LoginView
         language={profile.language}
         onSelectLanguage={(language: Language) => handleUpdateProfile({ language })}
-        onLoginSuccess={(updatedProfile) => {
+        onLoginSuccess={async (updatedProfile) => {
           handleUpdateProfile(updatedProfile);
           setPageMode('app');
           setActiveTab('home');
+          await refreshProfileStats();
         }}
         onBackToLanding={() => setPageMode('landing')}
       />
@@ -155,7 +256,10 @@ export default function App() {
             onUpdateProfile={handleUpdateProfile}
             onSignOut={() => {
               signOut();
-              setPageMode('landing');
+              clearDemoGrade();
+              // In demo mode "sign out" means "pick a different grade", not
+              // "go to the marketing page" — that page is skipped entirely.
+              setPageMode(DEMO_MODE ? 'demo' : 'landing');
             }}
           />
         )}

@@ -23,7 +23,7 @@ from app.core import errors
 from app.core.settings import Settings
 
 PUBLIC_PATHS = frozenset({"/auth/register", "/auth/login", "/health"})
-PROTECTED_PREFIXES = ("/auth/me", "/chat", "/problems", "/answers")
+PROTECTED_PREFIXES = ("/auth/me", "/chat", "/problems", "/answers", "/hints", "/profile")
 
 
 class AuthVerifyMiddleware(BaseHTTPMiddleware):

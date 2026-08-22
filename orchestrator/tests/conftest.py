@@ -55,8 +55,15 @@ class FakeSafetyClient:
 class FakeSolverClient:
     ANSWERS = {
         "5*8": ("40", ["5 * 8 = 40"]),
+        "5 * 8": ("40", ["5 * 8 = 40"]),
+        "12+34": ("46", ["12 + 34 = 46"]),
+        "12 + 34": ("46", ["12 + 34 = 46"]),
+        "25*4": ("100", ["25 * 4 = 100"]),
+        "25 * 4": ("100", ["25 * 4 = 100"]),
         "25% of 80": ("20", ["25% of 80 = 20"]),
+        "20% of 150": ("30", ["20% of 150 = 30"]),
     }
+
 
     def __init__(self) -> None:
         self.calls: list[str] = []
@@ -83,6 +90,18 @@ class FakeContentClient:
             raise ServiceUnavailable("content_service", "connection refused")
         self.calls.append(problem_id)
         return self.problems.get(problem_id)
+
+    async def list_problems(
+        self, grade: int | None = None, subject: str | None = None
+    ) -> list[dict]:
+        if self.down:
+            raise ServiceUnavailable("content_service", "connection refused")
+        results = list(self.problems.values())
+        if grade is not None:
+            results = [p for p in results if p.get("grade") == grade]
+        if subject is not None:
+            results = [p for p in results if p.get("subject") == subject]
+        return results
 
 
 class FakePedagogyClient:
@@ -149,15 +168,21 @@ class FakeGradingClient:
 
 
 class FakeProfileClient:
-    def __init__(self) -> None:
+    def __init__(self, profile_data: dict[str, Any] | None = None) -> None:
         self.calls: list[dict[str, Any]] = []
         self.down = False
+        self.profile_data = profile_data or {
+            "stars": 10,
+            "completed_problems": [],
+            "completed_problems_count": 0,
+            "mastery_levels": {},
+        }
 
     async def get_profile(self, student_id: str) -> dict[str, Any]:
         if self.down:
             raise ServiceUnavailable("student_profile_service", "connection refused")
         self.calls.append({"student_id": student_id})
-        return {"stars": 10, "completed_problems": []}
+        return dict(self.profile_data)
 
     async def record_attempt(
         self,
@@ -176,6 +201,45 @@ class FakeProfileClient:
             "is_correct": is_correct,
         })
         return {"status": "recorded"}
+
+
+class FakeOcrClient:
+    def __init__(self, result: dict[str, Any] | None = None, *, down: bool = False) -> None:
+        self.down = down
+        self.result = result or {
+            "text_khmer": "គណនា ៥ + ៣",
+            "text_eng": "Calculate 5 + 3",
+            "math_expressions": ["5 + 3 = ?"],
+            "confidence": 0.98,
+        }
+        self.calls: list[dict[str, Any]] = []
+
+    async def extract(
+        self, image_bytes: bytes, filename: str = "image.jpg"
+    ) -> dict[str, Any]:
+        if self.down:
+            raise ServiceUnavailable("ocr_service", "connection refused")
+        self.calls.append({"bytes_len": len(image_bytes), "filename": filename})
+        return dict(self.result)
+
+
+class FakeSttClient:
+    def __init__(self, result: dict[str, Any] | None = None, *, down: bool = False) -> None:
+        self.down = down
+        self.result = result or {
+            "text": "៥ បូក ៣",
+            "language": "km",
+            "normalized_math": "5 + 3",
+        }
+        self.calls: list[dict[str, Any]] = []
+
+    async def transcribe(
+        self, audio_bytes: bytes, filename: str = "audio.webm", language: str | None = None
+    ) -> dict[str, Any]:
+        if self.down:
+            raise ServiceUnavailable("stt_service", "connection refused")
+        self.calls.append({"bytes_len": len(audio_bytes), "filename": filename, "language": language})
+        return dict(self.result)
 
 
 # Public problem shape — correct_answer already stripped by content_service.
@@ -201,23 +265,59 @@ APPLES_PROBLEM = {
     ],
 }
 
+FRACTIONS_PROBLEM = {
+    "id": "math-g4-fractions",
+    "title_khmer": "ប្រភាគ",
+    "title_eng": "Fractions",
+    "grade": 4,
+    "subject": "math",
+    "problem_statement_khmer": "លំហាត់ប្រភាគ",
+    "problem_statement_eng": "Fraction practice",
+    "image_uri": None,
+    "steps": [
+        {
+            "id": "fractions-step-1",
+            "step_number": 1,
+            "total_steps": 2,
+            "question_khmer": "តើប្រភាគស្មើនឹងប៉ុន្មាន?",
+            "question_eng": "What is the fraction?",
+            "input_format": "mcq",
+            "options": ["1/2", "1/4", "3/4"],
+        }
+    ],
+}
+
 
 @pytest.fixture
 def fakes() -> ServiceClients:
     return ServiceClients(
         safety=FakeSafetyClient(),
         solver=FakeSolverClient(),
-        content=FakeContentClient({"math-g4-apples": APPLES_PROBLEM}),
+        content=FakeContentClient({
+            "math-g4-apples": APPLES_PROBLEM,
+            "math-g4-fractions": FRACTIONS_PROBLEM,
+        }),
         pedagogy=FakePedagogyClient(),
         auth=FakeAuthClient(),
         grading=FakeGradingClient(),
         profile=FakeProfileClient(),
+        stt=FakeSttClient(),
+        ocr=FakeOcrClient(),
     )
 
 
 @pytest.fixture
 def store() -> InMemorySessionStore:
     return InMemorySessionStore()
+
+
+@pytest.fixture(autouse=True)
+def reset_explanation_cache():
+    from app.session_store.cache import reset_cache
+    reset_cache()
+    yield
+    reset_cache()
+
 
 
 @pytest.fixture

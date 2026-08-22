@@ -1,0 +1,34 @@
+[
+  {
+    "prompt": "how do I solve step 1?",
+    "problem_id": "math-g4-apples",
+    "step_index": 0,
+    "language": "en",
+    "expected_mode": "student",
+    "expected_is_parent_help": false
+  },
+  {
+    "prompt": "តើត្រូវគិតយ៉ាងដូចម្តេច?",
+    "problem_id": "math-g4-apples",
+    "step_index": 0,
+    "language": "km",
+    "expected_mode": "student",
+    "expected_is_parent_help": false
+  },
+  {
+    "prompt": "what does the numerator mean?",
+    "problem_id": "math-g4-fractions",
+    "step_index": 0,
+    "language": "en",
+    "expected_mode": "student",
+    "expected_is_parent_help": false
+  },
+  {
+    "prompt": "ពន្យល់ពីភាគបែង",
+    "problem_id": "math-g4-fractions",
+    "step_index": 0,
+    "language": "km",
+    "expected_mode": "student",
+    "expected_is_parent_help": false
+  }
+]

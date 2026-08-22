@@ -84,6 +84,7 @@ export interface ChatMessage {
   activeStepIndex?: number;
   isSafetyRefusal?: boolean;
   isParentHelp?: boolean;
+  suggestedNext?: string | null;
 }
 
 export interface UserProfile {

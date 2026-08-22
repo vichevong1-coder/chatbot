@@ -22,3 +22,16 @@ class ContentClient(BaseServiceClient):
             return None
         response.raise_for_status()
         return response.json()
+
+    async def list_problems(
+        self, grade: int | None = None, subject: str | None = None
+    ) -> list[dict[str, Any]]:
+        """List public problems filtered by grade and/or subject."""
+        params: dict[str, Any] = {}
+        if grade is not None:
+            params["grade"] = grade
+        if subject is not None:
+            params["subject"] = subject
+        response = await self._request("GET", "/problems", params=params)
+        response.raise_for_status()
+        return response.json()

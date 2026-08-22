@@ -48,6 +48,9 @@ class ServiceClients:
     auth: Any
     grading: Any
     profile: Any
+    stt: Any = None
+    ocr: Any = None
+    retrieval: Any = None
 
 
 class BaseServiceClient:
