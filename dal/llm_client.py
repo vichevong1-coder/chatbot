@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 # plan.md "Content, not code"). Keep it configurable via GEMINI_MODEL; do not
 # "fix" the default here without confirming the real id first.
 DEFAULT_MODEL_ENV = "GEMINI_MODEL"
-DEFAULT_MODEL = "gemini-2.0-flash"
+DEFAULT_MODEL = "gemini-3.6-flash"
 
 DEFAULT_PROVIDER_ENV = "LLM_PROVIDER"
 DEFAULT_PROVIDER = "gemini"
