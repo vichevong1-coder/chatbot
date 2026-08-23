@@ -105,10 +105,12 @@ async def explain(state: GraphState, clients: ServiceClients) -> dict:
 
     # Append transcript summary if it gets long (to prevent context window overflow)
     transcript = state.get("transcript") or []
+    conversation_summary: str | None = None
     if transcript:
         from app.session_store.summarizer import summarize_transcript
         _, summary = summarize_transcript(transcript, language)
         if summary:
+            conversation_summary = summary
             context = f"{summary}\n\n{context}" if context else summary
 
     # Append misconception code to context so the pedagogy service can tailor the prompt
@@ -137,4 +139,5 @@ async def explain(state: GraphState, clients: ServiceClients) -> dict:
         "text_khmer": text_khmer,
         "text_eng": text_eng,
         "is_parent_help": mode == "parent",
+        "conversation_summary": conversation_summary,
     }

@@ -133,6 +133,16 @@ async def chat_image(
     }
     result = await graph.ainvoke(state)
 
+    # Log the image file as an attachment
+    await store.log_attachment(session_id, file_key=file.filename or "image.jpg", file_type="image")
+
+    # Log detected intent
+    await store.log_intent(
+        session_id,
+        intent=result.get("intent", "unknown"),
+        routed_to=result.get("routed_to", result.get("intent", "unknown")),
+    )
+
     response = ChatResponse(
         text_khmer=result.get("text_khmer", ""),
         text_eng=result.get("text_eng", ""),

@@ -34,6 +34,7 @@ from app.infrastructure.service_clients.stt_client import SttClient
 from app.infrastructure.service_clients.ocr_client import OcrClient
 from app.infrastructure.service_clients.retrieval_client import RetrievalClient
 from app.session_store.redis_store import RedisSessionStore, SessionStore
+from app.session_store.postgres_store import PostgresSessionStore
 from app.utils.logging import request_id_var
 
 
@@ -78,7 +79,7 @@ def create_app(
         app.state.http = None  # injected fakes own no transport
 
     app.state.clients = clients
-    app.state.session_store = session_store or RedisSessionStore()
+    app.state.session_store = session_store or PostgresSessionStore()
     app.state.graph = build_graph(clients)
 
     @app.middleware("http")

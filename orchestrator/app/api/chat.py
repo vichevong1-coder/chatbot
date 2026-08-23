@@ -50,6 +50,18 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
     started = time.perf_counter()
     store = request.app.state.session_store
     graph = request.app.state.graph
+    
+
+    # Init session metadata on first message (no-op if already set)
+    if await store.get_session_meta(body.session_id) is None:
+        if body.grade is None:
+            raise ValueError("Please enter your grade!")
+        await store.init_session(
+            body.session_id,
+            student_id=body.student_id,
+            grade=body.grade,
+            language=body.language.value if hasattr(body.language, "value") else (body.language or "km"),
+        )
 
     transcript = await store.get(body.session_id)
 
@@ -64,6 +76,25 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
         "transcript": transcript,
     }
     result = await graph.ainvoke(state)
+
+    # Log detected intent for this turn
+    await store.log_intent(
+        body.session_id,
+        intent=result.get("intent", "unknown"),
+        routed_to=result.get("routed_to", result.get("intent", "unknown")),
+    )
+
+    # Persist conversation summary if the graph produced one
+    if summary := result.get("conversation_summary"):
+        await store.set_summary(body.session_id, summary)
+
+    # Log service call timing
+    await store.log_service_call(
+        body.session_id,
+        service_name=result.get("intent", "unknown"),
+        latency_ms=(time.perf_counter() - started) * 1000,
+        status="ok",
+    )
 
     response = ChatResponse(
         text_khmer=result.get("text_khmer", ""),

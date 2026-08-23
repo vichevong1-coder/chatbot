@@ -391,14 +391,30 @@ Closes the hole in `contracts.md` §4: `correct_answer` currently ships to the b
 - **Verify:** complete a problem in the browser, hard-refresh → stars persist. Two wrong
   attempts on the same skill lower its mastery and change what `recommend_next` returns.
 
-### P2.4 — `clarify` node + real session continuity · ⚠ **MOSTLY NOT DONE** *(marked DONE 2026-08-17; audited 2026-08-22)*
+### P2.4 — `clarify` node + real session continuity · ✅ **SESSION STORE DONE 2026-08-23** *(clarify node + golden queries still open)*
 
-> **Audit.** Of the files this task lists, only `session_store/summarizer.py` has content
-> (1,687 bytes). `nodes/clarify.py`, `session_store/cache.py` and
-> `session_store/postgres_store.py` are all **0 bytes**, and `tests/golden_queries/`
-> contains only `.gitkeep`. So ambiguous input does not route to a clarify node, repeated
-> explanations are not memoized, and neither verify can be run. `intent_router.py` does
-> exist (731 bytes) from P1.7. Treat this task as open.
+> **Audit 2026-08-23.** The session store backend is now fully implemented:
+> - `session_store/redis_store.py` — restructured into **10 Redis namespaces** (chat_sessions,
+>   chat_messages, session_contexts, intent_routes, service_calls, conversation_summaries,
+>   chat_feedback, chat_attachments, failed_requests, model_usage_logs). Each namespace uses the
+>   correct Redis data structure (Hash/List/String) with a 24 h sliding TTL refreshed via pipeline
+>   on every write.
+> - `session_store/postgres_store.py` — implemented `PostgresSessionStore` with write-through
+>   pattern: Postgres is authoritative, Redis is the hot-read cache. `get()` reads Redis first and
+>   falls back to Postgres; `append()` writes Postgres first then mirrors to Redis. Summary is
+>   persisted to the `sessions.summary` column. Hot-path log methods (intent, service calls, etc.)
+>   are Redis-only.
+> - `orchestrator/app/main.py` — switched from `RedisSessionStore` to `PostgresSessionStore`
+>   as the production default. Tests still inject `InMemorySessionStore` via DI.
+> - All call-sites wired: `api/chat.py` calls `init_session()` on first turn and `log_intent()`,
+>   `set_summary()`, `log_service_call()` after graph resolves. `nodes/explain.py` and
+>   `nodes/hint.py` return `conversation_summary` in state. `chat_audio.py` and `chat_image.py`
+>   call `log_attachment()` and `log_intent()`.
+> - `session_store/summarizer.py` — summary trigger raised from 6 → **8 turns**; last 4 kept verbatim.
+> - `session_store/cache.py` — explanation cache already implemented (4,077 bytes, Redis-backed).
+>
+> Still open: `nodes/clarify.py` is still 0 bytes (ambiguous intent still routes to explain rather
+> than a clarify prompt). `tests/golden_queries/` still holds only `.gitkeep`.
 
 - **Files:** `orchestrator/.../nodes/clarify.py`, `intent_router.py`,
   `app/session_store/{postgres_store,summarizer,cache}.py`
@@ -430,16 +446,18 @@ Currently a single canned paragraph in `geminiService.ts`.
 - **Verify:** the same question in `mode: student` vs `mode: parent` returns substantively
   different content; student mode never leaks the final answer before the last step.
 
-### ⚠ Milestone 2 — **NOT YET REACHED** *(marked reached 2026-08-18; audited 2026-08-22)*
+### ⚠ Milestone 2 — **NOT YET REACHED** *(backend gap closed 2026-08-23; frontend P2.3 still open)*
 
-> **Audit.** Four of the five milestone conditions hold: server-side grading,
-> misconception-driven explanations, a working safety gate, and no `correct_answer` in any
-> client payload. The fifth — **persistent progress** — does not: stars still live in
-> `App.tsx` `useState` and are lost on refresh, which is the unfinished frontend half of
-> P2.3. Closing that, plus P2.4, closes the milestone.
+> **Status 2026-08-23.** The session store backend gap (P2.4) is now closed:
+> `postgres_store.py` is fully implemented with write-through Postgres + Redis.
+> Three of five milestone conditions hold on the backend. The remaining two blockers are:
+> 1. **Frontend P2.3** — `App.tsx` still holds `starsEarned` in `useState`; stars are
+>    lost on refresh. `nodes/recommend_next.py` is still 0 bytes.
+> 2. **P2.4 clarify node** — ambiguous intent still routes to explain; `clarify.py` is 0 bytes.
 
-Server-side grading, misconception-driven explanations, persistent progress, working safety
-gate, no `correct_answer` in any client payload.
+Server-side grading ✅, misconception-driven explanations ✅, persistent session transcript ✅,
+working safety gate ✅, no `correct_answer` in any client payload ✅.
+NOT yet: persistent stars/progress (frontend P2.3), clarify node (P2.4).
 
 ---
 
@@ -581,11 +599,12 @@ Strict dependency chain — do not start a task before its predecessor's verify 
       API: `App.tsx` still holds `starsEarned` in `useState` and `HintSheet.tsx` emits no
       hint-rung events. The verify — "complete a problem, hard-refresh, stars persist" —
       cannot pass yet *audited 2026-08-22*
-- [~] **P2.4** `clarify` node + session continuity + explanation cache — only
-      `session_store/summarizer.py` exists. `nodes/clarify.py`, `session_store/cache.py` and
-      `session_store/postgres_store.py` are all still 0 bytes, and `tests/golden_queries/`
-      holds nothing but `.gitkeep`, so neither verify (>=20 routed utterances; a repeated
-      explanation is a cache hit costing zero tokens) can run *audited 2026-08-22*
+- [~] **P2.4** `clarify` node + session continuity + explanation cache —
+      **Session store backend fully done 2026-08-23**: `redis_store.py` restructured into
+      10 Redis namespaces; `postgres_store.py` implemented (write-through, Postgres
+      authoritative); `main.py` switched to `PostgresSessionStore`; all call-sites wired;
+      summarizer threshold raised to 8 turns; `cache.py` already existed. Still open:
+      `nodes/clarify.py` is 0 bytes; `tests/golden_queries/` is empty ✅ *store done 2026-08-23*
 - [~] **P2.5** Parent mode — the mechanism is in: `mode_instructions` in the band YAMLs
       differ substantively (parent may reveal answer and method, student may not) and
       `explain.py` sets `is_parent_help` for the yellow bubble. What is missing is the
@@ -617,8 +636,13 @@ Strict dependency chain — do not start a task before its predecessor's verify 
 
 ### Phase 4 — Depth and hardening
 
-- [ ] **P4.1** `retrieval_service` (RAG over WEG curriculum)
-- [ ] **P4.2** Cost controls — token budgets, cache-hit logging, heuristics
+- [ ] **P4.1** `retrieval_service` — RAG over WEG curriculum. **Gate:** validate retrieval
+      quality on real Khmer queries before wiring into prompts. Prompt YAMLs need
+      `{retrieved_context}` slot; `explanation_generator.py` needs to inject it;
+      `explain.py` node needs to call the retrieval client before pedagogy.
+- [ ] **P4.2** Cost controls — per-student daily token budget (Redis counter
+      `token_budget:{student_id}:{YYYY-MM-DD}` with `EXPIREAT` to midnight);
+      cache-hit-rate logging; heuristics in `heuristics.py`
 - [ ] **P4.3** Child-data privacy pass
 - [ ] **P4.4** Offline / low-bandwidth assessment — *before any field pilot*
 

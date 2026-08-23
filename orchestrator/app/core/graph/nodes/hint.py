@@ -94,10 +94,12 @@ async def hint(state: GraphState, clients: ServiceClients) -> dict[str, Any]:
     context = f"{hint_instruction}\n\n{context}" if context else hint_instruction
 
     transcript = state.get("transcript") or []
+    conversation_summary: str | None = None
     if transcript:
         from app.session_store.summarizer import summarize_transcript
         _, summary = summarize_transcript(transcript, language)
         if summary:
+            conversation_summary = summary
             context = f"{summary}\n\n{context}"
 
     try:
@@ -119,4 +121,5 @@ async def hint(state: GraphState, clients: ServiceClients) -> dict[str, Any]:
         "text_khmer": text_khmer,
         "text_eng": text_eng,
         "is_parent_help": mode == "parent",
+        "conversation_summary": conversation_summary,
     }

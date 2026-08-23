@@ -15,7 +15,7 @@ def summarize_transcript(
     - The trimmed transcript list (keeping the last 4 messages in full).
     - An optional text summary string of the older messages to inject into the context.
     """
-    if len(transcript) <= 6:
+    if len(transcript) <= 8:
         return transcript, None
 
     # Keep the last 4 messages in full
