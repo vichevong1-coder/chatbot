@@ -53,8 +53,11 @@ async def get_problem_full(request: Request, problem_id: str) -> HomeworkProblem
     return problem
 
 
+from fastapi import Response
+
 @admin_router.delete("/problems/{problem_id}", status_code=204)
-async def delete_problem(request: Request, problem_id: str) -> None:
+async def delete_problem(request: Request, problem_id: str) -> Response:
     deleted = await _repository(request).delete_problem(problem_id)
     if not deleted:
         raise HTTPException(status_code=404, detail=problem_not_found_detail(problem_id))
+    return Response(status_code=204)

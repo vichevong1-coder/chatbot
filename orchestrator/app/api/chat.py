@@ -54,12 +54,11 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
 
     # Init session metadata on first message (no-op if already set)
     if await store.get_session_meta(body.session_id) is None:
-        if body.grade is None:
-            raise ValueError("Please enter your grade!")
+        grade = body.grade if body.grade is not None else 4
         await store.init_session(
             body.session_id,
             student_id=body.student_id,
-            grade=body.grade,
+            grade=grade,
             language=body.language.value if hasattr(body.language, "value") else (body.language or "km"),
         )
 

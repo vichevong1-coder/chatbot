@@ -81,8 +81,8 @@ class SessionStore(ABC):
         self,
         session_id: str,
         student_id: str,
-        grade: int,
-        language: str,
+        grade: int = 4,
+        language: str = "km",
     ) -> None:
         """Create/reset the session metadata hash. Safe to call multiple times."""
 
@@ -226,8 +226,8 @@ class RedisSessionStore(SessionStore):
         self,
         session_id: str,
         student_id: str,
-        grade: int,
-        language: str,
+        grade: int = 4,
+        language: str = "km",
     ) -> None:
         r = get_redis()
         await r.hset(
@@ -395,6 +395,10 @@ class InMemorySessionStore(SessionStore):
         self._usage: dict[str, list[dict[str, Any]]] = {}
         self.touched: list[str] = []
 
+    @property
+    def sessions(self) -> dict[str, list[dict[str, Any]]]:
+        return self._messages
+
     async def get(self, session_id: str) -> list[dict[str, Any]]:
         return list(self._messages.get(session_id, []))
 
@@ -408,8 +412,8 @@ class InMemorySessionStore(SessionStore):
         self,
         session_id: str,
         student_id: str,
-        grade: int,
-        language: str,
+        grade: int = 4,
+        language: str = "km",
     ) -> None:
         self._meta[session_id] = {
             "student_id": student_id,

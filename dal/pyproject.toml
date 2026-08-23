@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "tunsay-dal"
 version = "0.1.0"
 description = "Shared data-access and schema library for the Tunsay backend services."
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
     "sqlalchemy>=2.0",
     "pydantic>=2.0",

@@ -70,6 +70,7 @@ class ChatRequest(TunsayModel):
     language: Language = Language.KHMER
     problem_id: str | None = None
     active_step_index: int | None = Field(default=None, ge=0)
+    grade: int | None = Field(default=None, ge=1, le=12)
 
 
 class ChatResponse(TunsayModel):

@@ -164,8 +164,8 @@ class PostgresSessionStore(SessionStore):
         self,
         session_id: str,
         student_id: str,
-        grade: int,
-        language: str,
+        grade: int = 4,
+        language: str = "km",
     ) -> None:
         """UPSERT a session row. Safe to call multiple times."""
         stmt = (
