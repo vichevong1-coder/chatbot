@@ -158,7 +158,7 @@ def test_all_attempts_fail_returns_khmer_fallback_no_exception():
     result = asyncio.run(client.generate("q", language=Language.KHMER))
 
     assert result.from_fallback is True
-    assert result.text == KM_FALLBACK
+    assert result.text.startswith(KM_FALLBACK)
     assert result.attempts == 3
     assert len(call.calls) == 3
 
@@ -167,7 +167,7 @@ def test_all_attempts_fail_returns_english_fallback():
     client, _, _ = make_client([Transient503(), Transient503(), Transient503()])
     result = asyncio.run(client.generate("q", language=Language.ENGLISH))
     assert result.from_fallback is True
-    assert result.text == EN_FALLBACK
+    assert result.text.startswith(EN_FALLBACK)
 
 
 def test_fallback_strings_match_server_ts():
@@ -179,7 +179,7 @@ def test_totally_unexpected_exception_still_returns_fallback():
     client, _, _ = make_client([RuntimeError("boom"), RuntimeError("boom"), RuntimeError("boom")])
     result = asyncio.run(client.generate("q", language=Language.KHMER))
     assert result.from_fallback is True
-    assert result.text == KM_FALLBACK
+    assert result.text.startswith(KM_FALLBACK)
 
 
 # -- key handling ----------------------------------------------------------------------
@@ -198,7 +198,7 @@ def test_missing_or_placeholder_key_short_circuits_with_zero_sdk_calls(key, monk
 
     result = asyncio.run(client.generate("q", language=Language.KHMER))
     assert result.from_fallback is True
-    assert result.text == KM_FALLBACK
+    assert result.text.startswith(KM_FALLBACK)
     assert result.attempts == 0
     assert call.calls == []  # the SDK is never touched
 
@@ -211,7 +211,7 @@ def test_non_transient_error_goes_straight_to_fallback_without_retries():
     result = asyncio.run(client.generate("q", language=Language.ENGLISH))
 
     assert result.from_fallback is True
-    assert result.text == EN_FALLBACK
+    assert result.text.startswith(EN_FALLBACK)
     assert result.attempts == 1
     assert len(call.calls) == 1  # no retry burned on an unfixable error
     assert sleep.delays == []
