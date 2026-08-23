@@ -8,7 +8,10 @@ from typing import Any
 
 from app.core.audio_preprocess import validate_and_inspect_audio
 from app.core.language_detect import detect_language
-from app.core.math_notation_normalizer import normalize_spoken_math
+try:
+    from faster_whisper import WhisperModel  # type: ignore
+except ImportError:
+    WhisperModel = None
 
 
 class AudioTranscriber:
@@ -20,14 +23,16 @@ class AudioTranscriber:
         )
         self.model_path = model_path or os.environ.get("WHISPER_MODEL_PATH", default_model_dir)
         self._whisper_model = None
+        self._whisper_attempted = False
 
     def _get_whisper_model(self):
-        if self._whisper_model is None and os.path.exists(self.model_path):
-            try:
-                from faster_whisper import WhisperModel
-                self._whisper_model = WhisperModel(self.model_path, device="cpu", compute_type="int8")
-            except Exception:
-                self._whisper_model = None
+        if not self._whisper_attempted:
+            self._whisper_attempted = True
+            if WhisperModel is not None and os.path.exists(self.model_path):
+                try:
+                    self._whisper_model = WhisperModel(self.model_path, device="cpu", compute_type="int8")
+                except Exception:
+                    self._whisper_model = None
         return self._whisper_model
 
     async def transcribe(
@@ -44,11 +49,14 @@ class AudioTranscriber:
         if whisper and os.path.exists(self.model_path):
             try:
                 import tempfile
-                with tempfile.NamedTemporaryFile(suffix=f".{fmt}", delete=False) as tmp:
-                    tmp.write(audio_bytes)
-                    tmp_path = tmp.name
+                tmp = tempfile.NamedTemporaryFile(suffix=f".{fmt}", delete=False)
+                tmp_path = tmp.name
                 try:
-                    segments, _ = whisper.transcribe(tmp_path, language="km" if preferred_language == "km" else None)
+                    tmp.write(audio_bytes)
+                    tmp.close()  # Close handle so ffmpeg/ctranslate2 on Windows can read file
+
+                    lang_arg = preferred_language if preferred_language in ("km", "en") else None
+                    segments, _ = whisper.transcribe(tmp_path, language=lang_arg)
                     raw_text = " ".join([seg.text.strip() for seg in segments]).strip()
                     if raw_text:
                         lang = preferred_language or detect_language(raw_text)
