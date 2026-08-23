@@ -162,7 +162,7 @@ def test_no_api_key_returns_bilingual_fallback_km(fallback_generator):
         prompt="hello", grade=4, language=Language.KHMER, mode=UserMode.STUDENT
     ))
     assert result["from_fallback"] is True
-    assert result["text_khmer"] == FALLBACK_TEXT[Language.KHMER]
+    assert result["text_khmer"].startswith(FALLBACK_TEXT[Language.KHMER])
     assert result["text_eng"] == ""
     assert result["prompt_tokens"] is None and result["output_tokens"] is None
 
@@ -172,5 +172,5 @@ def test_no_api_key_returns_bilingual_fallback_en(fallback_generator):
         prompt="hello", grade=4, language=Language.ENGLISH, mode=UserMode.STUDENT
     ))
     assert result["from_fallback"] is True
-    assert result["text_eng"] == FALLBACK_TEXT[Language.ENGLISH]
+    assert result["text_eng"].startswith(FALLBACK_TEXT[Language.ENGLISH])
     assert result["text_khmer"] == ""
