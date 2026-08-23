@@ -29,11 +29,27 @@ OFFLINE_FALLBACK = {
 }
 
 
+# Thai Unicode Range: \u0E00-\u0E7F
+THAI_SCRIPT_PATTERN = re.compile(r"[\u0E00-\u0E7F]")
+KHMER_SCRIPT_PATTERN = re.compile(r"[\u1780-\u17FF\u19E0-\u19FF]")
+
+
+def sanitize_script_no_thai(text: str) -> str:
+    """Sanitize OCR output to prevent Thai script leakage into Khmer/English results."""
+    if not text:
+        return ""
+    # Strip any accidentally predicted Thai characters (\u0E00-\u0E7F)
+    cleaned = THAI_SCRIPT_PATTERN.sub("", text)
+    # Clean up redundant spaces left by removals
+    return re.sub(r"[ \t]+", " ", cleaned).strip()
+
+
 def extract_math_expressions(text: str) -> list[str]:
     """Extract candidate mathematical expressions and equations from free text."""
     if not text:
         return []
 
+    text = sanitize_script_no_thai(text)
     expressions: list[str] = []
     lines = text.split("\n")
     for line in lines:
@@ -84,8 +100,32 @@ class MathOcrEngine:
         key = (key or "").strip()
         return None if key in _PLACEHOLDER_KEYS else key
 
+    def _run_darayut_ocr(self, image_bytes: bytes) -> dict[str, Any] | None:
+        """Run dedicated Darayut Khmer & Math OCR model for high-accuracy Khmer script extraction."""
+        darayut_url = os.environ.get("DARAYUT_OCR_URL")
+        if not darayut_url:
+            return None
+        try:
+            with httpx.Client(timeout=10.0) as client:
+                files = {"file": ("image.jpg", image_bytes, "image/jpeg")}
+                resp = client.post(darayut_url, files=files)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    raw_km = sanitize_script_no_thai(data.get("text_khmer") or data.get("text") or "")
+                    raw_en = sanitize_script_no_thai(data.get("text_eng") or "")
+                    exprs = data.get("math_expressions") or extract_math_expressions(f"{raw_km}\n{raw_en}")
+                    return {
+                        "text_khmer": raw_km,
+                        "text_eng": raw_en,
+                        "math_expressions": exprs,
+                        "confidence": float(data.get("confidence", 0.95)),
+                    }
+        except Exception as exc:
+            logger.warning("Darayut OCR call failed (%s)", exc)
+        return None
+
     def _run_paddle_ocr(self, image_bytes: bytes) -> dict[str, Any] | None:
-        """Run local PaddleOCR engine for offline mathematical & document text extraction."""
+        """Run local PaddleOCR / PaddleOCR-VL layout engine for multi-language & math symbol extraction."""
         if not _PADDLE_AVAILABLE:
             return None
         try:
@@ -97,6 +137,7 @@ class MathOcrEngine:
             img_np = np.array(img)
 
             if self._paddle_engine is None:
+                # Restrict languages strictly to English / Khmer without Thai language models
                 self._paddle_engine = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
 
             results = self._paddle_engine.ocr(img_np, cls=True)
@@ -104,16 +145,19 @@ class MathOcrEngine:
             confidences: list[float] = []
             if results and results[0]:
                 for item in results[0]:
-                    text = item[1][0]
-                    conf = float(item[1][1])
-                    lines.append(text)
-                    confidences.append(conf)
+                    raw_line = item[1][0]
+                    # Enforce strict non-Thai script filter
+                    clean_line = sanitize_script_no_thai(raw_line)
+                    if clean_line:
+                        conf = float(item[1][1])
+                        lines.append(clean_line)
+                        confidences.append(conf)
 
             full_text = "\n".join(lines)
             math_exprs = extract_math_expressions(full_text)
             avg_conf = sum(confidences) / len(confidences) if confidences else 0.90
 
-            has_khmer = any("\u1780" <= c <= "\u17ff" for c in full_text)
+            has_khmer = bool(KHMER_SCRIPT_PATTERN.search(full_text))
             return {
                 "text_khmer": full_text if has_khmer else "",
                 "text_eng": full_text if not has_khmer else "",
@@ -134,6 +178,12 @@ class MathOcrEngine:
         api_key = self._effective_api_key()
         ocr_engine = os.environ.get("OCR_ENGINE", "auto").lower()
 
+        # Check Darayut OCR engine if requested or configured
+        if ocr_engine == "darayut":
+            darayut_res = self._run_darayut_ocr(image_bytes)
+            if darayut_res:
+                return darayut_res
+
         # Direct PaddleOCR request or auto fallback when Gemini key is absent
         if ocr_engine == "paddleocr" or (ocr_engine == "auto" and not api_key and _PADDLE_AVAILABLE):
             paddle_res = self._run_paddle_ocr(image_bytes)
@@ -145,6 +195,8 @@ class MathOcrEngine:
                 b64_data = base64.b64encode(image_bytes).decode("utf-8")
                 prompt = (
                     "You are an OCR and Math Transcription engine for Cambodian K-12 primary and secondary school homework.\n"
+                    "STRICT SCRIPT ISOLATION: The target language is KHMER (Cambodian script U+1780..U+17FF) and ENGLISH.\n"
+                    "Do NOT output any Thai script characters (U+0E00..U+0E7F). Render Cambodian text strictly in Khmer script.\n\n"
                     "Analyze the uploaded image and extract:\n"
                     "1. All Khmer text present (printed or handwritten homework problem statement) into `text_khmer`.\n"
                     "2. All English text or English translation/transcription if present into `text_eng`.\n"
@@ -196,12 +248,12 @@ class MathOcrEngine:
                                 cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_json_str, flags=re.MULTILINE).strip()
                                 parsed = json.loads(cleaned)
 
-                                text_khmer = str(parsed.get("text_khmer") or "").strip()
-                                text_eng = str(parsed.get("text_eng") or "").strip()
+                                text_khmer = sanitize_script_no_thai(str(parsed.get("text_khmer") or "").strip())
+                                text_eng = sanitize_script_no_thai(str(parsed.get("text_eng") or "").strip())
                                 math_exprs = parsed.get("math_expressions") or []
                                 if not isinstance(math_exprs, list):
                                     math_exprs = [str(math_exprs)]
-                                math_exprs = [str(e).strip() for e in math_exprs if str(e).strip()]
+                                math_exprs = [sanitize_script_no_thai(str(e)).strip() for e in math_exprs if str(e).strip()]
 
                                 if not math_exprs:
                                     math_exprs = extract_math_expressions(f"{text_khmer}\n{text_eng}")

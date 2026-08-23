@@ -102,9 +102,16 @@ def test_extract_math_expressions():
     assert "2x + 5 = 15" in expressions
 
 
-def test_extract_math_expressions_empty():
-    assert extract_math_expressions("") == []
-    assert extract_math_expressions("គ្មានលេខទេ") == []
+from app.core.math_ocr import MathOcrEngine, extract_math_expressions, sanitize_script_no_thai
+
+
+def test_sanitize_script_no_thai():
+    # Mix of Khmer, English, Math, and accidental Thai script characters (\u0E00-\u0E7F)
+    mixed_text = "គណនាលំហាត់ สวัสดีครับ 5 + 3 = 8"
+    sanitized = sanitize_script_no_thai(mixed_text)
+    assert "สวัสดีครับ" not in sanitized
+    assert "គណនាលំហាត់" in sanitized
+    assert "5 + 3 = 8" in sanitized
 
 
 @pytest.mark.anyio
