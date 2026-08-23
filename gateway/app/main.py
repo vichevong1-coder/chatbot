@@ -14,15 +14,26 @@ tests can mock every upstream and drive the clock.
 from __future__ import annotations
 
 import asyncio
+import logging
+import sys
 from contextlib import asynccontextmanager
 
 import httpx
 from fastapi import FastAPI, Request
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    stream=sys.stdout,
+    force=True,
+)
+
 from app.core.settings import Settings
 from app.middleware.auth_verify import AuthVerifyMiddleware
 from app.middleware.cors import add_cors
 from app.middleware.rate_limit import RateLimiter, RateLimitMiddleware
+from app.middleware.request_logger import RequestLoggerMiddleware
 from app.routes import auth, chat, chat_audio, chat_image, problems, answers, hints, profile
 
 SERVICE_NAME = "gateway"
@@ -94,6 +105,7 @@ def create_app(
         ),
     )
     app.add_middleware(AuthVerifyMiddleware, settings=settings)
+    app.add_middleware(RequestLoggerMiddleware)  # Runs right after CORS, before Auth
     add_cors(app, settings)  # outermost
 
     return app

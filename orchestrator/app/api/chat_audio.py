@@ -14,6 +14,26 @@ router = APIRouter()
 logger = get_logger("orchestrator")
 
 
+def _resolve_student_id(request: Request, form_student_id: str | None) -> str | None:
+    if form_student_id and form_student_id != "anonymous":
+        return form_student_id
+    auth_header = request.headers.get("Authorization") or ""
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:].strip()
+        parts = token.split(".")
+        if len(parts) >= 2:
+            try:
+                import base64, json
+                padding = "=" * (4 - len(parts[1]) % 4)
+                payload_bytes = base64.b64decode(parts[1] + padding)
+                payload = json.loads(payload_bytes)
+                if payload.get("sub"):
+                    return str(payload["sub"])
+            except Exception:
+                pass
+    return None
+
+
 @router.post("/chat/audio", response_model=ChatResponse, response_model_by_alias=False)
 async def chat_audio(
     request: Request,
@@ -29,6 +49,16 @@ async def chat_audio(
     store = request.app.state.session_store
     graph = request.app.state.graph
     clients = request.app.state.clients
+
+    resolved_student_id = _resolve_student_id(request, student_id)
+    if resolved_student_id:
+        if await store.get_session_meta(session_id) is None:
+            await store.init_session(
+                session_id,
+                student_id=resolved_student_id,
+                grade=4,
+                language=language,
+            )
 
     audio_bytes = await file.read()
     if not audio_bytes:
@@ -52,8 +82,9 @@ async def chat_audio(
     transcript = await store.get(session_id)
 
     # Drive LangGraph
+    final_student_id = resolved_student_id or student_id or "anonymous"
     state: dict[str, Any] = {
-        "student_id": student_id or "anonymous",
+        "student_id": final_student_id,
         "session_id": session_id,
         "language": language,
         "mode": mode,

@@ -58,7 +58,8 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
           stream.getTracks().forEach((track) => track.stop());
           const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
           if (audioBlob.size > 0) {
-            const res = await sendVoiceTurn(audioBlob, 'student', undefined, language);
+            const langParam: Language = language === 'en' ? 'en' : 'km';
+            const res = await sendVoiceTurn(audioBlob, 'student', undefined, langParam);
             const speechText = isKhmer ? (res.textKhmer || res.textEng) : (res.textEng || res.textKhmer);
             setTunsaySpeech(speechText || (isKhmer ? 'ខ្ញុំបានស្តាប់ឮហើយ! តោះគិតទាំងអស់គ្នា 🐰' : "I heard you! Let's think together 🐰"));
           }

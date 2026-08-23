@@ -58,6 +58,13 @@ def extract_math_expressions(text: str) -> list[str]:
     return unique_expressions
 
 
+try:
+    from paddleocr import PaddleOCR  # type: ignore
+    _PADDLE_AVAILABLE = True
+except ImportError:
+    _PADDLE_AVAILABLE = False
+
+
 class MathOcrEngine:
     """Extracts math expressions and bilingual text from homework images."""
 
@@ -70,11 +77,52 @@ class MathOcrEngine:
         self._api_key = api_key
         self._model = model or os.environ.get("GEMINI_MODEL", DEFAULT_GEMINI_MODEL)
         self._timeout_seconds = timeout_seconds
+        self._paddle_engine: Any = None
 
     def _effective_api_key(self) -> str | None:
         key = self._api_key if self._api_key is not None else os.environ.get("GEMINI_API_KEY")
         key = (key or "").strip()
         return None if key in _PLACEHOLDER_KEYS else key
+
+    def _run_paddle_ocr(self, image_bytes: bytes) -> dict[str, Any] | None:
+        """Run local PaddleOCR engine for offline mathematical & document text extraction."""
+        if not _PADDLE_AVAILABLE:
+            return None
+        try:
+            import io
+            import numpy as np
+            from PIL import Image
+
+            img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+            img_np = np.array(img)
+
+            if self._paddle_engine is None:
+                self._paddle_engine = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
+
+            results = self._paddle_engine.ocr(img_np, cls=True)
+            lines: list[str] = []
+            confidences: list[float] = []
+            if results and results[0]:
+                for item in results[0]:
+                    text = item[1][0]
+                    conf = float(item[1][1])
+                    lines.append(text)
+                    confidences.append(conf)
+
+            full_text = "\n".join(lines)
+            math_exprs = extract_math_expressions(full_text)
+            avg_conf = sum(confidences) / len(confidences) if confidences else 0.90
+
+            has_khmer = any("\u1780" <= c <= "\u17ff" for c in full_text)
+            return {
+                "text_khmer": full_text if has_khmer else "",
+                "text_eng": full_text if not has_khmer else "",
+                "math_expressions": math_exprs,
+                "confidence": round(avg_conf, 2),
+            }
+        except Exception as exc:
+            logger.warning("PaddleOCR processing failed (%s)", exc)
+            return None
 
     async def extract(
         self,
@@ -84,6 +132,13 @@ class MathOcrEngine:
     ) -> dict[str, Any]:
         """Extract Khmer text, English text, and math expressions from preprocessed image."""
         api_key = self._effective_api_key()
+        ocr_engine = os.environ.get("OCR_ENGINE", "auto").lower()
+
+        # Direct PaddleOCR request or auto fallback when Gemini key is absent
+        if ocr_engine == "paddleocr" or (ocr_engine == "auto" and not api_key and _PADDLE_AVAILABLE):
+            paddle_res = self._run_paddle_ocr(image_bytes)
+            if paddle_res:
+                return paddle_res
 
         if api_key:
             try:
@@ -138,7 +193,6 @@ class MathOcrEngine:
                             parts = candidates[0].get("content", {}).get("parts", [])
                             if parts:
                                 raw_json_str = parts[0].get("text", "").strip()
-                                # Clean markdown code fences if present
                                 cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_json_str, flags=re.MULTILINE).strip()
                                 parsed = json.loads(cleaned)
 
@@ -149,7 +203,6 @@ class MathOcrEngine:
                                     math_exprs = [str(math_exprs)]
                                 math_exprs = [str(e).strip() for e in math_exprs if str(e).strip()]
 
-                                # Augment math expressions from text if empty
                                 if not math_exprs:
                                     math_exprs = extract_math_expressions(f"{text_khmer}\n{text_eng}")
 
@@ -163,7 +216,12 @@ class MathOcrEngine:
                                     "confidence": confidence,
                                 }
             except Exception as exc:
-                logger.warning("math_ocr: live multimodal OCR failed (%s); falling back to offline result", type(exc).__name__)
+                logger.warning("math_ocr: live multimodal OCR failed (%s); falling back", type(exc).__name__)
+
+        # Try PaddleOCR as secondary fallback before offline static default
+        paddle_res = self._run_paddle_ocr(image_bytes)
+        if paddle_res:
+            return paddle_res
 
         # Offline fallback
         return dict(OFFLINE_FALLBACK)

@@ -52,9 +52,9 @@ def test_golden_intent_routing(client, fakes, item):
         assert fakes.solver.calls == []
 
     elif expected_intent == "solve":
-        # Solver path
+        # Solver path: solver computes answer, pedagogy provides Socratic LLM explanation
         assert len(fakes.solver.calls) == 1
-        assert fakes.pedagogy.calls == []
+        assert len(fakes.pedagogy.calls) == 1
 
     elif expected_intent == "hint":
         # Hint path

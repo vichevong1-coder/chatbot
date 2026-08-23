@@ -6,6 +6,7 @@ import { ModeSwitcher } from './ModeSwitcher';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Star, Award, Sparkles, User, Globe, GraduationCap, MessageSquare, Trash2, Shield, Save, CheckCircle2, Edit3 } from 'lucide-react';
 import { getDisplayName } from '../utils/language';
+import { fetchStudentProfile } from '../api/client';
 
 interface ProfileViewProps {
   profile: UserProfile;

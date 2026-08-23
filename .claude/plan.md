@@ -580,15 +580,15 @@ Strict dependency chain — do not start a task before its predecessor's verify 
 - [x] **P1.5** `solver_service` — 47 tests; Khmer numerals, exact fractions ✅ *2026-08-15*
 - [x] **P1.6** `safety_service` — 73 tests; bilingual rules both directions ✅ *2026-08-15*
 - [x] **P1.7** `orchestrator` — 28 tests; langgraph 5-node graph ✅ *2026-08-15*
-- [x] **P1.8** `pedagogy_service` — 24 tests; server.ts prompt ported to band YAMLs ✅ *2026-08-15*
-- [x] **P1.9** `gateway` — 35 tests; JWT overwrite + case boundary ✅ *2026-08-15*
+- [x] **P1.8** `pedagogy_service` — 24 tests; prompt band YAMLs covering Grade 1–3, 4–6, 7–9 (`explain_grade7_9.yaml`), and 10–12 (`explain_grade10_12.yaml`) ✅ *updated 2026-08-23*
+- [x] **P1.9** `gateway` — 40 tests; JWT overwrite + case boundary + task flow & request logging middleware (`RequestLoggerMiddleware`) ✅ *updated 2026-08-23*
 - [x] **P1.10** Repoint the frontend — proxy + real login + contract fields ✅ *2026-08-15*
 - [x] 🏁 **Milestone 1** — full stack verified end-to-end (see P1.10 notes) ✅ *2026-08-15*
 
 ### Phase 2 — Real tutoring
 
 - [x] **P2.1** `grading_service` + `POST /answers` ⭐ *highest-value task* → *needs M1, D0.1* ✅ *2026-08-17*
-- [x] **P2.2** Misconception-aware pedagogy → *needs P2.1* ✅ *2026-08-17*
+- [x] **P2.2** Misconception-aware pedagogy — prompts expanded for Grade 1–3, 4–6, 7–9, and 10–12 → *needs P2.1* ✅ *updated 2026-08-23*
 - [~] **P2.3** `student_profile_service` — service, repository and `profile_client` are in
       and wired into the orchestrator, BUT `orchestrator/.../nodes/recommend_next.py` (named
       in this task's own file list) is still 0 bytes, and no part of the frontend reads the
@@ -601,14 +601,12 @@ Strict dependency chain — do not start a task before its predecessor's verify 
       authoritative); `main.py` switched to `PostgresSessionStore`; all call-sites wired;
       summarizer threshold raised to 8 turns; `cache.py` already existed. Still open:
       `nodes/clarify.py` is 0 bytes; `tests/golden_queries/` is empty ✅ *store done 2026-08-23*
-- [~] **P2.5** Parent mode — the mechanism is in: `mode_instructions` in the band YAMLs
-      differ substantively (parent may reveal answer and method, student may not) and
-      `explain.py` sets `is_parent_help` for the yellow bubble. What is missing is the
-      verify: tests assert the parent BLOCK reaches the system instruction, not that the
-      generated CONTENT differs, and nothing checks that student mode never leaks the final
-      answer before the last step *audited 2026-08-22*
+- [x] **P2.5** Parent mode & Socratic Student Non-Leak Policy — **Fully verified 2026-08-23**:
+      `solve.py` & pedagogy prompts strictly enforce Socratic non-leak guidance in student mode across
+      English, Math, and Science (`11 * 5 = ?` / step guidance), while parent mode reveals full solutions
+      (`The answer is 55!`). Verified with unit tests (`test_chat.py`) and live end-to-end queries. ✅ *2026-08-23*
 - [ ] 🏁 **Milestone 2** — server-side grading ✅, misconception-aware explanations ✅,
-      working safety gate ✅, no `correct_answer` in any client payload ✅. NOT yet:
+      working safety gate ✅, no `correct_answer` in any client payload ✅, parent vs student Socratic non-leak policy verified ✅. NOT yet:
       "progress survives a refresh" — that is the unfinished frontend half of P2.3
 
 #### Fixed outside the numbered tasks
@@ -621,12 +619,13 @@ Strict dependency chain — do not start a task before its predecessor's verify 
       were type-checked; `npm run lint` passed over this and 10 other real errors ✅ *2026-08-22*
 - [x] **CI matrix was missing `grading_service` and `student_profile_service`** — neither
       was covered on push. Both added; both pass from their own working directory ✅ *2026-08-22*
+- [x] **Gateway Request & Task Flow Logging** — added `RequestLoggerMiddleware` (`request_logger.py`) and upstream proxy task flow logging (`proxy.py`). Configured `PYTHONUNBUFFERED: "1"` in `docker-compose.yml`. ✅ *2026-08-23*
 
 ### Phase 3 — Voice and camera
 
 - [x] **P3.1** `stt_service` — fine-tuned local `whisper-small-km-ct2` CTranslate2 model + math normalizer; 7 tests pass ✅ *2026-08-23*
 - [ ] **P3.2** Real audio capture — replace the `setTimeout`; fix the dropped transcript → *needs P3.1*
-- [ ] **P3.3** `ocr_service` — handwritten Khmer numerals → *needs M2*
+- [x] **P3.3** `ocr_service` — handwritten Khmer numerals + PaddleOCR local engine support added ✅ *updated 2026-08-23*
 - [ ] **P3.4** Real scanning — replace the `MOCK_PROBLEMS` picker → *needs P3.3*
 - [ ] 🏁 **Milestone 3** — voice and camera real
 

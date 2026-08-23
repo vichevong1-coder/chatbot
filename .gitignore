@@ -26,3 +26,6 @@ build/
 
 # Logs
 *.log
+
+# Large model binaries & local weights
+whisper-small-km-ct2/

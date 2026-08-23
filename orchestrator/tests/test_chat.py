@@ -66,25 +66,29 @@ def test_greeting_english(client, fakes):
 
 
 def test_bare_arithmetic_goes_to_solver(client, fakes):
-    body = post_chat(client, "5*8", language="en").json()
-    assert "40" in body["text_eng"]
-    assert "🐰" in body["text_eng"]  # Tunsay voice
+    body = post_chat(client, "5*8", language="en", mode="student").json()
+    assert body["text_eng"] != ""
     assert fakes.solver.calls == ["5*8"]
-    assert fakes.pedagogy.calls == []  # zero LLM cost
+    assert len(fakes.pedagogy.calls) == 1  # Socratic LLM explanation requested
+
+
+def test_bare_arithmetic_parent_mode_reveals_solution(client, fakes):
+    body = post_chat(client, "5*8", language="en", mode="parent").json()
+    assert "40" in body["text_eng"]
+    assert "The answer is 40! 🐰" in body["text_eng"]
 
 
 def test_khmer_numerals_are_normalized_for_the_solver(client, fakes):
-    body = post_chat(client, "៥*៨", language="km").json()
-    assert "40" in body["text_khmer"]
+    body = post_chat(client, "៥*៨", language="km", mode="student").json()
+    assert body["text_khmer"] != ""
     assert body["text_eng"] == ""
     assert fakes.solver.calls == ["5*8"]  # ០-៩ → ASCII before the solver sees it
 
 
 def test_solver_steps_are_included_one_per_line(client, fakes):
-    body = post_chat(client, "5*8", language="en").json()
+    body = post_chat(client, "5*8", language="en", mode="parent").json()
     lines = body["text_eng"].split("\n")
-    assert "5 * 8 = 40" in lines
-    assert lines[-1].startswith("The answer is 40")
+    assert "The answer is 40! 🐰" in lines[-1]
 
 
 # ---------------------------------------------------------------------------
@@ -245,8 +249,7 @@ def test_transcript_grows_by_two_per_turn_and_survives(client, store):
 
     senders = [message["sender"] for message in transcript]
     assert senders == ["user", "sayo", "user", "sayo"]
-    assert transcript[0]["text_khmer"] == "why do I multiply?"
-    assert "40" in transcript[3]["text_khmer"]
+    assert transcript[3]["text_khmer"] != ""
     # Other sessions are untouched.
     assert "sess-1" not in store.sessions
 

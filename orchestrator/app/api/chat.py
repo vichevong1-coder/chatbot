@@ -74,35 +74,41 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
         "prompt": body.prompt,
         "transcript": transcript,
     }
-    result = await graph.ainvoke(state)
+    try:
+        result = await graph.ainvoke(state)
 
-    # Log detected intent for this turn
-    await store.log_intent(
-        body.session_id,
-        intent=result.get("intent", "unknown"),
-        routed_to=result.get("routed_to", result.get("intent", "unknown")),
-    )
+        # Log detected intent for this turn
+        await store.log_intent(
+            body.session_id,
+            intent=result.get("intent", "unknown"),
+            routed_to=result.get("routed_to", result.get("intent", "unknown")),
+        )
 
-    # Persist conversation summary if the graph produced one
-    if summary := result.get("conversation_summary"):
-        await store.set_summary(body.session_id, summary)
+        # Persist conversation summary if the graph produced one
+        if summary := result.get("conversation_summary"):
+            await store.set_summary(body.session_id, summary)
 
-    # Log service call timing
-    await store.log_service_call(
-        body.session_id,
-        service_name=result.get("intent", "unknown"),
-        latency_ms=(time.perf_counter() - started) * 1000,
-        status="ok",
-    )
+        # Log service call timing
+        await store.log_service_call(
+            body.session_id,
+            service_name=result.get("intent", "unknown"),
+            latency_ms=(time.perf_counter() - started) * 1000,
+            status="ok",
+        )
 
-    response = ChatResponse(
-        text_khmer=result.get("text_khmer", ""),
-        text_eng=result.get("text_eng", ""),
-        is_safety_refusal=result.get("is_safety_refusal", False),
-        is_parent_help=result.get("is_parent_help", False),
-        session_id=body.session_id,
-        suggested_next=result.get("suggested_next"),
-    )
+        response = ChatResponse(
+            text_khmer=result.get("text_khmer", ""),
+            text_eng=result.get("text_eng", ""),
+            is_safety_refusal=result.get("is_safety_refusal", False),
+            is_parent_help=result.get("is_parent_help", False),
+            session_id=body.session_id,
+            suggested_next=result.get("suggested_next"),
+        )
+    except Exception as exc:
+        import traceback, sys
+        sys.stderr.write(f"ORCHESTRATOR CHAT ERROR: {exc}\n{traceback.format_exc()}\n")
+        sys.stderr.flush()
+        raise
 
     # Persist the turn: the child's message + Tunsay's reply (single-language
     # user text mirrors the requested language).

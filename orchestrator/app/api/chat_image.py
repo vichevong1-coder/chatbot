@@ -38,6 +38,26 @@ def _message(sender: str, *, text_khmer: str, text_eng: str, image_uri: str | No
     ).model_dump(mode="json")
 
 
+def _resolve_student_id(request: Request, form_student_id: str | None) -> str | None:
+    if form_student_id and form_student_id != "anonymous":
+        return form_student_id
+    auth_header = request.headers.get("Authorization") or ""
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:].strip()
+        parts = token.split(".")
+        if len(parts) >= 2:
+            try:
+                import base64, json
+                padding = "=" * (4 - len(parts[1]) % 4)
+                payload_bytes = base64.b64decode(parts[1] + padding)
+                payload = json.loads(payload_bytes)
+                if payload.get("sub"):
+                    return str(payload["sub"])
+            except Exception:
+                pass
+    return None
+
+
 @router.post("/chat/image", response_model=ChatResponse, response_model_by_alias=False)
 @router.post("/chat_image", response_model=ChatResponse, response_model_by_alias=False)
 async def chat_image(
@@ -54,6 +74,16 @@ async def chat_image(
     store = request.app.state.session_store
     graph = request.app.state.graph
     clients = request.app.state.clients
+
+    resolved_student_id = _resolve_student_id(request, student_id)
+    if resolved_student_id:
+        if await store.get_session_meta(session_id) is None:
+            await store.init_session(
+                session_id,
+                student_id=resolved_student_id,
+                grade=4,
+                language=language,
+            )
 
     image_bytes = await file.read()
     if not image_bytes:
@@ -121,8 +151,9 @@ async def chat_image(
 
     # 3. Invoke LangGraph state machine
     transcript = await store.get(session_id)
+    final_student_id = resolved_student_id or student_id
     state: dict[str, Any] = {
-        "student_id": student_id,
+        "student_id": final_student_id,
         "session_id": session_id,
         "language": language,
         "mode": mode,

@@ -45,7 +45,8 @@ export const HomeworkScanner: React.FC<HomeworkScannerProps> = ({
     setStage('analyzing');
     if (uploadedFile) {
       try {
-        const ocrResult = await sendImageTurn(uploadedFile, 'student', language);
+        const langParam: Language = language === 'en' ? 'en' : 'km';
+        const ocrResult = await sendImageTurn(uploadedFile, 'student', langParam);
         if (ocrResult && (ocrResult.textKhmer || ocrResult.textEng)) {
           setSelectedProblem((prev) => ({
             ...prev,

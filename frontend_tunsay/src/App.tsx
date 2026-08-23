@@ -280,8 +280,8 @@ export default function App() {
         isOpen={isVoiceModalOpen}
         language={profile.language}
         onClose={() => setIsVoiceModalOpen(false)}
-        onTranscriptSubmitted={() => {
-          handleStartChatWithProblem();
+        onTranscriptSubmitted={(text) => {
+          handleStartChatWithProblem(undefined, text);
         }}
       />
 

@@ -6,3 +6,5 @@ python-multipart>=0.0.9
 pytest>=8.0.0
 anyio>=4.0.0
 pillow>=10.0.0
+paddleocr>=2.7.0
+

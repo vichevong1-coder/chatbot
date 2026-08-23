@@ -12,6 +12,9 @@ through. Request bodies are never logged: this is children's data.
 from __future__ import annotations
 
 import json
+import logging
+import sys
+import time
 from typing import Any, Mapping
 
 import httpx
@@ -20,6 +23,8 @@ from fastapi.responses import JSONResponse
 
 from app.core import errors
 from app.core.case_translate import to_camel_keys, to_snake_keys
+
+logger = logging.getLogger("tunsay.gateway")
 
 # Response headers worth forwarding to the browser; everything else
 # (hop-by-hop, content-length, upstream server chatter) is dropped.
@@ -74,6 +79,13 @@ async def proxy_request(
         json_body = dict(body_override)
 
     params = dict(request.query_params) if forward_query else None
+    student_id = getattr(request.state, "student_id", None) or "anonymous"
+    started = time.perf_counter()
+
+    sys.stderr.write(
+        f"INFO:     [TASK FLOW START] Forwarding {request.method} {request.url.path} ---> {url} | Student: {student_id}\n"
+    )
+    sys.stderr.flush()
 
     try:
         upstream = await client.request(
@@ -84,7 +96,17 @@ async def proxy_request(
             headers=headers,
             params=params,
         )
-    except httpx.TransportError:
+        duration_ms = (time.perf_counter() - started) * 1000
+        sys.stderr.write(
+            f"INFO:     [TASK FLOW END] {request.method} {request.url.path} <--- Upstream {url} HTTP {upstream.status_code} in {duration_ms:.2f}ms | Student: {student_id}\n"
+        )
+        sys.stderr.flush()
+    except httpx.TransportError as exc:
+        duration_ms = (time.perf_counter() - started) * 1000
+        sys.stderr.write(
+            f"WARNING:  [TASK FLOW UNREACHABLE] {request.method} {request.url.path} ---> {url} failed ({type(exc).__name__}) in {duration_ms:.2f}ms\n"
+        )
+        sys.stderr.flush()
         # Connect refused / timed out / reset. No detail leaks to the child.
         return errors.upstream_unreachable_response()
 

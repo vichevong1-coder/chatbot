@@ -8,6 +8,7 @@ from typing import Any
 
 from app.core.audio_preprocess import validate_and_inspect_audio
 from app.core.language_detect import detect_language
+from app.core.math_notation_normalizer import normalize_spoken_math
 try:
     from faster_whisper import WhisperModel  # type: ignore
 except ImportError:

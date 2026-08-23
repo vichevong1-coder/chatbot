@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from app.api import explain_router
+from app.api import explain_router, translate_router
 
 SERVICE_NAME = "pedagogy_service"
 
@@ -16,6 +16,7 @@ SERVICE_NAME = "pedagogy_service"
 def create_app() -> FastAPI:
     app = FastAPI(title="Tunsay Pedagogy Service", version="0.1.0")
     app.include_router(explain_router)
+    app.include_router(translate_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:
