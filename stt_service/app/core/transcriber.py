@@ -12,8 +12,23 @@ from app.core.math_notation_normalizer import normalize_spoken_math
 
 
 class AudioTranscriber:
-    def __init__(self, api_key: str | None = None) -> None:
+    def __init__(self, api_key: str | None = None, model_path: str | None = None) -> None:
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
+        # Check local whisper-small-km-ct2 model directory
+        default_model_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "..", "..", "whisper-small-km-ct2")
+        )
+        self.model_path = model_path or os.environ.get("WHISPER_MODEL_PATH", default_model_dir)
+        self._whisper_model = None
+
+    def _get_whisper_model(self):
+        if self._whisper_model is None and os.path.exists(self.model_path):
+            try:
+                from faster_whisper import WhisperModel
+                self._whisper_model = WhisperModel(self.model_path, device="cpu", compute_type="int8")
+            except Exception:
+                self._whisper_model = None
+        return self._whisper_model
 
     async def transcribe(
         self,
@@ -23,6 +38,31 @@ class AudioTranscriber:
     ) -> dict[str, Any]:
         meta = validate_and_inspect_audio(audio_bytes, filename)
         fmt = meta["format"]
+
+        # 1. Try local fine-tuned whisper-small-km-ct2 CTranslate2 model if available
+        whisper = self._get_whisper_model()
+        if whisper and os.path.exists(self.model_path):
+            try:
+                import tempfile
+                with tempfile.NamedTemporaryFile(suffix=f".{fmt}", delete=False) as tmp:
+                    tmp.write(audio_bytes)
+                    tmp_path = tmp.name
+                try:
+                    segments, _ = whisper.transcribe(tmp_path, language="km" if preferred_language == "km" else None)
+                    raw_text = " ".join([seg.text.strip() for seg in segments]).strip()
+                    if raw_text:
+                        lang = preferred_language or detect_language(raw_text)
+                        norm = normalize_spoken_math(raw_text)
+                        return {
+                            "text": raw_text,
+                            "language": lang,
+                            "normalized_math": norm,
+                        }
+                finally:
+                    if os.path.exists(tmp_path):
+                        os.unlink(tmp_path)
+            except Exception:
+                pass
 
         # If Gemini API key is present, attempt live transcription
         if self.api_key:

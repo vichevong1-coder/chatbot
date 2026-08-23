@@ -11,7 +11,7 @@ from app.core.image_preprocess import (
     validate_and_preprocess_image,
 )
 from app.core.math_ocr import MathOcrEngine, extract_math_expressions
-from tests.conftest import FakeMathOcrEngine, make_test_image
+from conftest import FakeMathOcrEngine, make_test_image
 
 
 # ==========================================
