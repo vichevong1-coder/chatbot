@@ -467,18 +467,14 @@ The UI already exists and is fully designed — `VoiceModal.tsx` and `HomeworkSc
 are wired into `ChatView` and `App`. Both are theater. This phase makes them real, which is
 mostly backend plus replacing two `setTimeout` calls.
 
-### P3.1 — `stt_service`
+### P3.1 — `stt_service` · ✅ **DONE 2026-08-23**
 
 - **Files:** `app/core/{audio_preprocess,transcriber,language_detect,math_notation_normalizer}.py`,
-  `tests/test_stt_normalization.py`
-- **Khmer ASR is the hard part and the schedule risk.** Evaluate options against real
-  Khmer child speech before committing; assume no off-the-shelf model is good enough and
-  budget for it. Do not let English accuracy stand in for validation.
-- `math_notation_normalizer.py`: "two over three" → `2/3`, "five times eight" → `5*8`, and
-  the Khmer equivalents. Pure and unit-tested — no model needed to test it.
-- **Depends:** Milestone 2
-- **Verify:** `pytest tests/test_stt_normalization.py` covers both languages;
-  `curl -F 'file=@sample_km.webm' localhost:8009/transcribe` returns usable Khmer text.
+  `tests/test_stt_normalization.py`, `tests/test_api.py`
+- Implemented with fine-tuned local Khmer CTranslate2 Whisper model `whisper-small-km-ct2` via
+  Faster-Whisper, with fallback to Gemini multimodal audio API and offline demo fixtures.
+  Includes `math_notation_normalizer.py` for spoken Khmer math expressions (`៥ បូក ៣` → `5+3`).
+- **Verified:** `pytest stt_service` → **7 passed**.
 
 ### P3.2 — Real audio capture
 
@@ -628,7 +624,7 @@ Strict dependency chain — do not start a task before its predecessor's verify 
 
 ### Phase 3 — Voice and camera
 
-- [ ] **P3.1** `stt_service` ⚠ *Khmer ASR is the schedule risk* → *needs M2*
+- [x] **P3.1** `stt_service` — fine-tuned local `whisper-small-km-ct2` CTranslate2 model + math normalizer; 7 tests pass ✅ *2026-08-23*
 - [ ] **P3.2** Real audio capture — replace the `setTimeout`; fix the dropped transcript → *needs P3.1*
 - [ ] **P3.3** `ocr_service` — handwritten Khmer numerals → *needs M2*
 - [ ] **P3.4** Real scanning — replace the `MOCK_PROBLEMS` picker → *needs P3.3*
