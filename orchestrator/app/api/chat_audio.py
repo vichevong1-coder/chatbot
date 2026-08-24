@@ -112,6 +112,7 @@ async def chat_audio(
         is_parent_help=result.get("is_parent_help", False),
         session_id=session_id,
         suggested_next=result.get("suggested_next"),
+        user_transcript=prompt_text,
     )
 
     # Save turn

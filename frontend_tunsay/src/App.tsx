@@ -13,6 +13,7 @@ import { DemoEntryView } from './components/DemoEntryView';
 import { getDisplayName } from './utils/language';
 import { signOut, registerOrLogin, getToken, fetchStudentProfile } from './api/client';
 import { getDemoGrade, setDemoGrade, clearDemoGrade } from './api/demoSession';
+import { recordProblemAttempt } from './services/geminiService';
 
 /**
  * DEMO MODE — on by default, so a fresh clone lands straight in the tutor.
@@ -113,13 +114,18 @@ export default function App() {
     setActiveTab('chat');
   };
 
-  const handleProblemCompleted = () => {
+  const handleProblemCompleted = async () => {
+    if (activeProblem?.id) {
+      const stepId = activeProblem.steps?.[activeProblem.steps.length - 1]?.id || 'step-1';
+      await recordProblemAttempt(activeProblem.id, stepId, true, 'completed problem');
+    }
     setProfile((prev) => ({
       ...prev,
       starsEarned: prev.starsEarned + 5,
       completedProblemsCount: prev.completedProblemsCount + 1
     }));
     setIsCelebrationOpen(true);
+    await refreshProfileStats();
   };
 
   /**

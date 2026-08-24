@@ -121,3 +121,34 @@ async def use_hint(
         success=True,
         remaining_stars=profile.stars_earned,
     )
+
+
+@router.get("/profile/{student_id}/diagnosis")
+async def get_student_diagnosis(
+    student_id: str,
+    repo: ProgressRepository = Depends(get_repository),
+) -> dict[str, Any]:
+    """Autonomous Agent Endpoint: Diagnose student struggle patterns and generate a 3-day recovery path."""
+    from app.core.diagnostic_agent import DiagnosticAgent
+    agent = DiagnosticAgent()
+
+    masteries = await repo.get_skill_masteries(student_id)
+    mastery_levels = {m.skill: m.mastery for m in masteries}
+
+    # Fetch recent attempt logs for diagnosis
+    attempts = await repo.get_recent_attempts(student_id, limit=20)
+    attempt_dicts = [
+        {
+            "problem_id": a.problem_id,
+            "step_id": a.step_id,
+            "is_correct": a.is_correct,
+            "misconception_code": a.misconception_code,
+        }
+        for a in attempts
+    ]
+
+    return agent.diagnose_student_struggles(
+        student_id=student_id,
+        attempt_history=attempt_dicts,
+        mastery_levels=mastery_levels,
+    )

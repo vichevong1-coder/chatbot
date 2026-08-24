@@ -47,20 +47,21 @@ export const HomeworkScanner: React.FC<HomeworkScannerProps> = ({
       try {
         const langParam: Language = language === 'en' ? 'en' : 'km';
         const ocrResult = await sendImageTurn(uploadedFile, 'student', langParam);
-        if (ocrResult && (ocrResult.textKhmer || ocrResult.textEng)) {
+        const extractedText = ocrResult?.userTranscript;
+        if (extractedText && extractedText.trim()) {
           setSelectedProblem((prev) => ({
             ...prev,
-            problemStatementKhmer: ocrResult.textKhmer || prev.problemStatementKhmer,
-            problemStatementEng: ocrResult.textEng || prev.problemStatementEng,
+            problemStatementKhmer: isKhmer ? extractedText.trim() : prev.problemStatementKhmer,
+            problemStatementEng: !isKhmer ? extractedText.trim() : prev.problemStatementEng,
+            titleKhmer: isKhmer ? `លំហាត់ស្កែន៖ ${extractedText.trim()}` : prev.titleKhmer,
+            titleEng: !isKhmer ? `Scanned Homework: ${extractedText.trim()}` : prev.titleEng,
           }));
         }
-      } catch {
-        /* fallback to sample problem */
+      } catch (err) {
+        console.warn('OCR processing fallback:', err);
       }
     }
-    setTimeout(() => {
-      setStage('confirm');
-    }, 1500);
+    setStage('confirm');
   };
 
   return (

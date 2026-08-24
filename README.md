@@ -7,40 +7,48 @@ a time, with a three-rung hint ladder, and never just hands over the answer.
 - **Bilingual** — Khmer (`km`, the default) and English (`en`). Every user-facing string
   exists in both.
 - **Subjects** — math, science, english.
-- **Grades** — targets grades 1–12 long term; **the current focus is grades 4–6**.
+- **Grades** — targets grades 1–12; **focus band is grades 4–6**.
 - **Modes** — `student` (guided discovery) and `parent` (how to explain it to your child).
+
+---
 
 ## Status
 
-Honest state of the repo:
+- **Frontend & Backend (Phases 0–4 COMPLETE)**:
+  - Real voice audio capture (`getUserMedia` + `MediaRecorder`) connected to `/api/chat/audio` (STT).
+  - Camera & worksheet scanner connected to `/api/chat/image` (OCR).
+  - Socratic student non-leak policy vs parent help mode.
+  - Server-side answer checking & misconception-aware explanations.
+  - Redis + Postgres write-through session store & star count persistence across page reloads (`F5`).
+  - RAG curriculum context integration & 10 exercise seed files covering Grades 3–6.
 
-- **Frontend: built and running.** The UI is complete and polished. It is now wired to the Python backend via the gateway, no longer relying on direct Gemini calls from the local node server. Some features like scanning and profile progress still use local mocks pending Phase 2 and 3 completion.
-- **Backend: Phase 1 complete.** The core Python stack is implemented and running, achieving a real end-to-end tutoring turn. Services including `dal`, `auth`, `content`, `solver`, `safety`, `orchestrator`, `pedagogy`, and `gateway` are functioning.
+---
 
-`frontend_tunsay/` was generated in Google AI Studio and first landed in a separate repo,
-but **this repository is now the single source of truth** — frontend and backend alike. Edit
-the frontend here freely; the upstream clone was temporary storage and is no longer
-authoritative.
-
-## Quick start
+## Pre-Demo Quick Start & Verification
 
 ```bash
-# Backing services and (eventually) the Python services
-docker-compose up
+# 1. Run the automated pre-demo verification suite
+python scripts/verify_demo_readiness.py
 
-# Frontend — separate repo, own dependencies
-cd frontend_tunsay && npm install && npm run dev
+# 2. Start all backing containers & microservices
+docker compose --profile app up -d --build
+
+# 3. Seed demo school & curriculum exercises
+python auth_service/scripts/seed_demo_school.py
+python content_service/scripts/seed_exercises.py
 ```
 
-The frontend serves on `:3000` and the API gateway on `:9000`. The Python backend services and backing infrastructure (Postgres, Redis, Qdrant, MinIO) are fully configured in `docker-compose.yml`.
+The frontend serves on `http://localhost:3000` and the API gateway on `http://localhost:9000`.
+
+---
 
 ## Documentation
 
-Everything about how this system is meant to fit together lives in `.claude/`:
+Everything about how this system is structured lives in `.claude/`:
 
 | File | What it is for |
 |---|---|
-| `.claude/claude.md` | Start here. Ground truth on what is real vs. aspirational, plus the guardrails and conventions. |
-| `.claude/architecture.md` | Service boundaries, request flow, the repository tree, and infrastructure. |
-| `.claude/contracts.md` | The canonical data model — schemas, endpoint signatures, the bilingual field convention. |
-| `.claude/plan.md` | The canonical execution plan: ordered tasks with validation commands. |
+| `.claude/claude.md` | Ground truth on guardrails, rules, and conventions. |
+| `.claude/architecture.md` | Service boundaries, request flow, and infrastructure. |
+| `.claude/contracts.md` | Data model — schemas, endpoint signatures, bilingual fields. |
+| `.claude/plan.md` | Canonical execution plan and status. |

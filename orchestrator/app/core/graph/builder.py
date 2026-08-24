@@ -60,7 +60,11 @@ def build_graph(clients: ServiceClients):
         "check_answer", edges.after_check_answer, ["explain", END]
     )
     graph.add_conditional_edges("solve", edges.after_solve, ["explain", END])
-    graph.add_edge("explain", END)
+    from app.core.graph.nodes.self_critique import self_critique_node
+    graph.add_node("self_critique", self_critique_node)
+
+    graph.add_edge("explain", "self_critique")
+    graph.add_edge("self_critique", END)
     graph.add_edge("recommend_next", END)
     graph.add_edge("clarify", END)
 

@@ -159,12 +159,20 @@ class PromptManager:
         """
         spec = self._specs[band_for_grade(grade, self._bands).name]
 
-        language_instruction = spec["language_instructions"][Language(language).value]
-        mode_block = spec["mode_instructions"][UserMode(mode).value]
-        base = spec["system_instruction"].format(
-            language_instruction=language_instruction
-        )
-        result = f"{base.rstrip()}\n{mode_block.rstrip()}"
+        language_instruction = spec.get("language_instructions", {}).get(Language(language).value, "")
+        mode_block = spec.get("mode_instructions", {}).get(UserMode(mode).value, "")
+        system_instruction_tmpl = spec.get("system_instruction", "")
+
+        if "{language_instruction}" in system_instruction_tmpl:
+            base = system_instruction_tmpl.format(
+                language_instruction=language_instruction
+            )
+        else:
+            base = system_instruction_tmpl
+
+        result = base.rstrip()
+        if mode_block:
+            result = f"{result}\n{mode_block.rstrip()}"
 
         if misconception_code:
             note = spec.get("misconception_instructions", {}).get(misconception_code)
@@ -172,6 +180,19 @@ class PromptManager:
                 result += (
                     f"\n\nSpecific Coaching Note for This Student:\n{note.rstrip()}"
                 )
+
+        if mode == UserMode.STUDENT:
+            guard = (
+                "\n\n[CRITICAL SAFETY GUARD]:\n"
+                "Throughout the entire conversation, you must NEVER solve, calculate, or provide the direct answer/solution "
+                "for the student's exact problem or original numbers. "
+                "Whenever the student asks about a specific math/science question or word problem containing numbers, "
+                "or when they ask follow-up questions about it, you must ONLY discuss, explain, and solve a worked example "
+                "using different numbers. "
+                "Keep the explanations simple, clear, and easy to understand. "
+                "Always direct the student to apply the worked example's steps to solve their own problem."
+            )
+            result += guard
 
         return result
 

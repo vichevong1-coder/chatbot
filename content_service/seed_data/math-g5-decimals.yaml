@@ -1,0 +1,63 @@
+id: math-g5-decimals
+title_khmer: គណិតវិទ្យា ថ្នាក់ទី៥៖ ការបូកនិងដកចំនួនទសភាគ
+title_eng: 'Math Grade 5: Decimal Addition and Subtraction'
+grade: 5
+subject: math
+problem_statement_khmer: សុខាមានប្រាក់ ២.៥ ដុល្លារ។ ម្ដាយរបស់គេបានឲ្យប្រាក់បន្ថែម ១.៧៥ ដុល្លារទៀត។ តើសុខាមានប្រាក់សរុបទាំងអស់ប៉ុន្មានដុល្លារ?
+problem_statement_eng: Sokha has $2.50. His mother gave him $1.75 more. How much money does Sokha have in total?
+image_uri: https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&auto=format&fit=crop&q=80
+steps:
+- id: dec-step-1
+  step_number: 1
+  total_steps: 2
+  question_khmer: ដើម្បីបូក ២.៥០ និង ១.៧៥ តើយើងត្រូវតម្រឹមចំណុចទសភាគយ៉ាងដូចម្តេច?
+  question_eng: To add 2.50 and 1.75, how should we align the decimal points?
+  input_format: mcq
+  options:
+  - តម្រឹមចំណុចទសភាគឲ្យចំគ្នាក្នុងជួរឈរ (Align decimal points vertically)
+  - តម្រឹមលេខចុងក្រោយឲ្យចំគ្នា (Align rightmost digits)
+  - តម្រឹមតាមចិត្ត (Align anywhere)
+  correct_answer: តម្រឹមចំណុចទសភាគឲ្យចំគ្នាក្នុងជួរឈរ (Align decimal points vertically)
+  hint1:
+    khmer: គិតពីខ្ទង់ភាគដប់ និងខ្ទង់ភាគរយ។
+    eng: Think about tenths and hundredths places.
+  hint2:
+    khmer: ពេលបូកចំនួនទសភាគ ត្រូវតម្រឹមសញ្ញាចុចទសភាគ (.) ឲ្យត្រង់ជួរគ្នា!
+    eng: When adding decimals, always align the decimal points vertically!
+  hint3:
+    title_khmer: ការតម្រឹមទសភាគ
+    title_eng: Decimal Alignment
+    example_khmer: 2.50 + 1.75 (តម្រឹមសញ្ញាចុចទសភាគ)
+    example_eng: 2.50 + 1.75 (Align the dots)
+  explain_differently:
+    simple_khmer: ការតម្រឹមត្រង់ជួរជួយឲ្យយើងបូកខ្ទង់រាយ ខ្ទង់ភាគដប់ និងខ្ទង់ភាគរយបានត្រឹមត្រូវ។
+    simple_eng: Aligning the dots keeps tenths with tenths and hundredths with hundredths.
+    analogy_title: កាក់ និងក្រដាសប្រាក់ (Coins and Bills)
+    analogy_khmer: ដូចជាការបំបែកដុល្លារ និងសេន។
+    analogy_eng: Like keeping dollars with dollars and cents with cents.
+    analogy_type: pizza
+- id: dec-step-2
+  step_number: 2
+  total_steps: 2
+  question_khmer: តើ ២.៥០ + ១.៧៥ ស្មើនឹងប៉ុន្មាន?
+  question_eng: What is 2.50 + 1.75?
+  input_format: text
+  correct_answer: '4.25'
+  hint1:
+    khmer: បូកភាគរយ៖ 0 + 5 = 5; បូកភាគដប់៖ 5 + 7 = 12 (ត្រាទុក 1); បូកចំនួនគត់៖ 2 + 1 + 1 = 4។
+    eng: Add hundredths (0+5=5), add tenths (5+7=12, carry 1), add whole numbers (2+1+1=4).
+  hint2:
+    khmer: ២.៥០ + ១.៧៥ = ៤.២៥ ដុល្លារ!
+    eng: 2.50 + 1.75 = 4.25!
+  hint3:
+    title_khmer: លទ្ធផលទសភាគ
+    title_eng: Decimal Result
+    example_khmer: 2.50 + 1.75 = 4.25
+    example_eng: 2.50 + 1.75 = 4.25
+  explain_differently:
+    simple_khmer: ២ ដុល្លារ និង ៥០ សេន បូក ១ ដុល្លារ និង ៧៥ សេន ស្មើ ៤ ដុល្លារ និង ២៥ សេន។
+    simple_eng: $2.50 plus $1.75 equals $4.25 in total.
+    analogy_title: សរុបប្រាក់ (Total Money)
+    analogy_khmer: ៤.២៥ ដុល្លារ (4.25).
+    analogy_eng: $4.25 total.
+    analogy_type: pizza

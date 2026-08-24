@@ -31,6 +31,8 @@
 x-app-service: &app-service
   profiles: ["app"]
   restart: unless-stopped
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
   environment:
     PYTHONUNBUFFERED: "1"
   env_file:
@@ -155,7 +157,6 @@ services:
   gateway:
     <<: *app-service
     build: ./gateway
-    container_name: tunsay-gateway
     # The only service published to the host besides the frontend
     # (architecture.md §1, rule 1: the gateway is the only public surface).
     ports:
@@ -173,7 +174,8 @@ services:
     build:
       context: .
       dockerfile: orchestrator/Dockerfile
-    container_name: tunsay-orchestrator
+    volumes:
+      - ./orchestrator/app:/srv/orchestrator/app
     ports:
       - "9001:9001"
     expose:
@@ -191,7 +193,6 @@ services:
     build:
       context: .
       dockerfile: auth_service/Dockerfile
-    container_name: tunsay-auth-service
     expose:
       - "9002"
     depends_on:
@@ -204,7 +205,6 @@ services:
     build:
       context: .
       dockerfile: content_service/Dockerfile
-    container_name: tunsay-content-service
     expose:
       - "9003"
     depends_on:
@@ -214,7 +214,6 @@ services:
   solver_service:
     <<: *app-service
     build: ./solver_service
-    container_name: tunsay-solver-service
     # Pure computation (sympy) — no backing service.
     expose:
       - "9004"
@@ -222,7 +221,6 @@ services:
   grading_service:
     <<: *app-service
     build: ./grading_service
-    container_name: tunsay-grading-service
     # Pure computation — grades against the answer it is handed.
     expose:
       - "9005"
@@ -233,7 +231,8 @@ services:
     build:
       context: .
       dockerfile: pedagogy_service/Dockerfile
-    container_name: tunsay-pedagogy-service
+    volumes:
+      - ./pedagogy_service/app:/srv/pedagogy_service/app
     # The ONLY service that talks to Gemini (architecture.md §1, rule 4).
     # GEMINI_API_KEY is consumed here and nowhere else.
     expose:
@@ -244,7 +243,6 @@ services:
     build:
       context: .
       dockerfile: retrieval_service/Dockerfile
-    container_name: tunsay-retrieval-service
     expose:
       - "9007"
     depends_on:
@@ -257,7 +255,6 @@ services:
     build:
       context: .
       dockerfile: student_profile_service/Dockerfile
-    container_name: tunsay-student-profile-service
     expose:
       - "9008"
     depends_on:
@@ -269,7 +266,6 @@ services:
     build:
       context: .
       dockerfile: stt_service/Dockerfile
-    container_name: tunsay-stt-service
     expose:
       - "9009"
     depends_on:
@@ -282,7 +278,6 @@ services:
     build:
       context: .
       dockerfile: ocr_service/Dockerfile
-    container_name: tunsay-ocr-service
     expose:
       - "9010"
     depends_on:
@@ -293,20 +288,10 @@ services:
   safety_service:
     <<: *app-service
     build: ./safety_service
-    container_name: tunsay-safety-service
     # Screens input and output; holds no state.
     expose:
       - "9011"
 
-  frontend_tunsay:
-    <<: *app-service
-    build:
-      context: .
-      dockerfile: frontend_tunsay/Dockerfile
-    container_name: tunsay-frontend
-    # Published to the host — the browser loads the SPA from here.
-    ports:
-      - "3000:3000"
 
 
 volumes:

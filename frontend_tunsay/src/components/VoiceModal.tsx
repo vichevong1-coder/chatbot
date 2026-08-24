@@ -21,11 +21,16 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [tunsaySpeech, setTunsaySpeech] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     if (isOpen) {
+      setIsListening(false);
+      setIsProcessing(false);
+      setTranscript('');
       setTunsaySpeech(
         isKhmer 
           ? 'សួស្តី! ខ្ញុំគឺទន្សាយ។ តើមានអ្វីឲ្យខ្ញុំជួយអ្នកទេ?' 
@@ -38,9 +43,34 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
 
   const handleStartListening = async () => {
     setIsListening(true);
+    setIsProcessing(false);
     setTranscript('');
     setTunsaySpeech('');
     audioChunksRef.current = [];
+
+    // Optional Web Speech API for real-time live preview if available
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = isKhmer ? 'km-KH' : 'en-US';
+        recognition.onresult = (event: any) => {
+          let currentTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            currentTranscript += event.results[i][0].transcript;
+          }
+          if (currentTranscript.trim()) {
+            setTranscript(currentTranscript.trim());
+          }
+        };
+        recognition.start();
+        recognitionRef.current = recognition;
+      } catch (err) {
+        // Ignore fallback
+      }
+    }
 
     try {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -56,41 +86,50 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
 
         mediaRecorder.onstop = async () => {
           stream.getTracks().forEach((track) => track.stop());
+          if (recognitionRef.current) {
+            try { recognitionRef.current.stop(); } catch {}
+          }
+
           const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
           if (audioBlob.size > 0) {
+            setIsProcessing(true);
             const langParam: Language = language === 'en' ? 'en' : 'km';
             const res = await sendVoiceTurn(audioBlob, 'student', undefined, langParam);
+            setIsProcessing(false);
+
+            if (res.userTranscript && res.userTranscript.trim()) {
+              setTranscript(res.userTranscript.trim());
+            }
+
             const speechText = isKhmer ? (res.textKhmer || res.textEng) : (res.textEng || res.textKhmer);
             setTunsaySpeech(speechText || (isKhmer ? 'ខ្ញុំបានស្តាប់ឮហើយ! តោះគិតទាំងអស់គ្នា 🐰' : "I heard you! Let's think together 🐰"));
+          } else {
+            setIsProcessing(false);
           }
         };
 
         mediaRecorder.start();
         return;
       }
-    } catch {
-      /* Fallback to simulated mic */
-    }
-
-    // Simulated voice fallback
-    setTimeout(() => {
-      setTranscript(isKhmer ? 'ខ្ញុំមិនយល់សំណួរនេះទេ...' : 'I do not understand this question...');
-    }, 1200);
-
-    setTimeout(() => {
+    } catch (err) {
+      console.warn('Microphone permission denied or unsupported:', err);
       setIsListening(false);
+      setIsProcessing(false);
       setTunsaySpeech(
-        isKhmer 
-          ? 'មិនអីទេ! តោះយើងពិនិត្យសំណួរនេះជាមួយគ្នាណា' 
-          : "No problem! Let's look at it together."
+        isKhmer
+          ? 'សូមអនុញ្ញាតឱ្យប្រើប្រាស់មីក្រូហ្វូនដើម្បីនិយាយជាមួយទន្សាយ 🎤'
+          : 'Please allow microphone permissions to speak with Tunsay 🎤'
       );
-    }, 3200);
+    }
   };
 
   const handleStopListening = () => {
     setIsListening(false);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
+    }
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch {}
     }
   };
 
@@ -150,7 +189,12 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
 
         {/* Big Mic Toggle Button */}
         <div className="space-y-3 w-full">
-          {!isListening ? (
+          {isProcessing ? (
+            <div className="w-full py-4 bg-[#FFCB3D] text-[#2A1E4D] font-black text-base rounded-2xl border-3 border-[#2A1E4D] shadow-[4px_4px_0px_#2A1E4D] flex items-center justify-center gap-2 animate-pulse">
+              <span className="w-3 h-3 rounded-full bg-[#2A1E4D] animate-ping" />
+              {isKhmer ? 'កំពុងដំណើរការសំឡេង...' : 'Processing voice...'}
+            </div>
+          ) : !isListening ? (
             <button
               type="button"
               onClick={handleStartListening}
@@ -166,11 +210,11 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
               className="w-full py-4 bg-[#FF6FA3] text-white font-black text-base rounded-2xl border-3 border-[#2A1E4D] shadow-[4px_4px_0px_#2A1E4D] flex items-center justify-center gap-2 animate-pulse cursor-pointer"
             >
               <span className="w-3 h-3 rounded-full bg-white animate-ping" />
-              {isKhmer ? 'កំពុងស្តាប់...' : 'Listening...'}
+              {isKhmer ? 'កំពុងស្តាប់... (ចុចដើម្បីឈប់)' : 'Listening... (Tap to stop)'}
             </button>
           )}
 
-          {transcript && !isListening && (
+          {transcript && !isListening && !isProcessing && (
             <button
               type="button"
               onClick={handleSendVoiceQuery}

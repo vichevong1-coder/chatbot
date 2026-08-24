@@ -59,7 +59,7 @@ def _build_context(problem: dict, language: str, active_step_index: int | None) 
 async def explain(state: GraphState, clients: ServiceClients) -> dict:
     language = state.get("language", "km")
     mode = state.get("mode", "student")
-    grade = DEFAULT_GRADE
+    grade = int(state.get("grade")) if state.get("grade") is not None else DEFAULT_GRADE
     context: str | None = None
 
     problem_id = state.get("problem_id")
@@ -72,9 +72,9 @@ async def explain(state: GraphState, clients: ServiceClients) -> dict:
         except ServiceUnavailable:
             problem = None  # content down/unknown → explain without context
         if problem:
-            grade = int(problem.get("grade") or DEFAULT_GRADE)
+            grade = int(problem.get("grade") or grade)
             context = _build_context(problem, language, step_index)
-    else:
+    elif state.get("grade") is None:
         student_id = state.get("student_id")
         if student_id and student_id != "anonymous":
             try:
@@ -103,15 +103,46 @@ async def explain(state: GraphState, clients: ServiceClients) -> dict:
                 "is_parent_help": mode == "parent",
             }
 
-    # Append transcript summary if it gets long (to prevent context window overflow)
+    # Append transcript history & summary for context window & turn-by-turn memory
     transcript = state.get("transcript") or []
     conversation_summary: str | None = None
     if transcript:
         from app.session_store.summarizer import summarize_transcript
-        _, summary = summarize_transcript(transcript, language)
+        recent_transcript, summary = summarize_transcript(transcript, language)
         if summary:
             conversation_summary = summary
-            context = f"{summary}\n\n{context}" if context else summary
+
+        formatted_history = []
+        if summary:
+            formatted_history.append(f"Earlier summary: {summary}")
+        for msg in recent_transcript:
+            sender = "Student" if msg.get("sender") == "user" else "Tunsay"
+            text = msg.get("text_khmer") if language == "km" else msg.get("text_eng")
+            if not text:
+                text = msg.get("text_eng") or msg.get("text_khmer") or ""
+            if text:
+                formatted_history.append(f"{sender}: {text}")
+
+        if formatted_history:
+            history_block = "Recent Conversation History:\n" + "\n".join(formatted_history)
+            context = f"{history_block}\n\n{context}" if context else history_block
+
+    # Fetch RAG curriculum context from retrieval_service if available
+    retrieval_client = getattr(clients, "retrieval", None)
+    if retrieval_client and state.get("prompt"):
+        try:
+            passages = await retrieval_client.retrieve(
+                query=state.get("prompt", ""),
+                grade=grade,
+                top_k=2,
+            )
+            if passages:
+                text_passages = [p.get("text", "") for p in passages if p.get("text")]
+                if text_passages:
+                    rag_block = "Retrieved Textbook Context:\n" + "\n".join(text_passages)
+                    context = f"{rag_block}\n\n{context}" if context else rag_block
+        except (ServiceUnavailable, Exception):
+            pass
 
     # Append misconception code to context so the pedagogy service can tailor the prompt
     if misconception_code:

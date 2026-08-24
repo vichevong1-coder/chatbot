@@ -1,0 +1,1666 @@
+[
+  {
+    "id": "grade1_math",
+    "grade": 1,
+    "subject": "Math",
+    "topic": "Psar Chas mangoes",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A vendor at Psar Chas sells 3 mangoes to one customer and 4 mangoes to another. How many mangoes did she sell in total?"
+      },
+      {
+        "role": "bot",
+        "text": "Let's look at this together! 🐰 Step 1: When we put two groups together, do we add them or take one away?"
+      },
+      {
+        "role": "student",
+        "text": "add"
+      },
+      {
+        "role": "bot",
+        "text": "Yes, we add! 🎉 Step 2: So we have 3 mangoes and 4 mangoes. Can you count them all together — 3 then 4 more?"
+      },
+      {
+        "role": "student",
+        "text": "6"
+      },
+      {
+        "role": "bot",
+        "text": "Let's check carefully — start at 3 and count up 4 more: 4, 5, 6, 7. What number do you land on?"
+      },
+      {
+        "role": "student",
+        "text": "7"
+      },
+      {
+        "role": "bot",
+        "text": "That's right, 7 mangoes! 🥭🥭🥭🥭🥭🥭🥭 Great counting!"
+      }
+    ]
+  },
+  {
+    "id": "grade1_physics",
+    "grade": 1,
+    "subject": "Physics",
+    "topic": "wooden block vs stone",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A wooden block and a stone are pushed with the same force on a table. Which one moves farther? Why?"
+      },
+      {
+        "role": "bot",
+        "text": "Great question! 🐘 Step 1: Which do you think is heavier — the block or the stone?"
+      },
+      {
+        "role": "student",
+        "text": "the stone"
+      },
+      {
+        "role": "bot",
+        "text": "Good thinking! Step 2: If something is heavier, do you think it's easier or harder to push?"
+      },
+      {
+        "role": "student",
+        "text": "harder"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly! So with the same push, which one do you think moves farther — the heavy stone or the lighter block?"
+      },
+      {
+        "role": "student",
+        "text": "the block"
+      },
+      {
+        "role": "bot",
+        "text": "Yes! 🎉 The wooden block moves farther because it's lighter and easier to push with the same force."
+      }
+    ]
+  },
+  {
+    "id": "grade1_chemistry",
+    "grade": 1,
+    "subject": "Chemistry",
+    "topic": "ice in hot tea",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Ice cubes are put in a glass of hot tea. What happens to the ice after a few minutes?"
+      },
+      {
+        "role": "bot",
+        "text": "Ooh, ice and hot tea! 🧊 Step 1: What do you already know happens to ice when it gets warm?"
+      },
+      {
+        "role": "student",
+        "text": "it melts"
+      },
+      {
+        "role": "bot",
+        "text": "Great! Step 2: So if the tea is hot and the ice melts, what do you think happens to the ice cubes after a few minutes — do they stay the same size or get smaller?"
+      },
+      {
+        "role": "student",
+        "text": "smaller"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The ice melts and gets smaller until it turns into water because the hot tea warms it up."
+      }
+    ]
+  },
+  {
+    "id": "grade1_biology",
+    "grade": 1,
+    "subject": "Biology",
+    "topic": "chick hatching",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A baby chick hatches from an egg on a farm. What did the chick need inside the egg to grow before hatching?"
+      },
+      {
+        "role": "bot",
+        "text": "Let's think about the baby chick! 🐣 Step 1: Do you think the chick needed warmth to grow, like from its mother sitting on the egg?"
+      },
+      {
+        "role": "student",
+        "text": "yes"
+      },
+      {
+        "role": "bot",
+        "text": "Good! Step 2: Besides warmth, do you think there was food stored inside the egg for the chick to eat while growing?"
+      },
+      {
+        "role": "student",
+        "text": "the yolk?"
+      },
+      {
+        "role": "bot",
+        "text": "Yes, exactly! 🎉 The chick used the yolk as food and needed warmth from the mother hen to grow and hatch."
+      }
+    ]
+  },
+  {
+    "id": "grade2_math",
+    "grade": 2,
+    "subject": "Math",
+    "topic": "tuk-tuk driver earnings",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A tuk-tuk driver earns 8,000 riel in the morning and 12,000 riel in the afternoon. How much did he earn in total that day?"
+      },
+      {
+        "role": "bot",
+        "text": "Nice, a real money problem! 🚕 Step 1: He earned money in the morning AND the afternoon — do we add or subtract these two amounts?"
+      },
+      {
+        "role": "student",
+        "text": "add"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: Let's add 8,000 + 12,000. What do you get when you add the thousands: 8 + 12?"
+      },
+      {
+        "role": "student",
+        "text": "20"
+      },
+      {
+        "role": "bot",
+        "text": "Great! So 8,000 + 12,000 = ?"
+      },
+      {
+        "role": "student",
+        "text": "20,000"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 He earned 20,000 riel that day."
+      }
+    ]
+  },
+  {
+    "id": "grade2_physics",
+    "grade": 2,
+    "subject": "Physics",
+    "topic": "kite flying",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A kite flies high in the sky during windy weather but falls when the wind stops. What is pushing the kite up?"
+      },
+      {
+        "role": "bot",
+        "text": "Let's think about the kite and the wind! 🪁 Step 1: What happens to the kite when the wind stops?"
+      },
+      {
+        "role": "student",
+        "text": "it falls"
+      },
+      {
+        "role": "bot",
+        "text": "Right! Step 2: So when there's wind, the kite stays up, and when there's no wind, it falls. What do you think is holding it up in the sky?"
+      },
+      {
+        "role": "student",
+        "text": "the wind?"
+      },
+      {
+        "role": "bot",
+        "text": "Yes! 🎉 The wind pushes against the kite and keeps it up in the air."
+      }
+    ]
+  },
+  {
+    "id": "grade2_chemistry",
+    "grade": 2,
+    "subject": "Chemistry",
+    "topic": "salt in water",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Salt is stirred into a glass of water and disappears. Did the salt disappear completely, or is it still there?"
+      },
+      {
+        "role": "bot",
+        "text": "Interesting — the salt seems to vanish! 🧂 Step 1: If you taste the water now, do you think it will taste plain or salty?"
+      },
+      {
+        "role": "student",
+        "text": "salty"
+      },
+      {
+        "role": "bot",
+        "text": "Good observation! Step 2: If it still tastes salty, does that mean the salt is really gone, or is it just too small to see?"
+      },
+      {
+        "role": "student",
+        "text": "too small to see"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The salt dissolved into tiny pieces we can't see, but it's still there in the water."
+      }
+    ]
+  },
+  {
+    "id": "grade2_biology",
+    "grade": 2,
+    "subject": "Biology",
+    "topic": "lotus flower",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A lotus flower closes its petals at night and opens again in the morning. What causes this change?"
+      },
+      {
+        "role": "bot",
+        "text": "Let's think about the lotus and the sunlight! 🌸 Step 1: What's different between night and day that a flower might notice?"
+      },
+      {
+        "role": "student",
+        "text": "light"
+      },
+      {
+        "role": "bot",
+        "text": "Good! Step 2: So when it's dark at night, the flower closes. When the sun comes up, what do you think happens to the petals?"
+      },
+      {
+        "role": "student",
+        "text": "they open"
+      },
+      {
+        "role": "bot",
+        "text": "Yes! 🎉 Sunlight causes the lotus flower to open in the morning and close again when it gets dark."
+      }
+    ]
+  },
+  {
+    "id": "grade3_math",
+    "grade": 3,
+    "subject": "Math",
+    "topic": "rice sacks",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A rice sack weighs 50 kg. If a farmer has 6 sacks, how many kilograms of rice does he have in total?"
+      },
+      {
+        "role": "bot",
+        "text": "A farmer with sacks of rice! 🌾 Step 1: If each sack weighs the same amount and we have 6 sacks, is there a faster operation than adding 50 six times?"
+      },
+      {
+        "role": "student",
+        "text": "multiply"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: So let's multiply 50 × 6. What is 5 × 6 first?"
+      },
+      {
+        "role": "student",
+        "text": "30"
+      },
+      {
+        "role": "bot",
+        "text": "Good! Now since it's 50 (not just 5), what's 50 × 6?"
+      },
+      {
+        "role": "student",
+        "text": "300"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 He has 300 kg of rice."
+      }
+    ]
+  },
+  {
+    "id": "grade3_physics",
+    "grade": 3,
+    "subject": "Physics",
+    "topic": "see-saw balance",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A see-saw balances when two children of equal weight sit on each side. What happens if one child is heavier?"
+      },
+      {
+        "role": "bot",
+        "text": "Let's think about the see-saw! ⚖️ Step 1: If one side has more weight, does that side go up or down?"
+      },
+      {
+        "role": "student",
+        "text": "down"
+      },
+      {
+        "role": "bot",
+        "text": "Right! Step 2: So if the heavier child's side goes down, what happens to the lighter child's side?"
+      },
+      {
+        "role": "student",
+        "text": "it goes up"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly! 🎉 The heavier side goes down and the lighter side goes up — the see-saw becomes unbalanced."
+      }
+    ]
+  },
+  {
+    "id": "grade3_chemistry",
+    "grade": 3,
+    "subject": "Chemistry",
+    "topic": "candle wax melting",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A candle is lit at a Pchum Ben ceremony. What happens to the solid wax near the flame?"
+      },
+      {
+        "role": "bot",
+        "text": "Let's watch the candle! 🕯️ Step 1: What state is the wax in before it's near the flame — solid, liquid, or gas?"
+      },
+      {
+        "role": "student",
+        "text": "solid"
+      },
+      {
+        "role": "bot",
+        "text": "Good! Step 2: When the flame heats the solid wax, what do you think it turns into?"
+      },
+      {
+        "role": "student",
+        "text": "liquid"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The heat from the flame melts the solid wax into liquid wax."
+      }
+    ]
+  },
+  {
+    "id": "grade3_biology",
+    "grade": 3,
+    "subject": "Biology",
+    "topic": "tadpole vs frog",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Frogs have gills as tadpoles and lungs as adults. Explain why a young tadpole needs gills but a grown frog does not."
+      },
+      {
+        "role": "bot",
+        "text": "Tadpoles and frogs are so different! 🐸 Step 1: Where does a tadpole live — underwater or on land?"
+      },
+      {
+        "role": "student",
+        "text": "underwater"
+      },
+      {
+        "role": "bot",
+        "text": "Right! Step 2: What body part do animals use to breathe underwater?"
+      },
+      {
+        "role": "student",
+        "text": "gills"
+      },
+      {
+        "role": "bot",
+        "text": "Good! And when the frog grows up and starts living on land, what does it need to breathe air instead?"
+      },
+      {
+        "role": "student",
+        "text": "lungs"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 Tadpoles need gills to breathe underwater, and adult frogs need lungs to breathe air on land."
+      }
+    ]
+  },
+  {
+    "id": "grade4_math",
+    "grade": 4,
+    "subject": "Math",
+    "topic": "banana bunches",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Bananas are sold in bunches of 6. If a customer buys 9 bunches, how many bananas does she buy in total?"
+      },
+      {
+        "role": "bot",
+        "text": "Bunches of bananas! 🍌 Step 1: Since each bunch has an equal number of bananas, what operation combines equal groups quickly?"
+      },
+      {
+        "role": "student",
+        "text": "multiplication"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: So let's multiply 6 × 9. Do you know this multiplication fact?"
+      },
+      {
+        "role": "student",
+        "text": "54"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 She buys 54 bananas in total."
+      }
+    ]
+  },
+  {
+    "id": "grade4_physics",
+    "grade": 4,
+    "subject": "Physics",
+    "topic": "boat speed on Tonle Sap",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A boat's motor runs faster or slower. Explain the relationship between the motor's speed and the boat's speed."
+      },
+      {
+        "role": "bot",
+        "text": "Let's think about the boat's motor! 🚤 Step 1: When the motor spins faster, does it push more water or less water backward?"
+      },
+      {
+        "role": "student",
+        "text": "more"
+      },
+      {
+        "role": "bot",
+        "text": "Good! Step 2: If the motor pushes more water backward, does the boat move forward faster or slower?"
+      },
+      {
+        "role": "student",
+        "text": "faster"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly! 🎉 A faster motor pushes more water back, which makes the boat move forward faster."
+      }
+    ]
+  },
+  {
+    "id": "grade4_chemistry",
+    "grade": 4,
+    "subject": "Chemistry",
+    "topic": "palm sugar hardening",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Palm sugar syrup hardens into a solid block once cooled. Is this change easy to reverse?"
+      },
+      {
+        "role": "bot",
+        "text": "Palm sugar syrup turning solid! 🍯 Step 1: If you heat the hardened sugar block again, do you think it could turn back into syrup?"
+      },
+      {
+        "role": "student",
+        "text": "yes"
+      },
+      {
+        "role": "bot",
+        "text": "Good thinking! Step 2: If it can go back and forth between liquid and solid just by heating and cooling, is this a physical change or a chemical change?"
+      },
+      {
+        "role": "student",
+        "text": "physical"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 It's a physical change because no new substance is formed — it just changes state."
+      }
+    ]
+  },
+  {
+    "id": "grade4_biology",
+    "grade": 4,
+    "subject": "Biology",
+    "topic": "ants carrying food",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Ants work together to carry a large piece of food back to their nest. What does this suggest about how ants live?"
+      },
+      {
+        "role": "bot",
+        "text": "Ants working together! 🐜 Step 1: Could one ant carry that big piece of food alone?"
+      },
+      {
+        "role": "student",
+        "text": "no"
+      },
+      {
+        "role": "bot",
+        "text": "Right! Step 2: Since they need each other to move the food, what does that tell you about how ants survive — alone or in groups?"
+      },
+      {
+        "role": "student",
+        "text": "in groups"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly! 🎉 Ants are social insects that work together as a colony to gather food and survive."
+      }
+    ]
+  },
+  {
+    "id": "grade5_math",
+    "grade": 5,
+    "subject": "Math",
+    "topic": "students in classrooms",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A school has 240 students split evenly into 8 classrooms. How many students are in each classroom?"
+      },
+      {
+        "role": "bot",
+        "text": "240 students split evenly! 🏫 Step 1: When we split a total into equal groups, is that operation multiplication or division?"
+      },
+      {
+        "role": "student",
+        "text": "division"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: So let's divide 240 ÷ 8. What is 24 ÷ 8 first?"
+      },
+      {
+        "role": "student",
+        "text": "3"
+      },
+      {
+        "role": "bot",
+        "text": "Good! So since 240 is 24 with an extra zero, what is 240 ÷ 8?"
+      },
+      {
+        "role": "student",
+        "text": "30"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 There are 30 students in each classroom."
+      }
+    ]
+  },
+  {
+    "id": "grade5_physics",
+    "grade": 5,
+    "subject": "Physics",
+    "topic": "lever lifting rock",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A worker uses a long wooden lever to lift a heavy rock. Explain why the lever makes it easier to lift."
+      },
+      {
+        "role": "bot",
+        "text": "A lever helping lift a heavy rock! 🪨 Step 1: Have you seen someone use a long stick to pry something up? Where do they usually push — near the rock or far from it?"
+      },
+      {
+        "role": "student",
+        "text": "far from it"
+      },
+      {
+        "role": "bot",
+        "text": "Good observation! Step 2: When you push far from the rock (and near the end of the lever), does it take more force or less force to lift the same rock?"
+      },
+      {
+        "role": "student",
+        "text": "less force"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 Pushing farther from the pivot point lets the lever multiply your force, making it easier to lift heavy things."
+      }
+    ]
+  },
+  {
+    "id": "grade5_chemistry",
+    "grade": 5,
+    "subject": "Chemistry",
+    "topic": "rainwater vs plastic bottle water",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Rainwater in a clay jar tastes different from water in a plastic bottle after a few days. What might be causing this?"
+      },
+      {
+        "role": "bot",
+        "text": "Interesting — the water tastes different! 🏺 Step 1: What is the clay jar made of, compared to the plastic bottle?"
+      },
+      {
+        "role": "student",
+        "text": "clay and plastic"
+      },
+      {
+        "role": "bot",
+        "text": "Right! Step 2: Do you think tiny minerals from the clay could slowly mix into the water over time, changing its taste?"
+      },
+      {
+        "role": "student",
+        "text": "yes maybe"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly! 🎉 Minerals from the porous clay can slowly dissolve into the water, giving it a different taste than water stored in plastic."
+      }
+    ]
+  },
+  {
+    "id": "grade5_biology",
+    "grade": 5,
+    "subject": "Biology",
+    "topic": "mosquitoes and standing water",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Mosquitoes lay eggs in still water near homes. Explain why removing standing water helps reduce dengue."
+      },
+      {
+        "role": "bot",
+        "text": "Let's think about mosquitoes and water! 🦟 Step 1: Where do mosquito eggs get laid — in moving water like a river, or still water like a puddle?"
+      },
+      {
+        "role": "student",
+        "text": "still water"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: If there's no still water around a house, can mosquito eggs hatch and grow into adult mosquitoes there?"
+      },
+      {
+        "role": "student",
+        "text": "no"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 Removing standing water breaks the mosquito's life cycle, so fewer mosquitoes survive to spread dengue."
+      }
+    ]
+  },
+  {
+    "id": "grade6_math",
+    "grade": 6,
+    "subject": "Math",
+    "topic": "rice field area",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A rectangular rice field is 40 meters long and 25 meters wide. What is its area?"
+      },
+      {
+        "role": "bot",
+        "text": "A rectangular rice field! 🌾 Step 1: Do you remember the formula for the area of a rectangle?"
+      },
+      {
+        "role": "student",
+        "text": "length times width"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: So let's multiply 40 × 25. What's 40 × 20 first?"
+      },
+      {
+        "role": "student",
+        "text": "800"
+      },
+      {
+        "role": "bot",
+        "text": "Good! And what's 40 × 5?"
+      },
+      {
+        "role": "student",
+        "text": "200"
+      },
+      {
+        "role": "bot",
+        "text": "Now add those together: 800 + 200 = ?"
+      },
+      {
+        "role": "student",
+        "text": "1000"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The field's area is 1,000 square meters."
+      }
+    ]
+  },
+  {
+    "id": "grade6_physics",
+    "grade": 6,
+    "subject": "Physics",
+    "topic": "flashlight and mirror",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A student shines a flashlight at a mirror in a dark room. What happens to the light?"
+      },
+      {
+        "role": "bot",
+        "text": "A flashlight and a mirror! 🔦 Step 1: When light hits a shiny surface like a mirror, does it stop, get absorbed, or change direction?"
+      },
+      {
+        "role": "student",
+        "text": "change direction"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: This change of direction off a surface has a name — do you know what we call it?"
+      },
+      {
+        "role": "student",
+        "text": "reflection"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The light reflects off the mirror, which is why the room looks lit wherever the reflected light lands."
+      }
+    ]
+  },
+  {
+    "id": "grade6_chemistry",
+    "grade": 6,
+    "subject": "Chemistry",
+    "topic": "vinegar and eggshells",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Vinegar poured onto crushed eggshells makes bubbles form immediately. What kind of change is this?"
+      },
+      {
+        "role": "bot",
+        "text": "Bubbles from vinegar and eggshells! 🥚 Step 1: When bubbles form quickly and a gas is released, does that usually mean the substances just mixed, or that something new was created?"
+      },
+      {
+        "role": "student",
+        "text": "something new"
+      },
+      {
+        "role": "bot",
+        "text": "Good! Step 2: If a new gas is produced that wasn't there before, is this a physical change or a chemical change?"
+      },
+      {
+        "role": "student",
+        "text": "chemical"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 This is a chemical reaction — the vinegar (an acid) reacts with the eggshell (calcium carbonate) to produce carbon dioxide gas."
+      }
+    ]
+  },
+  {
+    "id": "grade6_biology",
+    "grade": 6,
+    "subject": "Biology",
+    "topic": "water hyacinth on Mekong",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Water hyacinth covers large areas of the Mekong River. How could this affect fish below the surface?"
+      },
+      {
+        "role": "bot",
+        "text": "Water hyacinth covering the river! 🐟 Step 1: What do underwater plants need from sunlight to survive?"
+      },
+      {
+        "role": "student",
+        "text": "to make food"
+      },
+      {
+        "role": "bot",
+        "text": "Right, through photosynthesis! Step 2: If water hyacinth blocks sunlight from reaching the water, what happens to underwater plants and the oxygen they produce?"
+      },
+      {
+        "role": "student",
+        "text": "they die and less oxygen"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly! 🎉 Less sunlight means less photosynthesis and oxygen, which can hurt the fish living below the surface."
+      }
+    ]
+  },
+  {
+    "id": "grade7_math",
+    "grade": 7,
+    "subject": "Math",
+    "topic": "phone discount",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A $180 phone gets a 15% discount during Khmer New Year. What is the sale price?"
+      },
+      {
+        "role": "bot",
+        "text": "A 15% discount — let's calculate! 📱 Step 1: To find the discount amount, what percent of $180 do we need to find first?"
+      },
+      {
+        "role": "student",
+        "text": "15%"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: 15% of 180 — can you convert 15% to a decimal and multiply?"
+      },
+      {
+        "role": "student",
+        "text": "0.15 x 180 = 27"
+      },
+      {
+        "role": "bot",
+        "text": "Great! Step 3: Now subtract that discount from the original price: 180 − 27 = ?"
+      },
+      {
+        "role": "student",
+        "text": "153"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The sale price is $153."
+      }
+    ]
+  },
+  {
+    "id": "grade7_physics",
+    "grade": 7,
+    "subject": "Physics",
+    "topic": "cart, force, and friction",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A student pushes a cart with 50 N and friction pushes back with 50 N, so it doesn't move. What happens if the push is 60 N?"
+      },
+      {
+        "role": "bot",
+        "text": "Forces balancing on the cart! 🛒 Step 1: Right now the forces are equal and the cart is still. What do we call it when forces are balanced like this?"
+      },
+      {
+        "role": "student",
+        "text": "balanced forces"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: If the push increases to 60 N but friction stays at 50 N, is there now a net (unbalanced) force?"
+      },
+      {
+        "role": "student",
+        "text": "yes, 10N"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 With a 10 N net force forward, the cart will now start to accelerate in that direction."
+      }
+    ]
+  },
+  {
+    "id": "grade7_chemistry",
+    "grade": 7,
+    "subject": "Chemistry",
+    "topic": "fish sauce fermentation",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Fish sauce (teuk trei) is made by fermenting fish with salt. Is this a physical or chemical change?"
+      },
+      {
+        "role": "bot",
+        "text": "Making teuk trei! 🐟 Step 1: After fermentation, could you separate the mixture back into fresh fish and plain salt?"
+      },
+      {
+        "role": "student",
+        "text": "no"
+      },
+      {
+        "role": "bot",
+        "text": "Right! Step 2: If the original substances can't be recovered because new substances have formed, is this physical or chemical?"
+      },
+      {
+        "role": "student",
+        "text": "chemical"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 Fermentation is a chemical change — bacteria break down the fish proteins into entirely new compounds."
+      }
+    ]
+  },
+  {
+    "id": "grade7_biology",
+    "grade": 7,
+    "subject": "Biology",
+    "topic": "rice plants and sunlight",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Rice plants grown with plenty of sunlight are taller and greener than shaded ones. Explain the sunlight's role."
+      },
+      {
+        "role": "bot",
+        "text": "Sunlight and rice plant growth! 🌾 Step 1: What is the name of the process plants use to turn sunlight into food?"
+      },
+      {
+        "role": "student",
+        "text": "photosynthesis"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: If a plant gets more sunlight, does it produce more or less food through photosynthesis?"
+      },
+      {
+        "role": "student",
+        "text": "more"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 More sunlight means more photosynthesis, more food produced, and healthier, taller, greener growth."
+      }
+    ]
+  },
+  {
+    "id": "grade8_math",
+    "grade": 8,
+    "subject": "Math",
+    "topic": "cylindrical water tank volume",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A cylindrical water tank has radius 1.5 m and height 4 m. Calculate its volume."
+      },
+      {
+        "role": "bot",
+        "text": "A cylindrical tank! 🛢️ Step 1: Do you remember the volume formula for a cylinder?"
+      },
+      {
+        "role": "student",
+        "text": "V = πr²h"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: Let's find r² first — what's 1.5 × 1.5?"
+      },
+      {
+        "role": "student",
+        "text": "2.25"
+      },
+      {
+        "role": "bot",
+        "text": "Good! Step 3: Now multiply 2.25 × 4 (the height) × 3.14 (π). What do you get?"
+      },
+      {
+        "role": "student",
+        "text": "28.26"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The tank's volume is about 28.26 cubic meters."
+      }
+    ]
+  },
+  {
+    "id": "grade8_physics",
+    "grade": 8,
+    "subject": "Physics",
+    "topic": "moto-taxi speed",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A moto-taxi travels 45 km in 1.5 hours at constant speed. Calculate its speed."
+      },
+      {
+        "role": "bot",
+        "text": "Speed, distance, and time! 🏍️ Step 1: What's the formula relating speed, distance, and time?"
+      },
+      {
+        "role": "student",
+        "text": "speed = distance / time"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: So let's divide 45 ÷ 1.5. What do you get?"
+      },
+      {
+        "role": "student",
+        "text": "30"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The moto-taxi's speed is 30 km/h."
+      }
+    ]
+  },
+  {
+    "id": "grade8_chemistry",
+    "grade": 8,
+    "subject": "Chemistry",
+    "topic": "Kampot limestone heating",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Limestone from Kampot is heated strongly and breaks down while releasing a gas. What type of reaction is this?"
+      },
+      {
+        "role": "bot",
+        "text": "Limestone breaking down when heated! ⛰️ Step 1: One substance is breaking into two or more new substances — what do we call this type of reaction?"
+      },
+      {
+        "role": "student",
+        "text": "decomposition"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 This is thermal decomposition — heat breaks calcium carbonate into calcium oxide and carbon dioxide gas."
+      }
+    ]
+  },
+  {
+    "id": "grade8_biology",
+    "grade": 8,
+    "subject": "Biology",
+    "topic": "crop rotation with mung beans",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A farmer rotates rice with mung beans each season. How might this help maintain soil fertility?"
+      },
+      {
+        "role": "bot",
+        "text": "Rice and mung beans in rotation! 🌱 Step 1: Do you think all crops use the exact same nutrients from the soil, or different amounts of different nutrients?"
+      },
+      {
+        "role": "student",
+        "text": "different"
+      },
+      {
+        "role": "bot",
+        "text": "Good! Step 2: If rice uses up certain nutrients, and mung beans (a legume) actually add nitrogen back to the soil, how does rotating them help?"
+      },
+      {
+        "role": "student",
+        "text": "it gives the soil nutrients back"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 Rotating rice with nitrogen-fixing mung beans helps replenish soil nutrients instead of depleting them every season."
+      }
+    ]
+  },
+  {
+    "id": "grade9_math",
+    "grade": 9,
+    "subject": "Math",
+    "topic": "solving for x",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Solve for x: 3x − 7 = 2x + 5."
+      },
+      {
+        "role": "bot",
+        "text": "Let's solve this step by step! ✏️ Step 1: To isolate x, what could we subtract from both sides to remove 2x from the right?"
+      },
+      {
+        "role": "student",
+        "text": "subtract 2x"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: That gives us x − 7 = 5. Now what should we do to both sides to isolate x completely?"
+      },
+      {
+        "role": "student",
+        "text": "add 7"
+      },
+      {
+        "role": "bot",
+        "text": "Great! So x = 5 + 7. What's the final value of x?"
+      },
+      {
+        "role": "student",
+        "text": "12"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 x = 12."
+      }
+    ]
+  },
+  {
+    "id": "grade9_physics",
+    "grade": 9,
+    "subject": "Physics",
+    "topic": "force from gravity",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A 2 kg object accelerates due to gravity at 9.8 m/s². Calculate the force (F = ma)."
+      },
+      {
+        "role": "bot",
+        "text": "Using F = ma! ⬇️ Step 1: We have mass (2 kg) and acceleration (9.8 m/s²) — what operation combines them in this formula?"
+      },
+      {
+        "role": "student",
+        "text": "multiply"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: So 2 × 9.8 — what do you get?"
+      },
+      {
+        "role": "student",
+        "text": "19.6"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The force is 19.6 N."
+      }
+    ]
+  },
+  {
+    "id": "grade9_chemistry",
+    "grade": 9,
+    "subject": "Chemistry",
+    "topic": "salt vs sugar conductivity",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Salt water conducts electricity but sugar water doesn't. Explain this difference."
+      },
+      {
+        "role": "bot",
+        "text": "Salt vs. sugar in water! ⚡ Step 1: When salt dissolves, does it break apart into charged particles (ions), or stay as whole molecules like sugar?"
+      },
+      {
+        "role": "student",
+        "text": "breaks into ions"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: Do you think moving charged ions in the water can carry electric current, while neutral sugar molecules can't?"
+      },
+      {
+        "role": "student",
+        "text": "yes"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The free-moving ions in salt water carry electric current, but sugar molecules stay neutral and can't conduct."
+      }
+    ]
+  },
+  {
+    "id": "grade9_biology",
+    "grade": 9,
+    "subject": "Biology",
+    "topic": "fish dying near factory",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Fish near a factory are dying while fish in a clean pond are healthy. Propose what might be different."
+      },
+      {
+        "role": "bot",
+        "text": "A mystery about the fish pond! 🔬 Step 1: What's one thing you could measure about the water near the factory that might differ from the clean pond?"
+      },
+      {
+        "role": "student",
+        "text": "the temperature or chemicals"
+      },
+      {
+        "role": "bot",
+        "text": "Good hypothesis! Step 2: How could you test whether chemicals from the factory are the cause — what would you compare?"
+      },
+      {
+        "role": "student",
+        "text": "test water samples from both ponds"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 Comparing water samples for pollutants, pH, and oxygen levels between the two ponds would help identify the cause."
+      }
+    ]
+  },
+  {
+    "id": "grade10_math",
+    "grade": 10,
+    "subject": "Math",
+    "topic": "ladder against wall (Pythagorean theorem)",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A 5 m ladder leans against a wall, base 3 m from the wall. How high does it reach?"
+      },
+      {
+        "role": "bot",
+        "text": "Perfect for the Pythagorean theorem! 🪜 Step 1: In this right triangle, which side is the hypotenuse — the ladder, the wall, or the ground?"
+      },
+      {
+        "role": "student",
+        "text": "the ladder"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: So a² + b² = c², where c = 5 and one leg = 3. What's 5² − 3²?"
+      },
+      {
+        "role": "student",
+        "text": "25 - 9 = 16"
+      },
+      {
+        "role": "bot",
+        "text": "Great! Step 3: So the height² = 16. What's the square root of 16?"
+      },
+      {
+        "role": "student",
+        "text": "4"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The ladder reaches 4 meters up the wall."
+      }
+    ]
+  },
+  {
+    "id": "grade10_physics",
+    "grade": 10,
+    "subject": "Physics",
+    "topic": "moto acceleration",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A moto accelerates uniformly from rest to 15 m/s in 6 seconds. Find its acceleration and distance traveled."
+      },
+      {
+        "role": "bot",
+        "text": "Uniform acceleration! 🏍️ Step 1: What's the formula relating acceleration to change in velocity and time?"
+      },
+      {
+        "role": "student",
+        "text": "a = (v-u)/t"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: So a = 15/6. What's that?"
+      },
+      {
+        "role": "student",
+        "text": "2.5"
+      },
+      {
+        "role": "bot",
+        "text": "Good, 2.5 m/s². Step 3: Now for distance, can you use d = ½(u+v)t with u=0, v=15, t=6?"
+      },
+      {
+        "role": "student",
+        "text": "½ x 15 x 6 = 45"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 Acceleration is 2.5 m/s² and the distance traveled is 45 meters."
+      }
+    ]
+  },
+  {
+    "id": "grade10_chemistry",
+    "grade": 10,
+    "subject": "Chemistry",
+    "topic": "balancing methane combustion",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Balance: CH₄ + O₂ → CO₂ + H₂O."
+      },
+      {
+        "role": "bot",
+        "text": "Let's balance this equation! 🔥 Step 1: Count the carbon atoms — 1 on the left (CH₄), how many on the right (CO₂)?"
+      },
+      {
+        "role": "student",
+        "text": "1"
+      },
+      {
+        "role": "bot",
+        "text": "Good, carbon is balanced. Step 2: Now count hydrogen — 4 on the left. Each H₂O has 2 hydrogens, so how many H₂O do we need to get 4 hydrogens?"
+      },
+      {
+        "role": "student",
+        "text": "2 H2O"
+      },
+      {
+        "role": "bot",
+        "text": "Great! Step 3: Now count oxygen on the right: 2 (from CO₂) + 2 (from 2H₂O) = 4 oxygen atoms. How many O₂ molecules on the left give us 4 oxygen atoms?"
+      },
+      {
+        "role": "student",
+        "text": "2 O2"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The balanced equation is CH₄ + 2O₂ → CO₂ + 2H₂O."
+      }
+    ]
+  },
+  {
+    "id": "grade10_biology",
+    "grade": 10,
+    "subject": "Biology",
+    "topic": "Punnett square for drought tolerance",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Cross two heterozygous rice plants (Tt × Tt). What fraction of offspring is homozygous recessive?"
+      },
+      {
+        "role": "bot",
+        "text": "Let's set up a Punnett square! 🧬 Step 1: Since both parents are Tt, what alleles can each parent pass on?"
+      },
+      {
+        "role": "student",
+        "text": "T or t"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: If we combine T and t from each parent in all four ways (TT, Tt, Tt, tt), how many of the 4 combinations are homozygous recessive (tt)?"
+      },
+      {
+        "role": "student",
+        "text": "1"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 1 out of 4, so ¼ (25%) of offspring are expected to be homozygous recessive (tt)."
+      }
+    ]
+  },
+  {
+    "id": "grade11_math",
+    "grade": 11,
+    "subject": "Math",
+    "topic": "exponential population growth",
+    "turns": [
+      {
+        "role": "student",
+        "text": "P(t) = 5000(1.03)^t. What will the population be after 10 years?"
+      },
+      {
+        "role": "bot",
+        "text": "Population growth! 📈 Step 1: In this formula, what value should we substitute for t?"
+      },
+      {
+        "role": "student",
+        "text": "10"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: So we need 1.03^10 first. Do you know roughly what 1.03 raised to the 10th power is (approximately)?"
+      },
+      {
+        "role": "student",
+        "text": "around 1.34"
+      },
+      {
+        "role": "bot",
+        "text": "Good estimate! Step 3: Now multiply 5000 × 1.34. What do you get?"
+      },
+      {
+        "role": "student",
+        "text": "6700"
+      },
+      {
+        "role": "bot",
+        "text": "Close! Using the more precise value (1.3439), the population is about 6,720 people — great work getting there!"
+      }
+    ]
+  },
+  {
+    "id": "grade11_physics",
+    "grade": 11,
+    "subject": "Physics",
+    "topic": "projectile maximum height",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A ball is launched at 20 m/s at a 30° angle. Find the maximum height (g = 9.8 m/s²)."
+      },
+      {
+        "role": "bot",
+        "text": "Let's break the velocity into components! 🎯 Step 1: The vertical component is v·sin(θ). What's sin(30°)?"
+      },
+      {
+        "role": "student",
+        "text": "0.5"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: So vertical velocity = 20 × 0.5 = 10 m/s. Now, what's the formula for maximum height using this vertical velocity?"
+      },
+      {
+        "role": "student",
+        "text": "h = v²/2g"
+      },
+      {
+        "role": "bot",
+        "text": "Great! Step 3: So h = 10² ÷ (2 × 9.8). What do you get?"
+      },
+      {
+        "role": "student",
+        "text": "5.1"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The maximum height is about 5.1 meters."
+      }
+    ]
+  },
+  {
+    "id": "grade11_chemistry",
+    "grade": 11,
+    "subject": "Chemistry",
+    "topic": "acid-base neutralization",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Hydrochloric acid mixed with sodium hydroxide — what reaction type, and what's the resulting pH?"
+      },
+      {
+        "role": "bot",
+        "text": "Mixing an acid and a base! 🧪 Step 1: When an acid and a base react, what do we generally call this type of reaction?"
+      },
+      {
+        "role": "student",
+        "text": "neutralization"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: A strong acid and strong base in equal amounts typically produce salt and water — what pH would you expect from this kind of neutral salt solution?"
+      },
+      {
+        "role": "student",
+        "text": "7"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 HCl + NaOH → NaCl + H₂O, and with equal strong acid/base amounts, the pH is approximately neutral (7)."
+      }
+    ]
+  },
+  {
+    "id": "grade11_biology",
+    "grade": 11,
+    "subject": "Biology",
+    "topic": "mosquito insecticide resistance",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Explain how natural selection could make mosquitoes resistant to insecticides over time."
+      },
+      {
+        "role": "bot",
+        "text": "Natural selection in action! 🦟 Step 1: If a few mosquitoes happened to already have a trait resisting the insecticide, what would happen to them compared to mosquitoes without it, after spraying?"
+      },
+      {
+        "role": "student",
+        "text": "they survive and the others die"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly! Step 2: If the survivors reproduce, what happens to the resistant trait in the next generation?"
+      },
+      {
+        "role": "student",
+        "text": "it becomes more common"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 Over generations, resistant mosquitoes survive and reproduce more, making the whole population increasingly resistant."
+      }
+    ]
+  },
+  {
+    "id": "grade12_math",
+    "grade": 12,
+    "subject": "Math",
+    "topic": "derivative of a polynomial",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Find the derivative of f(x) = 3x³ − 5x² + 2x − 7."
+      },
+      {
+        "role": "bot",
+        "text": "Let's differentiate term by term! 📐 Step 1: Using the power rule on 3x³ (bring the exponent down and subtract 1), what do we get?"
+      },
+      {
+        "role": "student",
+        "text": "9x²"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: Now apply the same rule to −5x². What's that term's derivative?"
+      },
+      {
+        "role": "student",
+        "text": "-10x"
+      },
+      {
+        "role": "bot",
+        "text": "Great! Step 3: And the derivative of 2x, and of the constant −7?"
+      },
+      {
+        "role": "student",
+        "text": "2 and 0"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 f'(x) = 9x² − 10x + 2. If x is time and f(x) is distance, this derivative represents velocity."
+      }
+    ]
+  },
+  {
+    "id": "grade12_physics",
+    "grade": 12,
+    "subject": "Physics",
+    "topic": "electric fan power",
+    "turns": [
+      {
+        "role": "student",
+        "text": "A fan draws 2 A at 220 V. Calculate the power consumed."
+      },
+      {
+        "role": "bot",
+        "text": "Power, current, and voltage! 🌀 Step 1: What's the formula relating power to current and voltage?"
+      },
+      {
+        "role": "student",
+        "text": "P = IV"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: So P = 2 × 220. What do you get?"
+      },
+      {
+        "role": "student",
+        "text": "440"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The fan consumes 440 watts of power."
+      }
+    ]
+  },
+  {
+    "id": "grade12_chemistry",
+    "grade": 12,
+    "subject": "Chemistry",
+    "topic": "fermentation rate and collision theory",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Why does fish sauce fermentation happen faster in hot season than cool months?"
+      },
+      {
+        "role": "bot",
+        "text": "Fermentation speed and temperature! 🌡️ Step 1: According to collision theory, what happens to particle movement speed when temperature increases?"
+      },
+      {
+        "role": "student",
+        "text": "particles move faster"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: If particles move faster, do they collide more or less often, and with more or less energy?"
+      },
+      {
+        "role": "student",
+        "text": "more often and more energy"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 More frequent, higher-energy collisions mean more successful reactions per second, speeding up fermentation in the hot season."
+      }
+    ]
+  },
+  {
+    "id": "grade12_biology",
+    "grade": 12,
+    "subject": "Biology",
+    "topic": "osmosis and prahok preservation",
+    "turns": [
+      {
+        "role": "student",
+        "text": "Explain osmosis and why salting fish helps preserve it (prahok)."
+      },
+      {
+        "role": "bot",
+        "text": "Salting fish to make prahok! 🐟 Step 1: In osmosis, water moves from lower salt concentration to higher salt concentration. Where is salt concentration higher — inside bacteria cells, or in the salty fish around them?"
+      },
+      {
+        "role": "student",
+        "text": "in the salty fish"
+      },
+      {
+        "role": "bot",
+        "text": "Correct! Step 2: So water will move out of the bacteria cells into the salty surroundings. What happens to bacteria when they lose water like this?"
+      },
+      {
+        "role": "student",
+        "text": "they dry out and die"
+      },
+      {
+        "role": "bot",
+        "text": "Exactly right! 🎉 The high salt concentration draws water out of bacterial cells through osmosis, dehydrating and killing them, which preserves the fish."
+      }
+    ]
+  }
+]

@@ -86,6 +86,7 @@ class ChatResponse(TunsayModel):
     is_parent_help: bool = False
     session_id: NonBlank
     suggested_next: str | None = None
+    user_transcript: str | None = None
 
     @model_validator(mode="after")
     def _at_least_one_language(self) -> Self:

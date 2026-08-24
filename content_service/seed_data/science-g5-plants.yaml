@@ -1,96 +1,67 @@
 id: science-g5-plants
-title_khmer: វិទ្យាសាស្ត្រ៖ ដំណើរការរស្មីសំយោគរុក្ខជាតិ
-title_eng: 'Science: Plant Photosynthesis Process'
+title_khmer: វិទ្យាសាស្ត្រ ថ្នាក់ទី៥៖ រស្មីសំយោគរបស់រុក្ខជាតិ
+title_eng: 'Science Grade 5: Plant Photosynthesis'
 grade: 5
 subject: science
-problem_statement_khmer: តើរុក្ខជាតិបៃតងត្រូវការកត្តាសំខាន់ៗអ្វីខ្លះ មកពីដី បរិយាកាស និងព្រះអាទិត្យ ដើម្បីធ្វើរស្មីសំយោគបង្កើតអាហារ និងអុកស៊ីសែន?
-problem_statement_eng: What key ingredients do green plants collect from soil, air, and the sun for photosynthesis to create food and oxygen?
+problem_statement_khmer: រុក្ខជាតិបៃតងផលិតអាហារផ្ទាល់ខ្លួនដោយប្រើប្រាស់ពន្លឺព្រះអាទិត្យ ទឹក និងឧស្ម័នកាបូនិច។ តើដំណើរការនេះហៅថាអ្វី?
+problem_statement_eng: Green plants make their own food using sunlight, water, and carbon dioxide. What is this process called?
 image_uri: https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=600&auto=format&fit=crop&q=80
 steps:
-- id: plant-step-1
+- id: plt-step-1
   step_number: 1
-  total_steps: 3
-  question_khmer: តើរុក្ខជាតិបឺតស្រូបធាតុរាវអ្វីពីក្នុងដីតាមរយៈឬស?
-  question_eng: What liquid component do plant roots absorb from the soil?
+  total_steps: 2
+  question_khmer: តើដំណើរការផលិតអាហាររបស់រុក្ខជាតិដោយប្រើពន្លឺព្រះអាទិត្យហៅថាអ្វី?
+  question_eng: What is the process where green plants make food using sunlight called?
   input_format: mcq
   options:
-  - ទឹក (Water)
-  - ប្រេង (Oil)
-  - ទឹកដោះគោ (Milk)
-  correct_answer: ទឹក (Water)
+  - រស្មីសំយោគ (Photosynthesis)
+  - ការដកដង្ហើម (Respiration)
+  - ការរលាយ (Melting)
+  correct_answer: រស្មីសំយោគ (Photosynthesis)
   hint1:
-    khmer: ពេលយើងស្រោចដំណាំ យើងចាក់ធាតុរាវនេះទៅលើដី។
-    eng: When we water plants, we pour this liquid onto the soil.
+    khmer: ពាក្យនេះមានន័យថាការផ្សំអាហារដោយប្រើពន្លឺ។
+    eng: The word means building food using light.
   hint2:
-    khmer: ឬសបឺតស្រូប "ទឹក (Water)" និងសារធាតុរ៉ែពីដី!
-    eng: Roots absorb "Water" and minerals from soil!
+    khmer: ដំណើរការនេះគឺ "រស្មីសំយោគ" (Photosynthesis)!
+    eng: Green plants make food through "Photosynthesis"!
   hint3:
-    title_khmer: សារធាតុចម្បង
-    title_eng: Main Substance
-    example_khmer: រុក្ខជាតិត្រូវការទឹកជាចាំបាច់ដើម្បីរស់។
-    example_eng: Plants essential liquid is water.
+    title_khmer: ពាក្យគន្លឹះរុក្ខជាតិ
+    title_eng: Plant Keyword
+    example_khmer: ពន្លឺ + ទឹក + កាបូនិច = រស្មីសំយោគ
+    example_eng: Light + Water + CO2 = Photosynthesis
   explain_differently:
-    simple_khmer: ឬសដើរតួដូចបំពង់បឺត បឺតទឹកពីដីឡើងទៅកាន់ស្លឹក!
-    simple_eng: Roots act like drinking straws, sucking water up to the leaves!
-    analogy_title: បំពង់បឺតរុក្ខជាតិ (Plant Straws)
-    analogy_khmer: បឺតទឹកពីដីឡើងលើ!
-    analogy_eng: Sucking water up from the soil!
+    simple_khmer: រស្មីសំយោគជួយឲ្យរុក្ខជាតិលូតលាស់ និងបង្កើតឧស្ម័នអុកស៊ីសែនសម្រាប់យើងដកដង្ហើម។
+    simple_eng: Photosynthesis helps plants grow and creates oxygen for us to breathe.
+    analogy_title: ផ្ទះបាយធម្មជាតិ (Nature's Kitchen)
+    analogy_khmer: ដូចជាស្លឹកឈើជាផ្ទះបាយចម្អិនអាហារ។
+    analogy_eng: The leaf acts like a kitchen cooking food with sunlight.
     analogy_type: plants
-- id: plant-step-2
+- id: plt-step-2
   step_number: 2
-  total_steps: 3
-  question_khmer: តើរុក្ខជាតិស្រូបយកឧស្ម័នអ្វីពីខ្យល់អាកាសតាមរយៈស្លឹក?
-  question_eng: What gas do plant leaves take in from the air?
+  total_steps: 2
+  question_khmer: តើឧស្ម័នអ្វីដែលរុក្ខជាតិបញ្ចេញមកក្រៅបន្ទាប់ពីរស្មីសំយោគ ដែលមនុស្សនិងសត្វត្រូវការដកដង្ហើម?
+  question_eng: What gas do plants release during photosynthesis that humans and animals need to breathe?
   input_format: mcq
   options:
-  - កាបូនិច (Carbon Dioxide)
   - អុកស៊ីសែន (Oxygen)
+  - កាបូនិច (Carbon Dioxide)
   - អាសូត (Nitrogen)
-  correct_answer: កាបូនិច (Carbon Dioxide)
+  correct_answer: អុកស៊ីសែន (Oxygen)
   hint1:
-    khmer: វាជាឧស្ម័នដែលមនុស្ស និងសត្វដកដង្ហើមចេញ។
-    eng: It is the gas humans and animals breathe out.
+    khmer: យើងត្រូវការឧស្ម័ននេះជារៀងរាល់វិនាទីដើម្បីរស់។
+    eng: We need this gas every second to stay alive.
   hint2:
-    khmer: រុក្ខជាតិស្រូបយក "កាបូនិច" ហើយបញ្ចេញ "អុកស៊ីសែន" មកវិញ!
-    eng: Plants take in "Carbon Dioxide" and release "Oxygen"!
+    khmer: រុក្ខជាតិបញ្ចេញ "អុកស៊ីសែន" (Oxygen)!
+    eng: Plants produce "Oxygen" for us to breathe!
   hint3:
-    title_khmer: ការផ្លាស់ប្តូរឧស្ម័ន
-    title_eng: Gas Exchange
-    example_khmer: ស្រូបកាបូនិច → បញ្ចេញអុកស៊ីសែន
-    example_eng: Takes in CO2 → Releases O2
+    title_khmer: ឧស្ម័នជីវិត
+    title_eng: Gas of Life
+    example_khmer: រស្មីសំយោគ → បញ្ចេញ អុកស៊ីសែន
+    example_eng: Photosynthesis → Releases Oxygen
   explain_differently:
-    simple_khmer: ស្លឹកមានរន្ធតូចៗ (Stomata) សម្រាប់ស្រូបយកឧស្ម័នកាបូនិចពីខ្យល់!
-    simple_eng: Leaves have tiny mouth pores (stomata) to breathe in carbon dioxide!
-    analogy_title: រន្ធដង្ហើមស្លឹក (Leaf Pores)
-    analogy_khmer: ស្រូបកាបូនិចដើម្បីធ្វើអាហារ!
-    analogy_eng: Breathing in CO2 to make food!
-    analogy_type: plants
-- id: plant-step-3
-  step_number: 3
-  total_steps: 3
-  question_khmer: តើប្រភពថាមពលធម្មជាតិចម្បងអ្វីដែលជួយឲ្យស្លឹកធ្វើរស្មីសំយោគ?
-  question_eng: What main natural energy source powers the leaves during photosynthesis?
-  input_format: mcq
-  options:
-  - ពន្លឺព្រះអាទិត្យ (Sunlight)
-  - ពន្លឺអំពូលអគ្គិសនី (Light bulb)
-  - ខ្យល់ព្យុះ (Storm)
-  correct_answer: ពន្លឺព្រះអាទិត្យ (Sunlight)
-  hint1:
-    khmer: វាចែងចាំងពីលើមេឃនៅពេលថ្ងៃ។
-    eng: It shines brightly from the sky during daytime.
-  hint2:
-    khmer: រស្មីសំយោគត្រូវការ "ពន្លឺព្រះអាទិត្យ (Sunlight)" ជាថាមពល!
-    eng: Photosynthesis uses "Sunlight" as energy source!
-  hint3:
-    title_khmer: ថាមពលពន្លឺ
-    title_eng: Light Energy
-    example_khmer: ស្លឹកបៃតងចាប់យកពន្លឺព្រះអាទិត្យដោយសារជាតិក្លរ៉ូភីល
-    example_eng: Green leaves capture sunlight using chlorophyll
-  explain_differently:
-    simple_khmer: ពន្លឺព្រះអាទិត្យផ្តល់ថាមពលដូចជាចង្រ្កានបាយដែលចម្អិនអាហារឲ្យរុក្ខជាតិ!
-    simple_eng: Sunlight acts like a stove heater that cooks food for the plant!
-    analogy_title: ចង្រ្កានបាយព្រះអាទិត្យ (Sun Stove)
-    analogy_khmer: ចម្អិនអាហារដោយពន្លឺព្រះអាទិត្យ!
-    analogy_eng: Cooking food with sunlight energy!
+    simple_khmer: រុក្ខជាតិស្រូបយកកាបូនិច ហើយបញ្ចេញអុកស៊ីសែនស្អាតមកវិញ។
+    simple_eng: Plants take in carbon dioxide and release fresh oxygen into the air.
+    analogy_title: តម្រងខ្យល់ (Air Cleaner)
+    analogy_khmer: ដើមឈើជាតម្រងខ្យល់ធម្មជាតិ។
+    analogy_eng: Trees act as natural air purifiers.
     analogy_type: plants

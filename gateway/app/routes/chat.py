@@ -24,6 +24,7 @@ router = APIRouter()
 
 
 @router.post("/chat")
+@router.post("/tutor")
 async def chat(request: Request) -> Response:
     settings = request.app.state.settings
     return await proxy_request(

@@ -17,7 +17,7 @@ export async function askTunsayTutor(
   activeStepIndex: number = 0
 ): Promise<{ textKhmer: string; textEng: string; isSafetyRefusal?: boolean; suggestedNext?: string | null }> {
   try {
-    const response = await fetch('/api/tutor', {
+    let response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({
@@ -29,6 +29,21 @@ export async function askTunsayTutor(
         activeStepIndex,
       }),
     });
+
+    if (!response.ok) {
+      response = await fetch('/api/tutor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({
+          sessionId,
+          prompt: userPrompt,
+          mode,
+          language,
+          problemId: problemContext?.id,
+          activeStepIndex,
+        }),
+      });
+    }
 
     if (response.ok) {
       const data = await response.json();
@@ -150,6 +165,24 @@ export async function fetchAIHint(
   };
 }
 
+export async function fetchStudentProfile(): Promise<{ stars: number; completedProblemsCount: number } | null> {
+  try {
+    const response = await fetch('/api/profile', {
+      headers: authHeaders(),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        stars: data.stars ?? data.stars_earned ?? 0,
+        completedProblemsCount: data.completedProblemsCount ?? data.completed_problems_count ?? 0,
+      };
+    }
+  } catch (err) {
+    console.error('Failed to fetch profile stats:', err);
+  }
+  return null;
+}
+
 export async function deductHintStars(
   hintLevel: number
 ): Promise<{ starsRemaining: number }> {
@@ -158,16 +191,43 @@ export async function deductHintStars(
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({
-        hintLevel,
+        rung: hintLevel,
+        hint_level: hintLevel,
       }),
     });
     if (response.ok) {
-      return await response.json();
+      const data = await response.json();
+      return { starsRemaining: data.remaining_stars ?? data.starsRemaining ?? -1 };
     }
   } catch (err) {
     console.error('Failed to deduct hint stars:', err);
   }
   return { starsRemaining: -1 };
+}
+
+export async function recordProblemAttempt(
+  problemId: string,
+  stepId: string,
+  isCorrect: boolean,
+  studentAnswer: string = ""
+): Promise<boolean> {
+  try {
+    const response = await fetch('/api/profile/attempts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({
+        session_id: sessionId,
+        problem_id: problemId,
+        step_id: stepId,
+        is_correct: isCorrect,
+        student_answer: studentAnswer,
+      }),
+    });
+    return response.ok;
+  } catch (err) {
+    console.error('Failed to record attempt:', err);
+    return false;
+  }
 }
 
 export async function sendVoiceTurn(
@@ -176,7 +236,7 @@ export async function sendVoiceTurn(
   problemContext?: HomeworkProblem,
   language: Language = 'km',
   activeStepIndex: number = 0
-): Promise<{ textKhmer: string; textEng: string; isSafetyRefusal?: boolean }> {
+): Promise<{ textKhmer: string; textEng: string; userTranscript?: string; isSafetyRefusal?: boolean }> {
   try {
     const formData = new FormData();
     formData.append('file', audioBlob, 'voice_query.webm');
@@ -196,6 +256,7 @@ export async function sendVoiceTurn(
       return {
         textKhmer: data.textKhmer || data.text_khmer || '',
         textEng: data.textEng || data.text_eng || '',
+        userTranscript: data.userTranscript || data.user_transcript || '',
         isSafetyRefusal: data.isSafetyRefusal || data.is_safety_refusal || false,
       };
     }
@@ -212,7 +273,7 @@ export async function sendImageTurn(
   imageBlob: Blob,
   mode: UserMode = 'student',
   language: Language = 'km'
-): Promise<{ textKhmer: string; textEng: string; isSafetyRefusal?: boolean }> {
+): Promise<{ textKhmer: string; textEng: string; userTranscript?: string; isSafetyRefusal?: boolean }> {
   try {
     const formData = new FormData();
     formData.append('file', imageBlob, 'homework_photo.jpg');
@@ -230,6 +291,7 @@ export async function sendImageTurn(
       return {
         textKhmer: data.textKhmer || data.text_khmer || '',
         textEng: data.textEng || data.text_eng || '',
+        userTranscript: data.userTranscript || data.user_transcript || '',
         isSafetyRefusal: data.isSafetyRefusal || data.is_safety_refusal || false,
       };
     }

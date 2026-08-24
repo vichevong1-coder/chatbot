@@ -32,6 +32,7 @@ class PedagogyClient(BaseServiceClient):
                 "context": context,
                 "misconception_code": misconception_code,
             },
+            timeout=45.0,
         )
         response.raise_for_status()
         return response.json()
